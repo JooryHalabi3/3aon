@@ -1,78 +1,264 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Basic functionality for "Apply Filters" button (for demonstration)
-    const applyFiltersBtn = document.getElementById('applyFiltersBtn');
-    if (applyFiltersBtn) {
-        applyFiltersBtn.addEventListener('click', () => {
-            alert('Applying filters... (This would trigger data fetching in a real app)');
-            // In a real application, you would collect filter values (date, department, type, search term)
-            // and make an AJAX request to your backend to fetch filtered data.
-            // Then, you would update the table tbody with the new data.
-        });
+// إعدادات API
+const API_BASE_URL = 'http://localhost:3001/api';
+
+// متغيرات عامة
+let patientData = null;
+let complaintsData = [];
+
+// جلب شكاوى المريض
+async function loadPatientComplaints() {
+  const nationalId = localStorage.getItem("patientNationalId");
+  
+  if (!nationalId) {
+    alert("لا يوجد رقم هوية للمريض");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/complaints/patient/${nationalId}`);
+    const data = await response.json();
+    
+    if (data.success) {
+      patientData = data.data.patient;
+      complaintsData = data.data.complaints;
+      
+      // تحديث معلومات المريض
+      updatePatientInfo();
+      
+      // تحديث قائمة الشكاوى
+      updateComplaintsTable();
+      
+    } else {
+      alert("لا توجد شكاوى لهذا المريض");
     }
+  } catch (error) {
+    console.error('خطأ في جلب شكاوى المريض:', error);
+    alert("حدث خطأ في الاتصال بالخادم");
+  }
+}
 
-    // Basic functionality for pagination buttons (for demonstration)
-    const paginationButtons = document.querySelectorAll('.pagination-btn');
-    paginationButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove 'active' class from all buttons
-            paginationButtons.forEach(btn => btn.classList.remove('active'));
+// تحديث معلومات المريض
+function updatePatientInfo() {
+  if (!patientData) return;
 
-            // Add 'active' class to the clicked button, unless it's a chevron
-            if (!button.querySelector('.fas')) { // Check if it's not an icon (chevron)
-                button.classList.add('active');
-            }
+  // تحديث اسم المريض
+  const patientNameElement = document.querySelector('.info-group .value');
+  if (patientNameElement) {
+    patientNameElement.textContent = patientData.name;
+  }
 
-            // In a real application, clicking a page number would fetch data for that page.
-            if (button.textContent.trim() === '1') {
-                console.log('Navigating to page 1');
-            } else if (button.textContent.trim() === '2') {
-                console.log('Navigating to page 2');
-            } else if (button.textContent.trim() === '3') {
-                console.log('Navigating to page 3');
-            } else if (button.querySelector('.fa-chevron-right')) {
-                console.log('Navigating to previous page');
-            } else if (button.querySelector('.fa-chevron-left')) {
-                console.log('Navigating to next page');
-            }
-        });
+  // تحديث رقم الملف (رقم الهوية)
+  const fileNumberElement = document.querySelectorAll('.info-group .value')[1];
+  if (fileNumberElement) {
+    fileNumberElement.textContent = patientData.nationalId;
+  }
+
+  // تحديث عدد الشكاوى
+  const complaintsCountElement = document.querySelectorAll('.info-group .value')[2];
+  if (complaintsCountElement) {
+    complaintsCountElement.textContent = complaintsData.length;
+  }
+}
+
+// تحديث جدول الشكاوى
+function updateComplaintsTable() {
+  const tbody = document.querySelector('.complaint-list table tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  complaintsData.forEach(complaint => {
+    const row = document.createElement('tr');
+    
+    // تنسيق التاريخ
+    const complaintDate = new Date(complaint.ComplaintDate);
+    const formattedDate = complaintDate.toLocaleDateString('ar-SA');
+    
+    // تنسيق حالة الشكوى
+    const statusClass = getStatusClass(complaint.CurrentStatus);
+    const statusText = getStatusText(complaint.CurrentStatus);
+    
+    row.innerHTML = `
+      <td>#${complaint.ComplaintID}</td>
+      <td>${complaint.ComplaintTypeName}</td>
+      <td>${complaint.DepartmentName}</td>
+      <td>${formattedDate}</td>
+      <td><span class="status-tag ${statusClass}" data-ar="${statusText}" data-en="${statusText}">${statusText}</span></td>
+      <td>
+        <a href="#" onclick="viewComplaintDetails(${complaint.ComplaintID})" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
+      </td>
+    `;
+    
+    tbody.appendChild(row);
+  });
+}
+
+// الحصول على كلاس CSS للحالة
+function getStatusClass(status) {
+  switch (status) {
+    case 'جديدة':
+      return 'status-new';
+    case 'قيد المراجعة':
+    case 'قيد المعالجة':
+      return 'status-under-review';
+    case 'مغلقة':
+    case 'تم الحل':
+      return 'status-closed';
+    default:
+      return 'status-new';
+  }
+}
+
+// الحصول على نص الحالة
+function getStatusText(status) {
+  return status || 'جديدة';
+}
+
+// عرض تفاصيل الشكوى
+function viewComplaintDetails(complaintId) {
+  const complaint = complaintsData.find(c => c.ComplaintID === complaintId);
+  if (complaint) {
+    console.log('بيانات الشكوى المحددة:', complaint);
+    // حفظ بيانات الشكوى في localStorage للوصول إليها في صفحة التفاصيل
+    localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
+    console.log('تم حفظ البيانات في localStorage');
+    window.location.href = "/general complaints/details.html";
+  } else {
+    console.log('لم يتم العثور على الشكوى:', complaintId);
+  }
+}
+
+// تطبيق التصفية
+function applyFilters() {
+  const dateFilter = document.querySelector('input[type="date"]').value;
+  const departmentFilter = document.querySelector('select').value;
+  const complaintTypeFilter = document.querySelectorAll('select')[1].value;
+  const searchFilter = document.getElementById('searchComplaint').value;
+
+  let filteredComplaints = complaintsData;
+
+  // تصفية حسب التاريخ
+  if (dateFilter) {
+    const filterDate = new Date(dateFilter);
+    filteredComplaints = filteredComplaints.filter(complaint => {
+      const complaintDate = new Date(complaint.ComplaintDate);
+      return complaintDate.toDateString() === filterDate.toDateString();
     });
+  }
 
-    // Export Results functionality (for demonstration)
-    const exportResults = document.querySelector('.export-results');
-    if (exportResults) {
-        exportResults.addEventListener('click', () => {
-            alert('Exporting results... (In a real app, this would generate a CSV/Excel file)');
-            // You would typically make an API call to your backend to generate and download the report.
-        });
-    }
+  // تصفية حسب القسم
+  if (departmentFilter && departmentFilter !== 'Department') {
+    filteredComplaints = filteredComplaints.filter(complaint => 
+      complaint.DepartmentName.includes(departmentFilter)
+    );
+  }
 
-});
+  // تصفية حسب نوع الشكوى
+  if (complaintTypeFilter && complaintTypeFilter !== 'Complaint Type') {
+    filteredComplaints = filteredComplaints.filter(complaint => 
+      complaint.ComplaintTypeName.includes(complaintTypeFilter)
+    );
+  }
+
+  // تصفية حسب البحث
+  if (searchFilter) {
+    filteredComplaints = filteredComplaints.filter(complaint => 
+      complaint.ComplaintID.toString().includes(searchFilter)
+    );
+  }
+
+  // تحديث الجدول بالبيانات المصفاة
+  updateComplaintsTableWithData(filteredComplaints);
+}
+
+// تحديث الجدول ببيانات محددة
+function updateComplaintsTableWithData(complaints) {
+  const tbody = document.querySelector('.complaint-list table tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+
+  complaints.forEach(complaint => {
+    const row = document.createElement('tr');
+    
+    const complaintDate = new Date(complaint.ComplaintDate);
+    const formattedDate = complaintDate.toLocaleDateString('ar-SA');
+    
+    const statusClass = getStatusClass(complaint.CurrentStatus);
+    const statusText = getStatusText(complaint.CurrentStatus);
+    
+    row.innerHTML = `
+      <td>#${complaint.ComplaintID}</td>
+      <td>${complaint.ComplaintTypeName}</td>
+      <td>${complaint.DepartmentName}</td>
+      <td>${formattedDate}</td>
+      <td><span class="status-tag ${statusClass}" data-ar="${statusText}" data-en="${statusText}">${statusText}</span></td>
+      <td>
+        <a href="#" onclick="viewComplaintDetails(${complaint.ComplaintID})" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
+      </td>
+    `;
+    
+    tbody.appendChild(row);
+  });
+}
+
+// تصدير النتائج
+function exportResults() {
+  if (complaintsData.length === 0) {
+    alert("لا توجد بيانات للتصدير");
+    return;
+  }
+
+  // إنشاء ملف CSV
+  let csvContent = "رقم الشكوى,نوع الشكوى,القسم,التاريخ,الحالة\n";
+  
+  complaintsData.forEach(complaint => {
+    const complaintDate = new Date(complaint.ComplaintDate);
+    const formattedDate = complaintDate.toLocaleDateString('ar-SA');
+    
+    csvContent += `${complaint.ComplaintID},${complaint.ComplaintTypeName},${complaint.DepartmentName},${formattedDate},${complaint.CurrentStatus}\n`;
+  });
+
+  // تحميل الملف
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", `شكاوى_المريض_${patientData?.name || 'غير_محدد'}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// العودة للصفحة السابقة
+function goBack() {
+  window.history.back();
+}
+
+// تطبيق اللغة
+let currentLang = localStorage.getItem('lang') || 'ar';
 
 function applyLanguage(lang) {
   currentLang = lang;
   localStorage.setItem('lang', lang);
 
-  // إعداد اللغة والاتجاه
+  // الاتجاه واللغة
   document.documentElement.lang = lang;
-  document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-  document.body.classList.toggle('lang-ar', lang === 'ar');
-  document.body.classList.toggle('lang-en', lang === 'en');
+  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.body.style.textAlign = lang === 'ar' ? 'right' : 'left';
 
-  // تغيير النصوص
+  // تغيير النصوص بناءً على اللغة
   document.querySelectorAll('[data-ar]').forEach(el => {
-    if (el.tagName === 'INPUT') {
-      el.placeholder = el.getAttribute(`data-${lang}-placeholder`) || el.getAttribute(`data-${lang}`);
-    } else {
-      el.textContent = el.getAttribute(`data-${lang}`);
-    }
+    el.textContent = el.getAttribute(`data-${lang}`);
   });
 
-  // تغيير خاصية placeholder بشكل منفصل
+  // تغيير placeholder بناءً على اللغة
   document.querySelectorAll('[data-ar-placeholder]').forEach(el => {
     el.placeholder = el.getAttribute(`data-${lang}-placeholder`);
   });
 
-  // زر اللغة
+  // زر اللغة نفسه
   const langText = document.getElementById('langText');
   if (langText) {
     langText.textContent = lang === 'ar' ? 'العربية | English' : 'English | العربية';
@@ -80,30 +266,12 @@ function applyLanguage(lang) {
 
   // تغيير الخط
   document.body.style.fontFamily = lang === 'ar' ? "'Tajawal', sans-serif" : "serif";
-  
-  // إعادة ترتيب العناصر عند التبديل
-  rearrangeForRTL(lang);
 }
-function rearrangeForRTL(lang) {
-  // لحقل البحث
-  const searchGroup = document.querySelector('.search-input-group');
-  if (searchGroup) {
-    searchGroup.style.direction = lang === 'ar' ? 'rtl' : 'ltr';
-    searchGroup.style.textAlign = lang === 'ar' ? 'right' : 'left';
-  }
 
-  // لعناصر التفاصيل
-  document.querySelectorAll('.details-link').forEach(link => {
-    link.style.display = 'inline-block';
-    link.style.margin = lang === 'ar' ? '0 0 0 10px' : '0 10px 0 0';
-  });
-}
+// عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
-  // استرجاع اللغة المحفوظة أو استخدام العربية افتراضياً
-  const savedLang = localStorage.getItem('lang') || 'ar';
-  applyLanguage(savedLang);
+  applyLanguage(currentLang);
 
-  // تعريف زر التبديل
   const toggleBtn = document.getElementById('langToggle');
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
@@ -111,11 +279,14 @@ document.addEventListener('DOMContentLoaded', () => {
       applyLanguage(newLang);
     });
   }
+
+  // إضافة مستمع لزر تطبيق التصفية
+  const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', applyFilters);
+  }
+
+  // تحميل شكاوى المريض
+  loadPatientComplaints();
 });
-
-
-
-function goBack() {
-  window.history.back();
-}
 

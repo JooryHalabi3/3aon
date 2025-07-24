@@ -343,3 +343,30 @@ body.lang-en {
   width: 18px;
   height: 18px;
 }
+
+/* ===== رسالة عدم وجود شكاوى ===== */
+.no-complaints {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 8px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.no-complaints p {
+  font-size: 18px;
+  color: #666;
+  margin: 0;
+}
+
+/* تحسينات للتصميم المتجاوب */
+@media (max-width: 768px) {
+  .no-complaints {
+    padding: 40px 15px;
+  }
+  
+  .no-complaints p {
+    font-size: 16px;
+  }
+}

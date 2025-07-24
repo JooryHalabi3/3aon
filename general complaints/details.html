@@ -49,19 +49,19 @@
       <div class="info-grid">
         <div>
           <div class="info-label" data-ar="الاسم الكامل" data-en="Full Name">الاسم الكامل</div>
-          <div class="info-value" data-ar="أحمد محمد" data-en="Ahmed Mohammed">أحمد محمد</div>
+          <div class="info-value" id="patientName"></div>
         </div>
         <div>
           <div class="info-label" data-ar="رقم الهوية / الإقامة" data-en="ID/Iqama Number">رقم الهوية / الإقامة</div>
-          <div class="info-value">1023456789</div>
+          <div class="info-value" id="nationalId"></div>
         </div>
         <div>
           <div class="info-label" data-ar="رقم الملف الطبي" data-en="Medical File Number">رقم الملف الطبي</div>
-          <div class="info-value">124543</div>
+          <div class="info-value" id="medicalFileNumber"></div>
         </div>
         <div>
           <div class="info-label" data-ar="رقم الجوال" data-en="Mobile Number">رقم الجوال</div>
-          <div class="info-value">0551234567</div>
+          <div class="info-value" id="mobileNumber"></div>
         </div>
       </div>
     </div>
@@ -72,25 +72,22 @@
       <div class="info-grid">
         <div>
           <div class="info-label" data-ar="القسم المرتبط" data-en="Associated Department">القسم المرتبط</div>
-          <div class="info-value" data-ar="الطواري" data-en="Emergency">الطواري</div>
+          <div class="info-value" id="departmentName"></div>
         </div>
         <div>
           <div class="info-label" data-ar="تاريخ الزيارة" data-en="Visit Date">تاريخ الزيارة</div>
-          <div class="info-value">01 يوليو 2024</div>
+          <div class="info-value" id="visitDate"></div>
         </div>
         <div>
           <div class="info-label" data-ar="نوع الشكوى الرئيسي" data-en="Main Complaint Type">نوع الشكوى الرئيسي</div>
-          <div class="info-value" data-ar="الخدمات الطبية والعلاجية" data-en="Medical and Therapeutic Services">الخدمات الطبية والعلاجية</div>
+          <div class="info-value" id="complaintTypeName"></div>
         </div>
         <div>
           <div class="info-label" data-ar="الشكوى الفرعية" data-en="Subcategory">الشكوى الفرعية</div>
-          <div class="info-value" data-ar="تأخير في تقديم العلاج" data-en="Delay in Treatment">تأخير في تقديم العلاج</div>
+          <div class="info-value" id="subTypeName"></div>
         </div>
       </div>
-      <div class="details-box" data-ar="تم حضوري في الموعد المحدد ولكن لم يتم استقبالي من قبل الطبيب إلا بعد ساعة ونصف من الانتظار."
-           data-en="I arrived on time, but I was not seen by the doctor until an hour and a half later.">
-        تم حضوري في الموعد المحدد ولكن لم يتم استقبالي من قبل الطبيب إلا بعد ساعة ونصف من الانتظار.
-      </div>
+      <div class="details-box" id="complaintDetails"></div>
     </div>
 
     <!-- المرفقات -->
@@ -131,6 +128,14 @@
       </div>
     </div>
 
+    <!-- سجل التاريخ -->
+    <div class="section">
+      <div class="section-title" data-ar="سجل التاريخ" data-en="History Log">سجل التاريخ</div>
+      <div class="history-box" id="historyContainer">
+        <!-- سيتم تعبئة البيانات ديناميكياً -->
+      </div>
+    </div>
+
     <!-- أزرار أسفل الصفحة -->
     <div class="footer-actions">
       <a href="/general complaints/general-complaints.html" class="back-link">
@@ -153,3 +158,4 @@
   <script src="details.js"></script>
 </body>
 </html>
+

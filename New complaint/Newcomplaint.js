@@ -1,16 +1,117 @@
-const departments = ["الطوارئ", "العيادات الخارجية", "المختبر", "الأشعة"]; // أضف هذا السطر أول ملف Newcomplaint.js
+// إعدادات API
+const API_BASE_URL = 'http://localhost:3001/api';
 
-const departmentSelect = document.getElementById("department");
+// متغيرات عامة
+let departments = [];
+let complaintTypes = [];
+let subTypes = [];
 
-departments.forEach(dept => {
-  const option = document.createElement("option");
-  option.value = dept;
-  option.textContent = dept;
-  departmentSelect.appendChild(option);
-});
+// جلب الأقسام من الباك إند
+async function loadDepartments() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/complaints/departments`);
+    const data = await response.json();
+    
+    if (data.success) {
+      departments = data.data;
+      populateDepartmentSelect();
+    } else {
+      console.error('خطأ في جلب الأقسام:', data.message);
+    }
+  } catch (error) {
+    console.error('خطأ في الاتصال بالخادم:', error);
+  }
+}
 
+// جلب أنواع الشكاوى من الباك إند
+async function loadComplaintTypes() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/complaints/types`);
+    const data = await response.json();
+    
+    if (data.success) {
+      complaintTypes = data.data;
+      populateComplaintTypeSelect();
+    } else {
+      console.error('خطأ في جلب أنواع الشكاوى:', data.message);
+    }
+  } catch (error) {
+    console.error('خطأ في الاتصال بالخادم:', error);
+  }
+}
 
-function submitComplaint() {
+// جلب التصنيفات الفرعية
+async function loadSubTypes(complaintTypeID) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/complaints/subtypes/${complaintTypeID}`);
+    const data = await response.json();
+    
+    if (data.success) {
+      subTypes = data.data;
+      populateSubTypeSelect();
+    } else {
+      console.error('خطأ في جلب التصنيفات الفرعية:', data.message);
+    }
+  } catch (error) {
+    console.error('خطأ في الاتصال بالخادم:', error);
+  }
+}
+
+// ملء قائمة الأقسام
+function populateDepartmentSelect() {
+  const departmentSelect = document.getElementById("department");
+  departmentSelect.innerHTML = '<option disabled selected data-ar="اختر القسم" data-en="Select Department">اختر القسم</option>';
+  
+  departments.forEach(dept => {
+    const option = document.createElement("option");
+    option.value = dept.DepartmentID;
+    option.textContent = dept.DepartmentName;
+    departmentSelect.appendChild(option);
+  });
+}
+
+// ملء قائمة أنواع الشكاوى
+function populateComplaintTypeSelect() {
+  const mainTypeSelect = document.getElementById("mainType");
+  mainTypeSelect.innerHTML = '<option disabled selected data-ar="اختر نوع الشكوى" data-en="Select Complaint Type">اختر نوع الشكوى</option>';
+  
+  complaintTypes.forEach(type => {
+    const option = document.createElement("option");
+    option.value = type.ComplaintTypeID;
+    option.textContent = type.TypeName;
+    mainTypeSelect.appendChild(option);
+  });
+}
+
+// ملء قائمة التصنيفات الفرعية
+function populateSubTypeSelect() {
+  const subTypeSelect = document.getElementById("subType");
+  subTypeSelect.innerHTML = '<option disabled selected data-ar="اختر التصنيف الفرعي" data-en="Select Subcategory">اختر التصنيف الفرعي</option>';
+  
+  subTypes.forEach(subType => {
+    const option = document.createElement("option");
+    option.value = subType.SubTypeID;
+    option.textContent = subType.SubTypeName;
+    subTypeSelect.appendChild(option);
+  });
+}
+
+// عند تغيير نوع الشكوى الرئيسي
+function onMainTypeChange() {
+  const mainTypeSelect = document.getElementById("mainType");
+  const selectedTypeID = mainTypeSelect.value;
+  
+  if (selectedTypeID) {
+    loadSubTypes(selectedTypeID);
+  } else {
+    // إعادة تعيين التصنيف الفرعي
+    const subTypeSelect = document.getElementById("subType");
+    subTypeSelect.innerHTML = '<option disabled selected data-ar="اختر التصنيف الفرعي" data-en="Select Subcategory">اختر التصنيف الفرعي</option>';
+  }
+}
+
+// إرسال الشكوى إلى الباك إند
+async function submitComplaint() {
   const name = document.getElementById("fullName").value.trim();
   const id = document.getElementById("nationalId").value.trim();
   const gender = document.getElementById("gender").value;
@@ -26,33 +127,74 @@ function submitComplaint() {
     return;
   }
 
-  // تخزين البيانات محليًا للعرض في صفحة التأكيد
-  const complaintData = {
-    name,
-    id,
-    gender,
-    mobile,
-    dept,
-    date,
-    mainType,
-    subType,
-    desc,
-    fileName: "medication_issue.pdf" // مرفق وهمي كمثال
-  };
+  try {
+    // إنشاء FormData لإرسال البيانات مع المرفقات
+    const formData = new FormData();
+    
+    // إضافة البيانات النصية
+    formData.append('patientName', name);
+    formData.append('nationalId', id);
+    formData.append('gender', gender);
+    formData.append('contactNumber', mobile);
+    formData.append('departmentID', dept);
+    formData.append('visitDate', date);
+    formData.append('complaintTypeID', mainType);
+    formData.append('subTypeID', subType);
+    formData.append('complaintDetails', desc);
 
-  localStorage.setItem("complaint", JSON.stringify(complaintData));
+    // إضافة المرفقات
+    const attachmentsInput = document.getElementById("attachments");
+    if (attachmentsInput.files.length > 0) {
+      for (let i = 0; i < attachmentsInput.files.length; i++) {
+        formData.append('attachments', attachmentsInput.files[i]);
+      }
+    }
 
-  // الانتقال إلى صفحة التأكيد
-  window.location.href = "confirmation.html";
+    // إرسال البيانات إلى الباك إند
+    const response = await fetch(`${API_BASE_URL}/complaints/submit`, {
+      method: 'POST',
+      body: formData // لا نحتاج لـ Content-Type مع FormData
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // حفظ البيانات في localStorage مع ID الشكوى والمرفقات
+      const complaintData = {
+        name,
+        id,
+        gender,
+        mobile,
+        dept,
+        date,
+        mainType,
+        subType,
+        desc,
+        complaintID: data.data.complaintID,
+        attachments: data.data.attachments || [],
+        savedInDatabase: true
+      };
+
+      localStorage.setItem("complaint", JSON.stringify(complaintData));
+
+      alert("تم إرسال الشكوى بنجاح!");
+      
+      // الانتقال إلى صفحة التأكيد
+      window.location.href = "confirmation.html";
+    } else {
+      alert("خطأ في إرسال الشكوى: " + data.message);
+    }
+  } catch (error) {
+    console.error('خطأ في إرسال الشكوى:', error);
+    alert("حدث خطأ في الاتصال بالخادم");
+  }
 }
 
-
- let uploadedFiles = [];
+let uploadedFiles = [];
 
 function triggerUpload() {
   document.getElementById("attachments").click();
 }
-
 
 function previewFiles(event) {
   const files = Array.from(event.target.files);
@@ -100,41 +242,6 @@ function previewFiles(event) {
   });
 }
 
-
-
-
-
-/*let lang = localStorage.getItem("lang") || "ar";
-
-function applyLang(lang) {
-  document.documentElement.lang = lang;
-  document.body.dir = lang === "ar" ? "rtl" : "ltr";
-
-  document.querySelectorAll("[data-ar]").forEach(el => {
-    el.textContent = el.getAttribute(`data-${lang}`);
-  });
-
-  document.querySelectorAll("[data-ar-placeholder]").forEach(el => {
-    el.placeholder = el.getAttribute(`data-${lang}-placeholder`);
-  });
-
-  document.getElementById("langText").textContent = lang === "ar" ? "العربية | English" : "English | العربية";
-  localStorage.setItem("lang", lang);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  applyLang(lang);
-
-  document.getElementById("langToggle").addEventListener("click", () => {
-    lang = lang === "ar" ? "en" : "ar";
-    applyLang(lang);
-  });
-});*/
-
-
-
-
-
 let currentLang = localStorage.getItem('lang') || 'ar';
 
 function applyLanguage(lang) {
@@ -166,6 +273,11 @@ function applyLanguage(lang) {
   document.body.style.fontFamily = lang === 'ar' ? "'Tajawal', sans-serif" : "serif";
 }
 
+function goBack() {
+  window.history.back();
+}
+
+// تحميل البيانات عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
   applyLanguage(currentLang);
 
@@ -176,14 +288,14 @@ document.addEventListener('DOMContentLoaded', () => {
       applyLanguage(newLang);
     });
   }
+
+  // تحميل الأقسام وأنواع الشكاوى
+  loadDepartments();
+  loadComplaintTypes();
+
+  // إضافة مستمع لتغيير نوع الشكوى الرئيسي
+  const mainTypeSelect = document.getElementById("mainType");
+  if (mainTypeSelect) {
+    mainTypeSelect.addEventListener('change', onMainTypeChange);
+  }
 });
-
-
-
-
-
-
-
-function goBack() {
-  window.history.back();
-}

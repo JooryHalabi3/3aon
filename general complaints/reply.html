@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reply to Complaint</title>
+  <title>الرد على الشكوى</title>
   <link rel="stylesheet" href="reply.css">
    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
@@ -30,41 +30,70 @@
     </div>
 
   <div class="container">
-    <h1 data-ar="إرسال رد على الشكوى رقم #00123-2025" data-en="Send Reply for Complaint #00123-2025">إرسال رد على الشكوى رقم #00123-2025</h1>
+    <h1 data-ar="إرسال رد على الشكوى رقم" data-en="Send Reply for Complaint #">إرسال رد على الشكوى رقم <span id="complaintNumber">#00123-2025</span></h1>
 
     <div class="info-card">
       <div class="info-item">
         <label data-ar="نوع الشكوى" data-en="Complaint Type">نوع الشكوى</label>
-        <div class="value" data-ar="خدمات الطوارئ" data-en="Emergency Services">خدمات الطوارئ</div>
+        <div class="value" id="complaintTypeName">خدمات الطوارئ</div>
       </div>
       <div class="info-item">
         <label data-ar="رقم الملف" data-en="File Number">رقم الملف</label>
-        <div class="value" data-ar="458796" data-en="458796">458796</div>
+        <div class="value" id="medicalFileNumber">458796</div>
       </div>
       <div class="info-item">
         <label data-ar="اسم المريض" data-en="Patient Name">اسم المريض</label>
-        <div class="value" data-ar="أحمد محمد علي" data-en="Ahmad Mohammed Ali">أحمد محمد علي</div>
+        <div class="value" id="patientName">أحمد محمد علي</div>
       </div>
       <div class="info-item">
         <label data-ar="تاريخ الشكوى" data-en="Complaint Date">تاريخ الشكوى</label>
-        <div class="value" data-ar="15 يناير 2024" data-en="15 Jan 2024">15 يناير 2024</div>
+        <div class="value" id="complaintDate">15 يناير 2024</div>
       </div>
       <div class="info-item">
         <label data-ar="حالة الشكوى" data-en="Complaint Status">حالة الشكوى</label>
-        <div><span class="badge" data-ar="قيد المتابعة" data-en="Under Review">قيد المتابعة</span></div>
+        <div><span class="badge" id="complaintStatus" data-ar="قيد المتابعة" data-en="Under Review">قيد المتابعة</span></div>
       </div>
     </div>
 
     <div class="section">
       <label data-ar="نص الشكوى" data-en="Complaint Text">نص الشكوى</label>
-      <div class="text-box" data-ar="أود أن أتقدم بشكوى بخصوص..." data-en="I would like to file a complaint regarding...">
+      <div class="text-box" id="complaintDetails">
         أود أن أتقدم بشكوى بخصوص الخدمة في قسم الطوارئ، حضرت يوم أمس في تمام الساعة 8 مساءً وانتظرت لمدة ساعتين دون أن يتم الكشف علي. أرجو النظر في هذا الأمر وتحسين مستوى الخدمة.
+      </div>
+    </div>
+
+    <!-- الردود السابقة -->
+    <div class="section previous-responses">
+      <label data-ar="الردود السابقة" data-en="Previous Responses">الردود السابقة</label>
+      <div class="responses-container" id="previousResponses">
+        <!-- سيتم تعبئة الردود السابقة ديناميكياً -->
       </div>
     </div>
 
     <div class="section reply-area">
       <label data-ar="نص الرد" data-en="Reply Text">نص الرد</label>
-      <textarea id="replyText" placeholder="اكتب الرد هنا..." data-ar-placeholder="اكتب الرد هنا..." data-en-placeholder="Write your reply here..."></textarea>
+      <textarea id="responseText" placeholder="اكتب الرد هنا..." data-ar-placeholder="اكتب الرد هنا..." data-en-placeholder="Write your reply here..."></textarea>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label data-ar="نوع الرد" data-en="Response Type">نوع الرد</label>
+          <select id="responseType">
+            <option value="">اختر نوع الرد</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label data-ar="تغيير الحالة" data-en="Change Status">تغيير الحالة</label>
+          <select id="newStatus">
+            <option value="">اختر الحالة الجديدة</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label data-ar="ملاحظات إضافية" data-en="Additional Notes">ملاحظات إضافية</label>
+        <textarea id="notes" placeholder="ملاحظات إضافية (اختياري)..." data-ar-placeholder="ملاحظات إضافية (اختياري)..." data-en-placeholder="Additional notes (optional)..."></textarea>
+      </div>
 
       <div class="attachments" id="attachments">
         <button id="attachBtn" data-ar="إضافة مرفقات" data-en="Add Attachments">إضافة مرفقات</button>
@@ -77,8 +106,8 @@
     </div>
 
     <div class="buttons">
-      <button class="btn-send" id="sendBtn" data-ar="إرسال رد" data-en="Send Reply">إرسال رد</button>
-      <button class="btn-cancel" id="cancelBtn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+      <button class="btn-send" onclick="addResponse()" data-ar="إرسال رد" data-en="Send Reply">إرسال رد</button>
+      <button class="btn-cancel" onclick="goBack()" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
     </div>
   </div>
 

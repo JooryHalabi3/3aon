@@ -1,3 +1,27 @@
+// إعدادات API
+const API_BASE_URL = 'http://localhost:3001/api/auth';
+
+// وظيفة لإظهار رسائل الخطأ
+function showError(message) {
+  alert(message);
+}
+
+// وظيفة لإظهار رسائل النجاح
+function showSuccess(message) {
+  alert(message);
+}
+
+// وظيفة للتحقق من صحة البيانات
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+function validatePhone(phone) {
+  const re = /^[0-9]{10,15}$/;
+  return re.test(phone);
+}
+
 function showTab(tab) {
   const loginTab = document.getElementById('loginTab');
   const registerTab = document.getElementById('registerTab');
@@ -18,76 +42,182 @@ function showTab(tab) {
 }
 
 // تسجيل الدخول
-function login() {
-  const email = document.getElementById("email").value.trim();
+async function login() {
+  const username = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  if (!email || !password) {
-    alert("يرجى إدخال البريد وكلمة المرور.");
+  if (!username || !password) {
+    showError("يرجى إدخال اسم المستخدم وكلمة المرور.");
     return;
   }
 
-  // حفظ الدخول
-  localStorage.setItem("userEmail", email);
+  try {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username,
+        password
+      })
+    });
 
-  // سجل المستخدمين
-  let users = JSON.parse(localStorage.getItem("loggedUsers")) || [];
-  users.push({ email, time: new Date().toLocaleString() });
-  localStorage.setItem("loggedUsers", JSON.stringify(users));
+    const data = await response.json();
 
-  // سجل الأنشطة
-  let logs = JSON.parse(localStorage.getItem("activityLogs")) || [];
-  logs.push({
-    time: new Date().toLocaleString(),
-    action: "Login",
-    details: `User with email ${email} logged in.`
-  });
-  localStorage.setItem("activityLogs", JSON.stringify(logs));
+    if (data.success) {
+      // حفظ التوكن وبيانات المستخدم
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.employee));
+      localStorage.setItem("userEmail", data.data.employee.Email || username);
 
-  setTimeout(() => {
-    window.location.href = "home.html";
-  }, 1500);
+      // سجل الأنشطة
+      let logs = JSON.parse(localStorage.getItem("activityLogs")) || [];
+      logs.push({
+        time: new Date().toLocaleString(),
+        action: "Login",
+        details: `User ${data.data.employee.FullName} logged in successfully.`
+      });
+      localStorage.setItem("activityLogs", JSON.stringify(logs));
+
+      showSuccess("تم تسجيل الدخول بنجاح!");
+      
+      setTimeout(() => {
+        window.location.href = "home.html";
+      }, 1500);
+    } else {
+      showError(data.message || "حدث خطأ في تسجيل الدخول");
+    }
+  } catch (error) {
+    console.error('خطأ في تسجيل الدخول:', error);
+    showError("حدث خطأ في الاتصال بالخادم");
+  }
 }
 
 // التسجيل الجديد
-function register() {
-  const name = document.getElementById("regName").value.trim();
-  const phone = document.getElementById("regPhone").value.trim();
-  const id = document.getElementById("regID").value.trim();
+async function register() {
+  const fullName = document.getElementById("regName").value.trim();
+  const phoneNumber = document.getElementById("regPhone").value.trim();
+  const username = document.getElementById("regID").value.trim();
   const email = document.getElementById("regEmail").value.trim();
-  const pass = document.getElementById("regPass").value;
-  const confirm = document.getElementById("regConfirmPass").value;
+  const password = document.getElementById("regPass").value;
+  const confirmPassword = document.getElementById("regConfirmPass").value;
 
-  if (!name || !phone || !id || !email || !pass || !confirm) {
-    alert("يرجى تعبئة جميع الحقول.");
+  // التحقق من البيانات
+  if (!fullName || !phoneNumber || !username || !email || !password || !confirmPassword) {
+    showError("يرجى تعبئة جميع الحقول.");
     return;
   }
 
-  if (pass !== confirm) {
-    alert("كلمتا المرور غير متطابقتين.");
+  if (password !== confirmPassword) {
+    showError("كلمتا المرور غير متطابقتين.");
     return;
   }
 
-  localStorage.setItem("userEmail", email);
+  if (!validateEmail(email)) {
+    showError("يرجى إدخال بريد إلكتروني صحيح.");
+    return;
+  }
 
-  // إضافة المستخدم إلى قائمة المسجلين
-  let users = JSON.parse(localStorage.getItem("registeredUsers")) || [];
-  users.push({ name, phone, id, email, time: new Date().toLocaleString() });
-  localStorage.setItem("registeredUsers", JSON.stringify(users));
+  if (!validatePhone(phoneNumber)) {
+    showError("يرجى إدخال رقم هاتف صحيح.");
+    return;
+  }
 
-  // تسجيل في الأنشطة
-  let logs = JSON.parse(localStorage.getItem("activityLogs")) || [];
-  logs.push({
-    time: new Date().toLocaleString(),
-    action: "Register",
-    details: `User ${name} registered with email ${email}.`
-  });
-  localStorage.setItem("activityLogs", JSON.stringify(logs));
+  if (password.length < 6) {
+    showError("كلمة المرور يجب أن تكون 6 أحرف على الأقل.");
+    return;
+  }
 
-  setTimeout(() => {
-    window.location.href = "home.html";
-  }, 1500);
+  try {
+    const response = await fetch(`${API_BASE_URL}/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fullName,
+        username,
+        password,
+        email,
+        phoneNumber,
+        roleID: 2, // افتراضياً موظف عادي
+        specialty: ''
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // حفظ التوكن وبيانات المستخدم
+      localStorage.setItem('token', data.data.token);
+      localStorage.setItem('user', JSON.stringify(data.data.employee));
+      localStorage.setItem("userEmail", data.data.employee.Email || email);
+
+      // إضافة المستخدم إلى قائمة المسجلين
+      let users = JSON.parse(localStorage.getItem("registeredUsers")) || [];
+      users.push({ 
+        name: fullName, 
+        phone: phoneNumber, 
+        id: username, 
+        email, 
+        time: new Date().toLocaleString() 
+      });
+      localStorage.setItem("registeredUsers", JSON.stringify(users));
+
+      // تسجيل في الأنشطة
+      let logs = JSON.parse(localStorage.getItem("activityLogs")) || [];
+      logs.push({
+        time: new Date().toLocaleString(),
+        action: "Register",
+        details: `User ${fullName} registered successfully with email ${email}.`
+      });
+      localStorage.setItem("activityLogs", JSON.stringify(logs));
+
+      showSuccess("تم التسجيل بنجاح!");
+      
+      setTimeout(() => {
+        window.location.href = "home.html";
+      }, 1500);
+    } else {
+      showError(data.message || "حدث خطأ في التسجيل");
+    }
+  } catch (error) {
+    console.error('خطأ في التسجيل:', error);
+    showError("حدث خطأ في الاتصال بالخادم");
+  }
 }
+
+// وظيفة للتحقق من حالة تسجيل الدخول
+function checkAuthStatus() {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  
+  if (token && user) {
+    // التحقق من صحة التوكن
+    fetch(`${API_BASE_URL}/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) {
+        // التوكن غير صالح، حذف البيانات المحلية
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        console.log('تم حذف التوكن غير الصالح');
+      }
+    })
+    .catch(error => {
+      console.error('خطأ في التحقق من التوكن:', error);
+      // حذف البيانات المحلية في حالة الخطأ
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    });
+  }
+}
+
 let currentLang = localStorage.getItem('lang') || 'ar';
 
 function applyLanguage(lang) {
@@ -121,6 +251,7 @@ function applyLanguage(lang) {
 
 document.addEventListener('DOMContentLoaded', () => {
   applyLanguage(currentLang);
+  checkAuthStatus();
 
   const toggleBtn = document.getElementById('langToggle');
   if (toggleBtn) {
