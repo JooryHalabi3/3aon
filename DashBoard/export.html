@@ -19,23 +19,23 @@
           إعدادات التقرير
         </h3>
         <div class="checkbox-group">
-          <label><input type="checkbox"> إظهار بيانات المرضى</label>
-          <label><input type="checkbox"> إظهار بيانات الموظفين</label>
+          <label><input type="checkbox" id="includePatientData"> إظهار بيانات المرضى</label>
+          <label><input type="checkbox" id="includeEmployeeData"> إظهار بيانات الموظفين</label>
         </div>
         <hr class="divider">
         <div class="format-section">
           <p>تنسيق التقرير:</p>
           <div class="format-options">
-            <label class="format-option">
-              <input type="radio" name="format" checked>
-              <img src="/icon/Eexel1.png" alt="Excel">
-              Excel
-            </label>
-            <label class="format-option">
-              <input type="radio" name="format">
-              <img src="/icon/pdf1.png" alt="PDF">
-              PDF
-            </label>
+                      <label class="format-option">
+            <input type="radio" name="format" value="Excel" checked>
+            <img src="/icon/Eexel1.png" alt="Excel">
+            Excel
+          </label>
+          <label class="format-option">
+            <input type="radio" name="format" value="PDF">
+            <img src="/icon/pdf1.png" alt="PDF">
+            PDF
+          </label>
           </div>
         </div>
       </div>
@@ -48,32 +48,32 @@
         </h3>
         <div class="checkbox-icon-group">
           <label class="checkbox-icon-option">
-            <input type="checkbox">
+            <input type="checkbox" id="allComplaints" checked>
             <img src="/icon/docc.png" alt="">
             جميع الشكاوى
           </label>
           <label class="checkbox-icon-option">
-            <input type="checkbox">
+            <input type="checkbox" id="repeatedComplaints">
             <img src="/icon/docc.png" alt="">
             الشكاوى المتكررة فقط
           </label>
           <label class="checkbox-icon-option">
-            <input type="checkbox">
+            <input type="checkbox" id="closedComplaints">
             <img src="/icon/docc.png" alt="">
             الشكاوى المغلقة
           </label>
           <label class="checkbox-icon-option">
-            <input type="checkbox">
+            <input type="checkbox" id="unansweredComplaints">
             <img src="/icon/docc.png" alt="">
             الشكاوى غير المجاب عليها
           </label>
           <label class="checkbox-icon-option">
-            <input type="checkbox">
+            <input type="checkbox" id="analysisSuggestions">
             <img src="/icon/analysis.png" alt="">
             تحليل + اقتراحات تحسين
           </label>
           <label class="checkbox-icon-option">
-            <input type="checkbox">
+            <input type="checkbox" id="complaintAttachments">
             <img src="/icon/doc3.png" alt="">
             مرفقات الشكاوى
           </label>
@@ -95,11 +95,11 @@
         <div class="custom-date-range">
           <div class="date-field">
             <label>من تاريخ</label>
-            <div class="input-date"><input type="date"><img src="/icon/fromto.png" alt=""></div>
+            <div class="input-date"><input type="date" id="dateFrom"><img src="/icon/fromto.png" alt=""></div>
           </div>
           <div class="date-field">
             <label>إلى تاريخ</label>
-            <div class="input-date"><input type="date"><img src="/icon/fromto.png" alt=""></div>
+            <div class="input-date"><input type="date" id="dateTo"><img src="/icon/fromto.png" alt=""></div>
           </div>
         </div>
       </div>
@@ -115,15 +115,15 @@
         </div>
         <div class="summary-item">
           <div class="summary-label">عدد الشكاوى</div>
-          <div class="summary-value">87</div>
+          <div class="summary-value" id="totalComplaints">—</div>
         </div>
         <div class="summary-item">
           <div class="summary-label">الشكاوى المتكررة</div>
-          <div class="summary-value">18</div>
+          <div class="summary-value" id="repeatedCount">—</div>
         </div>
         <div class="summary-item">
           <div class="summary-label">الشكاوى المغلقة</div>
-          <div class="summary-value">52</div>
+          <div class="summary-value" id="closedCount">—</div>
         </div>
         <div class="summary-item">
           <div class="summary-label">التنسيق</div>

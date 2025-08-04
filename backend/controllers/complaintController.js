@@ -29,11 +29,14 @@ const upload = multer({
   }
 });
 
-// جلب جميع الأقسام
+// جلب الأقسام التي لديها شكاوى فقط
 const getDepartments = async (req, res) => {
   try {
     const [departments] = await pool.execute(
-      'SELECT DepartmentID, DepartmentName, Description FROM Departments ORDER BY DepartmentName'
+      `SELECT DISTINCT d.DepartmentID, d.DepartmentName, d.Description 
+       FROM Departments d
+       INNER JOIN Complaints c ON d.DepartmentID = c.DepartmentID
+       ORDER BY d.DepartmentName`
     );
     
     res.json({
@@ -50,11 +53,14 @@ const getDepartments = async (req, res) => {
   }
 };
 
-// جلب أنواع الشكاوى الرئيسية
+// جلب أنواع الشكاوى التي لديها شكاوى فعلاً
 const getComplaintTypes = async (req, res) => {
   try {
     const [types] = await pool.execute(
-      'SELECT ComplaintTypeID, TypeName, Description FROM ComplaintTypes ORDER BY TypeName'
+      `SELECT DISTINCT ct.ComplaintTypeID, ct.TypeName, ct.Description 
+       FROM ComplaintTypes ct
+       INNER JOIN Complaints c ON ct.ComplaintTypeID = c.ComplaintTypeID
+       ORDER BY ct.TypeName`
     );
     
     res.json({
@@ -71,7 +77,7 @@ const getComplaintTypes = async (req, res) => {
   }
 };
 
-// جلب التصنيفات الفرعية حسب النوع الرئيسي
+// جلب التصنيفات الفرعية التي لديها شكاوى فعلاً
 const getSubTypes = async (req, res) => {
   try {
     const { complaintTypeID } = req.params;
@@ -84,10 +90,11 @@ const getSubTypes = async (req, res) => {
     }
 
     const [subTypes] = await pool.execute(
-      `SELECT SubTypeID, SubTypeName, Description 
-       FROM ComplaintSubTypes 
-       WHERE ComplaintTypeID = ? 
-       ORDER BY SubTypeName`,
+      `SELECT DISTINCT cst.SubTypeID, cst.SubTypeName, cst.Description 
+       FROM ComplaintSubTypes cst
+       INNER JOIN Complaints c ON cst.SubTypeID = c.SubTypeID
+       WHERE cst.ComplaintTypeID = ?
+       ORDER BY cst.SubTypeName`,
       [complaintTypeID]
     );
     

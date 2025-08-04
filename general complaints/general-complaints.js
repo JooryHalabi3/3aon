@@ -42,20 +42,41 @@ async function loadComplaints() {
 
     console.log('معاملات البحث:', params.toString()); // إضافة رسالة تصحيح
 
-    const response = await fetch(`${API_BASE_URL}/complaints/all?${params}`);
+    const response = await fetch(`${API_BASE_URL}/general-complaints/stats?${params}`);
     const data = await response.json();
     
     console.log('استجابة الخادم:', data); // إضافة رسالة تصحيح
     
     if (data.success) {
-      complaintsData = data.data;
-      console.log('عدد الشكاوى المحملة:', complaintsData.length); // إضافة رسالة تصحيح
+      // البيانات تأتي في data.data.complaints
+      if (data.data && data.data.complaints && Array.isArray(data.data.complaints)) {
+        complaintsData = data.data.complaints;
+        console.log('عدد الشكاوى المحملة:', complaintsData.length); // إضافة رسالة تصحيح
+        
+        // التحقق من صحة البيانات
+        complaintsData = complaintsData.filter(complaint => {
+          const isValid = complaint.ComplaintID && complaint.ComplaintDetails;
+          if (!isValid) {
+            console.warn('شكوى غير صحيحة:', complaint);
+          }
+          return isValid;
+        });
+        
+        console.log('عدد الشكاوى الصحيحة:', complaintsData.length);
+      } else {
+        console.warn('البيانات ليست مصفوفة، تعيين مصفوفة فارغة');
+        complaintsData = [];
+      }
       updateComplaintsDisplay();
     } else {
       console.error('خطأ في جلب الشكاوى:', data.message);
+      complaintsData = [];
+      updateComplaintsDisplay();
     }
   } catch (error) {
     console.error('خطأ في الاتصال بالخادم:', error);
+    complaintsData = [];
+    updateComplaintsDisplay();
   }
 }
 
@@ -124,6 +145,17 @@ function updateComplaintsDisplay() {
     return;
   }
 
+  // فحص البيانات قبل استخدامها
+  if (!complaintsData || !Array.isArray(complaintsData)) {
+    console.error('بيانات الشكاوى غير صحيحة:', complaintsData);
+    complaintsSection.innerHTML = `
+      <div class="no-complaints">
+        <p data-ar="خطأ في تحميل البيانات" data-en="Error loading data">خطأ في تحميل البيانات</p>
+      </div>
+    `;
+    return;
+  }
+
   console.log('عدد الشكاوى للعرض:', complaintsData.length); // إضافة رسالة تصحيح
 
   if (complaintsData.length === 0) {
@@ -136,52 +168,57 @@ function updateComplaintsDisplay() {
     return;
   }
 
-  const complaintsHTML = complaintsData.map(complaint => {
-    const complaintDate = new Date(complaint.ComplaintDate);
-    const formattedDate = complaintDate.toLocaleDateString('ar-SA') + ' - ' + 
-                         complaintDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
-    
-    const statusClass = getStatusClass(complaint.CurrentStatus);
-    const statusText = getStatusText(complaint.CurrentStatus);
-    
-    // تقصير تفاصيل الشكوى
-    const shortDetails = complaint.ComplaintDetails.length > 100 
-      ? complaint.ComplaintDetails.substring(0, 100) + '...'
-      : complaint.ComplaintDetails;
+      const complaintsHTML = complaintsData.map(complaint => {
+      try {
+        const complaintDate = new Date(complaint.ComplaintDate);
+        const formattedDate = complaintDate.toLocaleDateString('ar-SA') + ' - ' + 
+                             complaintDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        
+        const statusClass = getStatusClass(complaint.CurrentStatus);
+        const statusText = getStatusText(complaint.CurrentStatus);
+        
+        // تقصير تفاصيل الشكوى
+        const shortDetails = complaint.ComplaintDetails && complaint.ComplaintDetails.length > 100 
+          ? complaint.ComplaintDetails.substring(0, 100) + '...'
+          : complaint.ComplaintDetails || 'لا توجد تفاصيل';
 
-    console.log('إنشاء HTML للشكوى:', complaint.ComplaintID); // إضافة رسالة تصحيح
+        console.log('إنشاء HTML للشكوى:', complaint.ComplaintID); // إضافة رسالة تصحيح
 
-    return `
-      <div class="complaint">
-        <div class="complaint-header">
-          <span data-ar="شكوى #${complaint.ComplaintID}" data-en="Complaint #${complaint.ComplaintID}">شكوى #${complaint.ComplaintID}</span>
-          <span class="badge ${statusClass}" data-ar="${statusText}" data-en="${statusText}">${statusText}</span>
-          <span class="date">${formattedDate}</span>
-        </div>
-        <div class="complaint-body">
-          <div class="details">
-            <h3 data-ar="تفاصيل الشكوى" data-en="Complaint Details">تفاصيل الشكوى</h3>
-            <p data-ar="القسم: ${complaint.DepartmentName}" data-en="Department: ${complaint.DepartmentName}">القسم: ${complaint.DepartmentName}</p>
-            <p data-ar="نوع الشكوى: ${complaint.ComplaintTypeName}" data-en="Complaint Type: ${complaint.ComplaintTypeName}">نوع الشكوى: ${complaint.ComplaintTypeName}</p>
-            ${complaint.SubTypeName ? `<p data-ar="التصنيف الفرعي: ${complaint.SubTypeName}" data-en="Subcategory: ${complaint.SubTypeName}">التصنيف الفرعي: ${complaint.SubTypeName}</p>` : ''}
-            <p data-ar="${shortDetails}" data-en="${shortDetails}">${shortDetails}</p>
+        return `
+          <div class="complaint">
+            <div class="complaint-header">
+              <span data-ar="شكوى #${complaint.ComplaintID}" data-en="Complaint #${complaint.ComplaintID}">شكوى #${complaint.ComplaintID}</span>
+              <span class="badge ${statusClass}" data-ar="${statusText}" data-en="${statusText}">${statusText}</span>
+              <span class="date">${formattedDate}</span>
+            </div>
+            <div class="complaint-body">
+              <div class="details">
+                <h3 data-ar="تفاصيل الشكوى" data-en="Complaint Details">تفاصيل الشكوى</h3>
+                <p data-ar="القسم: ${complaint.DepartmentName || 'غير محدد'}" data-en="Department: ${complaint.DepartmentName || 'Not specified'}">القسم: ${complaint.DepartmentName || 'غير محدد'}</p>
+                <p data-ar="نوع الشكوى: ${complaint.ComplaintTypeName || 'غير محدد'}" data-en="Complaint Type: ${complaint.ComplaintTypeName || 'Not specified'}">نوع الشكوى: ${complaint.ComplaintTypeName || 'غير محدد'}</p>
+                ${complaint.SubTypeName ? `<p data-ar="التصنيف الفرعي: ${complaint.SubTypeName}" data-en="Subcategory: ${complaint.SubTypeName}">التصنيف الفرعي: ${complaint.SubTypeName}</p>` : ''}
+                <p data-ar="${shortDetails}" data-en="${shortDetails}">${shortDetails}</p>
+              </div>
+              <div class="info">
+                <h3 data-ar="معلومات المريض" data-en="Patient Info">معلومات المريض</h3>
+                <p data-ar="اسم المريض: ${complaint.patientName || 'غير محدد'}" data-en="Patient Name: ${complaint.patientName || 'Not specified'}">اسم المريض: ${complaint.patientName || 'غير محدد'}</p>
+                <p data-ar="رقم الهوية: ${complaint.NationalID_Iqama || 'غير محدد'}" data-en="ID Number: ${complaint.NationalID_Iqama || 'Not specified'}">رقم الهوية: ${complaint.NationalID_Iqama || 'غير محدد'}</p>
+                <p data-ar="رقم الجوال: ${complaint.ContactNumber || 'غير محدد'}" data-en="Phone: ${complaint.ContactNumber || 'Not specified'}">رقم الجوال: ${complaint.ContactNumber || 'غير محدد'}</p>
+              </div>
+            </div>
+            <div class="actions">
+              <a href="#" onclick="viewComplaintDetails(${complaint.ComplaintID})" class="btn blue" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
+              <a href="/general complaints/reply.html" class="btn green" data-ar="الرد على الشكوى" data-en="Reply to Complaint">الرد على الشكوى</a>
+              <a href="/general complaints/status.html" class="btn gray" data-ar="تغيير الحالة" data-en="Change Status">تغيير الحالة</a>
+              <a href="/general complaints/track.html" class="btn track" data-ar="تتبع حالة الشكوى" data-en="Track Complaint">تتبع حالة الشكوى</a>
+            </div>
           </div>
-          <div class="info">
-            <h3 data-ar="معلومات المريض" data-en="Patient Info">معلومات المريض</h3>
-            <p data-ar="اسم المريض: ${complaint.PatientName}" data-en="Patient Name: ${complaint.PatientName}">اسم المريض: ${complaint.PatientName}</p>
-            <p data-ar="رقم الملف: ${complaint.NationalID_Iqama}" data-en="File Number: ${complaint.NationalID_Iqama}">رقم الملف: ${complaint.NationalID_Iqama}</p>
-            <p data-ar="رقم الهوية: ${complaint.NationalID_Iqama}" data-en="ID Number: ${complaint.NationalID_Iqama}">رقم الهوية: ${complaint.NationalID_Iqama}</p>
-          </div>
-        </div>
-        <div class="actions">
-          <a href="#" onclick="viewComplaintDetails(${complaint.ComplaintID})" class="btn blue" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
-          <a href="/general complaints/reply.html" class="btn green" data-ar="الرد على الشكوى" data-en="Reply to Complaint">الرد على الشكوى</a>
-          <a href="/general complaints/status.html" class="btn gray" data-ar="تغيير الحالة" data-en="Change Status">تغيير الحالة</a>
-          <a href="/general complaints/track.html" class="btn track" data-ar="تتبع حالة الشكوى" data-en="Track Complaint">تتبع حالة الشكوى</a>
-        </div>
-      </div>
-    `;
-  }).join('');
+        `;
+      } catch (error) {
+        console.error('خطأ في معالجة الشكوى:', complaint, error);
+        return '';
+      }
+    }).join('');
 
   console.log('تم إنشاء HTML للشكاوى'); // إضافة رسالة تصحيح
   complaintsSection.innerHTML = complaintsHTML;
