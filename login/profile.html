@@ -1,75 +1,94 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>الملف الشخصي - Profile</title>
-  <link rel="stylesheet" href="profile.css" />
+
+  <!-- خط عربي: Tajawal -->
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- ملف التنسيقات -->
+  <link rel="stylesheet" href="profile.css">
 </head>
 
 <body>
-  <!-- الهيدر (نفس شكل الصورة) -->
   <header class="header">
     <div class="header-content">
-      <!-- يسار: عنوان عونك -->
       <div class="header-title" data-ar="عُــــــونَك" data-en="AOUNAK">عُــــــونَك</div>
-  
-      <!-- وسط: شعار المستشفى -->
-      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo" />
-  
-      <!-- يمين: زر اللغة -->
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+
+      <!-- زر اللغة -->
       <button id="langToggle" class="lang-toggle-btn">
         <img src="/icon/lang.png" alt="language" class="lang-icon" />
-        <span id="langText">English | العربية</span>
+        <span id="langText">العربية | English</span>
       </button>
     </div>
-  </header>  
+  </header>
 
-  <!-- المحتوى -->
-  <main class="profile-section">
-    <h2 data-ar="بيانات الموظف" data-en="Employee Information">بيانات الموظف</h2>
+  <main>
+    <!-- بطاقة الملف الشخصي -->
+    <section class="profile-card">
+      <div class="card-header">
+        <img src="/icon/patient1.png" alt="الملف الشخصي" class="profile-icon">
+        <h2 data-ar="بيانات الموظف" data-en="Employee Information">بيانات الموظف</h2>
+      </div>
 
-    <div class="info">
-      <label data-ar="اسم الموظف" data-en="Employee Name">اسم الموظف</label>
-      <p id="empName">---</p>
-    </div>
-    <div class="info">
-      <label data-ar="رقم الجوال" data-en="Phone Number">رقم الجوال</label>
-      <p id="empPhone">---</p>
-    </div>
-    <div class="info">
-      <label data-ar="رقم الهوية / الإقامة" data-en="ID / Iqama Number">رقم الهوية / الإقامة</label>
-      <p id="empId">---</p>
-    </div>
-    <div class="info">
-      <label data-ar="رقم الموظف" data-en="Employee ID">رقم الموظف</label>
-      <p id="empNumber">---</p>
-    </div>
-    <div class="info">
-      <label data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</label>
-      <p id="empEmail">---</p>
-    </div>
+      <div class="profile-info">
+        <div class="info-row">
+          <div class="info-label" data-ar="اسم الموظف" data-en="Employee Name">اسم الموظف</div>
+          <div class="info-value" id="empName">---</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label" data-ar="رقم الجوال" data-en="Phone Number">رقم الجوال</div>
+          <div class="info-value" id="empPhone">---</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label" data-ar="رقم الهوية / الإقامة" data-en="ID / Iqama Number">رقم الهوية / الإقامة</div>
+          <div class="info-value" id="empId">---</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label" data-ar="رقم الموظف" data-en="Employee ID">رقم الموظف</div>
+          <div class="info-value" id="empNumber">---</div>
+        </div>
+        
+        <div class="info-row">
+          <div class="info-label" data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</div>
+          <div class="info-value" id="empEmail">---</div>
+        </div>
+      </div>
 
-    <div class="buttons">
-      <button id="backBtn" class="btn back" data-ar="عودة" data-en="Back">عودة</button>
-      <button id="editBtn" class="btn edit" data-ar="تعديل البيانات" data-en="Edit Info">تعديل البيانات</button>
-      <button id="logoutBtn" class="btn logout" data-ar="تسجيل الخروج" data-en="Logout">تسجيل الخروج</button>
-    </div>
+      <div class="profile-actions">
+        <button id="backBtn" class="btn btn-secondary" data-ar="عودة" data-en="Back">عودة</button>
+        <button id="editBtn" class="btn btn-primary" data-ar="تعديل البيانات" data-en="Edit Info">تعديل البيانات</button>
+        <button id="logoutBtn" class="btn btn-danger" data-ar="تسجيل الخروج" data-en="Logout">تسجيل الخروج</button>
+      </div>
+    </section>
   </main>
 
   <!-- مودال تأكيد الخروج -->
-  <div id="logoutModal" class="modal">
+  <div id="logoutModal" class="modal-overlay">
     <div class="modal-content">
-      <p id="logoutMessage">هل أنت متأكد أنك تريد تسجيل الخروج؟</p>
+      <div class="modal-header">
+        <h3 data-ar="تأكيد الخروج" data-en="Confirm Logout">تأكيد الخروج</h3>
+        <button id="closeModal" class="close-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="logoutMessage" data-ar="هل أنت متأكد أنك تريد تسجيل الخروج؟" data-en="Are you sure you want to logout?">هل أنت متأكد أنك تريد تسجيل الخروج؟</p>
+      </div>
       <div class="modal-actions">
-        <button id="cancelLogout" class="btn cancel" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
-        <button id="confirmLogout" class="btn confirm" data-ar="موافق" data-en="Confirm">موافق</button>
+        <button id="cancelLogout" class="btn btn-secondary" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+        <button id="confirmLogout" class="btn btn-danger" data-ar="موافق" data-en="Confirm">موافق</button>
       </div>
     </div>
   </div>
 
+  <!-- سكربت خارجي -->
   <script src="profile.js"></script>
 </body>
 </html>
