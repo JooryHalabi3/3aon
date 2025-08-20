@@ -282,20 +282,11 @@ const getProfile = async (req, res) => {
       `SELECT 
         e.EmployeeID,
         e.FullName as name,
-        e.Username,
+        e.EmployeeNumber as empNumber,
         e.Email as email,
         e.PhoneNumber as phone,
-        e.NationalID_Iqama as idNumber,
-        e.EmployeeNumber as empNumber,
-        e.Specialty,
-        e.JoinDate,
-        r.RoleName as roleName,
-        r.RoleID as roleID,
-        d.DepartmentName as departmentName,
-        d.DepartmentID as departmentID
+        e.NationalID_Iqama as idNumber
        FROM Employees e 
-       JOIN Roles r ON e.RoleID = r.RoleID 
-       LEFT JOIN departments d ON e.DepartmentID = d.DepartmentID
        WHERE e.EmployeeID = ?`,
       [employeeID]
     );
@@ -340,10 +331,106 @@ const getRoles = async (req, res) => {
   }
 };
 
+// تحديث بيانات البروفايل
+const updateProfile = async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'التوكن مطلوب' 
+      });
+    }
+
+    // التحقق من التوكن
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (jwtError) {
+      console.error('خطأ في التحقق من التوكن:', jwtError.message);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'التوكن غير صالح أو منتهي الصلاحية' 
+      });
+    }
+
+    const employeeID = decoded.employeeID;
+    const { name, phone, idNumber, empNumber, email } = req.body;
+
+    console.log('بيانات التحديث:', { employeeID, name, phone, idNumber, empNumber, email });
+
+    // التحقق من البيانات المطلوبة
+    if (!name || !phone || !idNumber || !empNumber || !email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'جميع الحقول مطلوبة' 
+      });
+    }
+
+    // التحقق من أن البريد الإلكتروني غير مستخدم من قبل مستخدم آخر
+    const [existingEmail] = await pool.execute(
+      'SELECT EmployeeID FROM Employees WHERE Email = ? AND EmployeeID != ?',
+      [email, employeeID]
+    );
+
+    if (existingEmail.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'البريد الإلكتروني مستخدم من قبل مستخدم آخر' 
+      });
+    }
+
+    // تحديث البيانات
+    const updateQuery = `UPDATE Employees 
+       SET FullName = ?, PhoneNumber = ?, NationalID_Iqama = ?, 
+           EmployeeNumber = ?, Email = ?
+       WHERE EmployeeID = ?`;
+    
+    console.log('query التحديث:', updateQuery);
+    console.log('قيم التحديث:', [name, phone, idNumber, empNumber, email, employeeID]);
+    
+    await pool.execute(updateQuery, [name, phone, idNumber, empNumber, email, employeeID]);
+    
+    console.log('تم تحديث البيانات بنجاح');
+
+    // تسجيل نشاط التحديث
+    const [employeeData] = await pool.execute(
+      'SELECT Username FROM Employees WHERE EmployeeID = ?',
+      [employeeID]
+    );
+    
+    const username = employeeData[0]?.Username || 'unknown';
+    
+    await logActivity(
+      employeeID,
+      username,
+      'profile_update',
+      `تم تحديث بيانات البروفايل`,
+      req.ip,
+      req.get('User-Agent')
+    );
+
+    res.json({
+      success: true,
+      message: 'تم تحديث البيانات بنجاح'
+    });
+
+  } catch (error) {
+    console.error('خطأ في تحديث البروفايل:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'حدث خطأ في الخادم' 
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   getCurrentUser,
   getProfile,
+  updateProfile,
   getRoles
 }; 
