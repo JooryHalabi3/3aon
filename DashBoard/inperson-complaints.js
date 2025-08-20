@@ -187,16 +187,15 @@ async function loadInPersonComplaintsData() {
             chartContainer.innerHTML = `
                 <div class="flex items-center justify-center h-full">
                     <div class="text-center">
-                        <div class="text-red-500 text-6xl mb-4">⚠️</div>
-                        <h3 class="text-xl font-semibold text-red-600 mb-2">فشل في تحميل البيانات</h3>
-                        <p class="text-gray-600 mb-4">${error.message}</p>
-                        <div class="text-sm text-gray-500 text-right">
-                            <p class="mb-2">تأكد من:</p>
-                            <ul class="space-y-1">
+                        <div class="text-red-500 text-xl mb-4">⚠️</div>
+                        <p class="text-red-600 text-lg">فشل في تحميل البيانات</p>
+                        <p class="text-gray-500 text-sm mt-2">${error.message}</p>
+                        <div class="mt-4 space-y-2">
+                            <p class="text-xs text-gray-400">تأكد من:</p>
+                            <ul class="text-xs text-gray-400 text-right">
                                 <li>• تشغيل الباك إند على المنفذ 3001</li>
                                 <li>• وجود بيانات في قاعدة البيانات</li>
                                 <li>• صحة إعدادات قاعدة البيانات</li>
-                                <li>• الاتصال بالإنترنت</li>
                             </ul>
                         </div>
                         <button onclick="loadInPersonComplaintsData()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
@@ -415,67 +414,78 @@ function createDailyCommunicationBarChart(ctx, chartData) {
     const canvasEl = ctx && ctx.clientWidth ? ctx : (ctx && ctx.canvas ? ctx.canvas : null);
     const canvasWidth = canvasEl && canvasEl.clientWidth ? canvasEl.clientWidth : 800;
     const groupWidthPx = canvasWidth / Math.max(1, numCategories);
-    const barThicknessValue = Math.max(25, Math.min(60, Math.floor((groupWidthPx * 0.8) / Math.max(1, numDatasets))));
-
-    const datasets = chartData.datasets.map((dataset, idx) => {
-        const rawCounts = (dataset.data || []).map(v => Number(v) || 0);
-        return {
-            label: dataset.label[currentLang],
-            data: rawCounts,
-            backgroundColor: dataset.backgroundColor || getColorForType(dataset.label.ar || dataset.label[currentLang], idx),
-            borderColor: dataset.borderColor || getColorForType(dataset.label.ar || dataset.label[currentLang], idx),
-            borderWidth: dataset.borderWidth ?? 1,
-            borderRadius: dataset.borderRadius ?? 3,
-            barThickness: barThicknessValue,
-            maxBarThickness: 70,
-            datalabels: {
-                display: true,
-                anchor: 'center',
-                align: 'center',
-                clamp: true,
-                offset: 0,
-                color: '#ffffff',
-                font: { family: getFont(), weight: '700', size: 12 },
-                formatter: function(value, context) {
-                    const v = Number(value) || 0;
-                    if (v <= 0) return '';
-                    const typeLabel = context.dataset.label || '';
-                    const dept = labelsForLang[context.dataIndex] || '';
-                    
-                    // حساب النسبة المئوية
-                    const percentage = grandTotal > 0 ? ((v / grandTotal) * 100).toFixed(1) : 0;
-                    
-                    return `${dept}\n${typeLabel}: ${v} (${percentage}%)`;
-                }
-            }
-        };
-    });
-
-    // حساب أعلى قيمة عبر جميع الأعمدة لضبط مقياس Y (ضمان 1..5 على الأقل)
-    const maxRawAcross = Math.max(0, ...datasets.flatMap(ds => ds.data || [0]));
-    const yMax = maxRawAcross <= 5 ? 5 : undefined;
+    const barThicknessValue = Math.max(25, Math.min(80, Math.floor((groupWidthPx * 0.8) / Math.max(1, numDatasets))));
 
     return new Chart(ctx, {
         type: 'bar',
         data: {
             labels: chartData.labels[currentLang],
-            datasets: datasets
+            datasets: chartData.datasets.map((dataset, idx) => {
+                const rawCounts = (dataset.data || []).map(v => Number(v) || 0);
+                return {
+                    label: dataset.label[currentLang],
+                    data: rawCounts,
+                    backgroundColor: dataset.backgroundColor || getColorForType(dataset.label.ar || dataset.label[currentLang], idx),
+                    borderColor: dataset.borderColor || getColorForType(dataset.label.ar || dataset.label[currentLang], idx),
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.9,
+                    datalabels: {
+                        display: true,
+                        anchor: 'center',
+                        align: 'center',
+                        clamp: true,
+                        offset: 0,
+                        color: '#ffffff',
+                        backgroundColor: 'transparent',
+                        borderRadius: 0,
+                        padding: { top: 1, bottom: 1, left: 1, right: 1 },
+                        font: { family: getFont(), weight: '700', size: 11 },
+                        formatter: function(value, context) {
+                            const v = Number(value) || 0;
+                            if (v <= 0) return '';
+                            return v.toString();
+                        }
+                    }
+                };
+            })
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            aspectRatio: 2.5,
+            aspectRatio: 1.5,
             layout: {
                 padding: {
-                    top: 15,
-                    right: 15,
-                    bottom: 15,
-                    left: 15
+                    top: 20,
+                    right: 20,
+                    bottom: 20,
+                    left: 20
+                }
+            },
+            scales: {
+                x: {
+                    stacked: false,
+                    ticks: {
+                        font: { family: getFont(), size: 12 },
+                        maxRotation: 45,
+                        minRotation: 0
+                    }
+                },
+                y: {
+                    stacked: false,
+                    beginAtZero: true,
+                    min: 0,
+                    max: 10,
+                    ticks: {
+                        font: { family: getFont(), size: 12 },
+                        stepSize: 1
+                    }
                 }
             },
             plugins: {
                 legend: {
-                    display: false, // Legend is custom HTML, not Chart.js legend
+                    display: false, // إخفاء رموز الألوان
                 },
                 tooltip: {
                     rtl: currentLang === 'ar',
@@ -483,46 +493,27 @@ function createDailyCommunicationBarChart(ctx, chartData) {
                     titleFont: { family: getFont(), size: 13 },
                     callbacks: {
                         label: function(context) {
-                            const value = context.parsed.y;
-                            const percentage = grandTotal > 0 ? ((value / grandTotal) * 100).toFixed(1) : 0;
-                            return `${context.dataset.label}: ${value} (${percentage}%)`;
+                            const label = context.dataset.label || '';
+                            const value = context.parsed.y || context.parsed;
+                            return `${label}: ${value}`;
                         }
                     }
                 }
             },
-            scales: {
-                x: {
-                    stacked: false,
-                    ticks: {
-                        font: {
-                            family: getFont(),
-                            size: 13,
-                            color: '#333'
-                        },
-                        maxRotation: 45,
-                        minRotation: 0
-                    },
-                    grid: { display: false },
-                    barPercentage: 0.85,
-                    categoryPercentage: 0.8
-                },
-                y: {
-                    stacked: false,
-                    beginAtZero: true,
-                    max: yMax,
-                    ticks: {
-                        stepSize: 1,
-                        font: {
-                            family: getFont(),
-                            size: 14,
-                            color: '#333'
-                        },
-                        callback: function(value) { return value === 0 ? '' : value; }
-                    },
-                    grid: {
-                        drawBorder: false,
-                        color: 'rgba(0, 0, 0, 0.1)',
-                    },
+            onClick: function(event, elements) {
+                if (elements.length > 0) {
+                    const element = elements[0];
+                    const datasetIndex = element.datasetIndex;
+                    const dataIndex = element.index;
+                    const value = element.raw;
+                    const label = this.data.labels[dataIndex];
+                    const datasetLabel = this.data.datasets[datasetIndex].label;
+                    
+                    const message = currentLang === 'ar' 
+                        ? `القسم: ${label}\nنوع الشكوى: ${datasetLabel}\nعدد الشكاوى: ${value}`
+                        : `Department: ${label}\nComplaint Type: ${datasetLabel}\nCount: ${value}`;
+                    
+                    alert(message);
                 }
             }
         }
