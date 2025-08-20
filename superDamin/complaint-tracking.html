@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تتبع الشكاوى والإشعارات - Super Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="complaint-tracking.css">
+</head>
+<body>
+  <div class="back-button">
+    <a href="/superDamin/admin.html">
+      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
+      <span data-ar="عودة" data-en="Back">عودة</span>
+    </a>
+  </div>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title" data-ar="تتبع الشكاوى والإشعارات" data-en="Complaint Tracking">تتبع الشكاوى والإشعارات</div>
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- فلاتر البحث -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label data-ar="حالة الشكوى:" data-en="Complaint Status:">حالة الشكوى:</label>
+        <select id="statusFilter">
+          <option value="" data-ar="جميع الحالات" data-en="All Statuses">جميع الحالات</option>
+          <option value="pending" data-ar="قيد الانتظار" data-en="Pending">قيد الانتظار</option>
+          <option value="assigned" data-ar="مسندة" data-en="Assigned">مسندة</option>
+          <option value="in_progress" data-ar="قيد المعالجة" data-en="In Progress">قيد المعالجة</option>
+          <option value="completed" data-ar="مكتملة" data-en="Completed">مكتملة</option>
+          <option value="closed" data-ar="مغلقة" data-en="Closed">مغلقة</option>
+          <option value="overdue" data-ar="متأخرة" data-en="Overdue">متأخرة</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="القسم:" data-en="Department:">القسم:</label>
+        <select id="departmentFilter">
+          <option value="" data-ar="جميع الأقسام" data-en="All Departments">جميع الأقسام</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="المكلّف:" data-en="Assignee:">المكلّف:</label>
+        <select id="assigneeFilter">
+          <option value="" data-ar="جميع الموظفين" data-en="All Employees">جميع الموظفين</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="البحث:" data-en="Search:">البحث:</label>
+        <input type="text" id="searchFilter" placeholder="البحث في الشكاوى...">
+      </div>
+
+      <button onclick="applyFilters()" class="filter-btn" data-ar="تطبيق الفلاتر" data-en="Apply Filters">تطبيق الفلاتر</button>
+      <button onclick="clearFilters()" class="clear-btn" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
+    </div>
+
+    <!-- إحصائيات سريعة -->
+    <div class="stats-section">
+      <div class="stat-card">
+        <h3 data-ar="إجمالي الشكاوى" data-en="Total Complaints">إجمالي الشكاوى</h3>
+        <span id="totalComplaints" class="stat-number">0</span>
+      </div>
+      <div class="stat-card">
+        <h3 data-ar="قيد المعالجة" data-en="In Progress">قيد المعالجة</h3>
+        <span id="inProgressComplaints" class="stat-number">0</span>
+      </div>
+      <div class="stat-card">
+        <h3 data-ar="متأخرة" data-en="Overdue">متأخرة</h3>
+        <span id="overdueComplaints" class="stat-number">0</span>
+      </div>
+      <div class="stat-card">
+        <h3 data-ar="مكتملة اليوم" data-en="Completed Today">مكتملة اليوم</h3>
+        <span id="completedToday" class="stat-number">0</span>
+      </div>
+    </div>
+
+    <!-- قائمة الشكاوى -->
+    <div class="complaints-container">
+      <div id="complaintsList" class="complaints-list">
+        <!-- الشكاوى ستُضاف هنا ديناميكياً -->
+      </div>
+    </div>
+
+    <!-- رسالة عدم وجود بيانات -->
+    <div id="noDataMessage" class="no-data-message" style="display: none;">
+      <p data-ar="لا توجد شكاوى للعرض" data-en="No complaints to display">لا توجد شكاوى للعرض</p>
+    </div>
+
+    <!-- رسالة التحميل -->
+    <div id="loadingMessage" class="loading-message">
+      <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
+    </div>
+  </main>
+
+  <!-- Modal تفاصيل الشكوى -->
+  <div id="complaintModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3 data-ar="تفاصيل الشكوى" data-en="Complaint Details">تفاصيل الشكوى</h3>
+      <div id="complaintDetails" class="complaint-details">
+        <!-- التفاصيل ستُضاف هنا ديناميكياً -->
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeComplaintModal()" class="close-btn" data-ar="إغلاق" data-en="Close">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="complaint-tracking.js"></script>
+</body>
+</html>

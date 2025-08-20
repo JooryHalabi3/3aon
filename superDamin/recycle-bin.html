@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استرجاع المحذوفات - Super Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="recycle-bin.css">
+</head>
+<body>
+  <div class="back-button">
+    <a href="/superDamin/admin.html">
+      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
+      <span data-ar="عودة" data-en="Back">عودة</span>
+    </a>
+  </div>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title" data-ar="استرجاع المحذوفات" data-en="Recycle Bin">استرجاع المحذوفات</div>
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- فلاتر البحث -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label data-ar="نوع الكيان:" data-en="Entity Type:">نوع الكيان:</label>
+        <select id="entityTypeFilter">
+          <option value="" data-ar="جميع الأنواع" data-en="All Types">جميع الأنواع</option>
+          <option value="complaints" data-ar="الشكاوى" data-en="Complaints">الشكاوى</option>
+          <option value="employees" data-ar="الموظفين" data-en="Employees">الموظفين</option>
+          <option value="departments" data-ar="الأقسام" data-en="Departments">الأقسام</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="من تاريخ:" data-en="From Date:">من تاريخ:</label>
+        <input type="date" id="fromDateFilter">
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="إلى تاريخ:" data-en="To Date:">إلى تاريخ:</label>
+        <input type="date" id="toDateFilter">
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="البحث:" data-en="Search:">البحث:</label>
+        <input type="text" id="searchFilter" placeholder="البحث في المحذوفات...">
+      </div>
+
+      <button onclick="applyFilters()" class="filter-btn" data-ar="تطبيق الفلاتر" data-en="Apply Filters">تطبيق الفلاتر</button>
+      <button onclick="clearFilters()" class="clear-btn" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
+    </div>
+
+    <!-- جدول المحذوفات -->
+    <div class="table-container">
+      <table id="deletedItemsTable" class="data-table">
+        <thead>
+          <tr>
+            <th data-ar="نوع الكيان" data-en="Entity Type">نوع الكيان</th>
+            <th data-ar="المعرف" data-en="ID">المعرف</th>
+            <th data-ar="الاسم/الملخص" data-en="Name/Summary">الاسم/الملخص</th>
+            <th data-ar="تاريخ الحذف" data-en="Deleted Date">تاريخ الحذف</th>
+            <th data-ar="المحذوف بواسطة" data-en="Deleted By">المحذوف بواسطة</th>
+            <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="deletedItemsBody">
+          <!-- البيانات ستُضاف هنا ديناميكياً -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- رسالة عدم وجود بيانات -->
+    <div id="noDataMessage" class="no-data-message" style="display: none;">
+      <p data-ar="لا توجد عناصر محذوفة" data-en="No deleted items found">لا توجد عناصر محذوفة</p>
+    </div>
+
+    <!-- رسالة التحميل -->
+    <div id="loadingMessage" class="loading-message">
+      <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
+    </div>
+  </main>
+
+  <!-- Modal تأكيد الاسترجاع -->
+  <div id="restoreModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3 data-ar="تأكيد الاسترجاع" data-en="Confirm Restoration">تأكيد الاسترجاع</h3>
+      <p id="restoreMessage" data-ar="هل أنت متأكد من استرجاع هذا العنصر؟" data-en="Are you sure you want to restore this item?">هل أنت متأكد من استرجاع هذا العنصر؟</p>
+      <div class="modal-actions">
+        <button onclick="confirmRestore()" class="confirm-btn" data-ar="تأكيد" data-en="Confirm">تأكيد</button>
+        <button onclick="closeRestoreModal()" class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal تأكيد الحذف النهائي -->
+  <div id="deleteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3 data-ar="تأكيد الحذف النهائي" data-en="Confirm Permanent Deletion">تأكيد الحذف النهائي</h3>
+      <p id="deleteMessage" data-ar="هل أنت متأكد من الحذف النهائي لهذا العنصر؟ لا يمكن التراجع عن هذا الإجراء." data-en="Are you sure you want to permanently delete this item? This action cannot be undone.">هل أنت متأكد من الحذف النهائي لهذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.</p>
+      <div class="modal-actions">
+        <button onclick="confirmDelete()" class="delete-btn" data-ar="حذف نهائي" data-en="Delete Permanently">حذف نهائي</button>
+        <button onclick="closeDeleteModal()" class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="recycle-bin.js"></script>
+</body>
+</html>

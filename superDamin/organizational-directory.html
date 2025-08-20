@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدليل التنظيمي - Super Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="organizational-directory.css">
+</head>
+<body>
+  <div class="back-button">
+    <a href="/superDamin/admin.html">
+      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
+      <span data-ar="عودة" data-en="Back">عودة</span>
+    </a>
+  </div>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title" data-ar="الدليل التنظيمي" data-en="Organizational Directory">الدليل التنظيمي</div>
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- فلاتر البحث -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label data-ar="القسم:" data-en="Department:">القسم:</label>
+        <select id="departmentFilter">
+          <option value="" data-ar="جميع الأقسام" data-en="All Departments">جميع الأقسام</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="البحث:" data-en="Search:">البحث:</label>
+        <input type="text" id="searchFilter" placeholder="البحث في اسم الموظف...">
+      </div>
+
+      <button onclick="applyFilters()" class="filter-btn" data-ar="تطبيق الفلاتر" data-en="Apply Filters">تطبيق الفلاتر</button>
+      <button onclick="clearFilters()" class="clear-btn" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
+    </div>
+
+    <!-- إحصائيات سريعة -->
+    <div class="stats-section">
+      <div class="stat-card">
+        <h3 data-ar="إجمالي الموظفين" data-en="Total Employees">إجمالي الموظفين</h3>
+        <span id="totalEmployees" class="stat-number">0</span>
+      </div>
+      <div class="stat-card">
+        <h3 data-ar="عدد الأقسام" data-en="Departments Count">عدد الأقسام</h3>
+        <span id="totalDepartments" class="stat-number">0</span>
+      </div>
+      <div class="stat-card">
+        <h3 data-ar="المديرين" data-en="Managers">المديرين</h3>
+        <span id="totalManagers" class="stat-number">0</span>
+      </div>
+    </div>
+
+    <!-- جدول الدليل التنظيمي -->
+    <div class="table-container">
+      <table id="directoryTable" class="data-table">
+        <thead>
+          <tr>
+            <th data-ar="اسم الموظف" data-en="Employee Name">اسم الموظف</th>
+            <th data-ar="رقم الموظف" data-en="Employee ID">رقم الموظف</th>
+            <th data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</th>
+            <th data-ar="القسم" data-en="Department">القسم</th>
+            <th data-ar="مدير القسم" data-en="Department Manager">مدير القسم</th>
+            <th data-ar="الدور" data-en="Role">الدور</th>
+            <th data-ar="تاريخ الانضمام" data-en="Join Date">تاريخ الانضمام</th>
+            <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="directoryBody">
+          <!-- البيانات ستُضاف هنا ديناميكياً -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- رسالة عدم وجود بيانات -->
+    <div id="noDataMessage" class="no-data-message" style="display: none;">
+      <p data-ar="لا توجد بيانات للعرض" data-en="No data to display">لا توجد بيانات للعرض</p>
+    </div>
+
+    <!-- رسالة التحميل -->
+    <div id="loadingMessage" class="loading-message">
+      <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
+    </div>
+  </main>
+
+  <!-- Modal تفاصيل الموظف -->
+  <div id="employeeModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3 data-ar="تفاصيل الموظف" data-en="Employee Details">تفاصيل الموظف</h3>
+      <div id="employeeDetails" class="employee-details">
+        <!-- التفاصيل ستُضاف هنا ديناميكياً -->
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeEmployeeModal()" class="close-btn" data-ar="إغلاق" data-en="Close">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="organizational-directory.js"></script>
+</body>
+</html>
