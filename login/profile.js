@@ -15,8 +15,6 @@ function applyLanguage(lang){
 
   const langText = document.getElementById('langText');
   if(langText){
-    // لو تبغى تظهر نفس النص دائماً مثل الصورة، خلّ السطر التالي ثابت:
-    // langText.textContent = 'English | العربية';
     langText.textContent = lang === 'ar' ? 'English | العربية' : 'العربية | English';
   }
 
@@ -61,6 +59,8 @@ function enableEdit(){
     const input = document.createElement('input');
     input.type = f.type;
     input.value = value;
+    input.className = 'info-value';
+    input.style.cssText = 'border: 2px solid #1565c0; background: white;';
     el.replaceWith(input);
     input.id = f.id;
   });
@@ -71,11 +71,11 @@ function enableEdit(){
   if(!saveBtn){
     saveBtn = document.createElement('button');
     saveBtn.id = 'saveBtn';
-    saveBtn.className = 'btn edit';
+    saveBtn.className = 'btn btn-primary';
     saveBtn.setAttribute('data-ar','حفظ');
     saveBtn.setAttribute('data-en','Save');
     saveBtn.textContent = currentLang === 'ar' ? 'حفظ' : 'Save';
-    document.querySelector('.buttons').prepend(saveBtn);
+    document.querySelector('.profile-actions').prepend(saveBtn);
     saveBtn.addEventListener('click', saveEdit);
   }else{
     saveBtn.style.display = 'inline-block';
@@ -103,35 +103,54 @@ async function saveEdit(){
     });
 
     if(res.ok){
-      alert(currentLang==='ar' ? 'تم حفظ البيانات' : 'Data saved');
+      alert(currentLang==='ar' ? 'تم حفظ البيانات بنجاح' : 'Data saved successfully');
 
       Object.keys(updated).forEach(key=>{
         const input = document.getElementById('emp'+key.charAt(0).toUpperCase()+key.slice(1));
-        const p = document.createElement('p');
-        p.id = input.id;
-        p.textContent = updated[key];
-        input.replaceWith(p);
+        const div = document.createElement('div');
+        div.id = input.id;
+        div.className = 'info-value';
+        div.textContent = updated[key];
+        input.replaceWith(div);
       });
 
       document.getElementById('saveBtn').style.display = 'none';
       document.getElementById('editBtn').style.display = 'inline-block';
       editing = false;
     }else{
-      alert('خطأ أثناء الحفظ');
+      alert(currentLang==='ar' ? 'خطأ أثناء حفظ البيانات' : 'Error saving data');
     }
   }catch(err){
-    alert('خطأ في الاتصال بالسيرفر');
+    alert(currentLang==='ar' ? 'خطأ في الاتصال بالسيرفر' : 'Server connection error');
   }
 }
 
 // تسجيل الخروج
 function setupLogout(){
   const logoutModal = document.getElementById('logoutModal');
-  document.getElementById('logoutBtn').addEventListener('click', ()=> logoutModal.style.display='flex');
-  document.getElementById('cancelLogout').addEventListener('click', ()=> logoutModal.style.display='none');
+  
+  document.getElementById('logoutBtn').addEventListener('click', ()=> {
+    logoutModal.style.display='flex';
+  });
+  
+  document.getElementById('cancelLogout').addEventListener('click', ()=> {
+    logoutModal.style.display='none';
+  });
+  
+  document.getElementById('closeModal').addEventListener('click', ()=> {
+    logoutModal.style.display='none';
+  });
+  
   document.getElementById('confirmLogout').addEventListener('click', ()=>{
     localStorage.clear();
     window.location.href = '/login/3oan.html';
+  });
+  
+  // إغلاق المودال عند النقر خارجه
+  logoutModal.addEventListener('click', (e) => {
+    if (e.target === logoutModal) {
+      logoutModal.style.display = 'none';
+    }
   });
 }
 
