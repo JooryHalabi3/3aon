@@ -41,10 +41,10 @@
 <section class="filters">
   <div class="row">
     <select class="dropdown" id="dateFilter">
-      <option value="all" data-ar="الكل" data-en="All">الكل</option>
+      <option value="all" data-ar="الكل" data-en="All" selected>الكل</option>
       <option value="30" data-ar="آخر 30 يوم" data-en="Last 30 Days">آخر 30 يوم</option>
       <option value="7" data-ar="آخر 7 أيام" data-en="Last 7 Days">آخر 7 أيام</option>
-      <option value="3" data-ar="آخر 3 أيام" data-en="Last 3 Days" selected>آخر 3 أيام</option>
+      <option value="3" data-ar="آخر 3 أيام" data-en="Last 3 Days">آخر 3 أيام</option>
     </select>
   </div>
   <div class="row">
@@ -54,6 +54,11 @@
            class="search-box" />
     <select class="dropdown">
       <option data-ar="الحالة" data-en="Status">الحالة</option>
+      <option value="جديدة" data-ar="جديدة" data-en="New">جديدة</option>
+      <option value="قيد المراجعة" data-ar="قيد المراجعة" data-en="Under Review">قيد المراجعة</option>
+      <option value="قيد المعالجة" data-ar="قيد المعالجة" data-en="Under Processing">قيد المعالجة</option>
+      <option value="تم الحل" data-ar="تم الحل" data-en="Resolved">تم الحل</option>
+      <option value="مغلقة" data-ar="مغلقة" data-en="Closed">مغلقة</option>
     </select>
     <select class="dropdown">
       <option data-ar="القسم" data-en="Department">القسم</option>
@@ -82,6 +87,26 @@
       <span data-ar="طباعة" data-en="Print">طباعة</span>
     </button>
   </footer>
+
+  <!-- نافذة تحويل الشكوى -->
+  <div id="transferModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-ar="تحويل الشكوى" data-en="Transfer Complaint">تحويل الشكوى</h3>
+        <button onclick="closeTransferModal()" class="close-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <p data-ar="اختر القسم الذي تريد تحويل الشكوى إليه:" data-en="Select the department to transfer the complaint to:">اختر القسم الذي تريد تحويل الشكوى إليه:</p>
+        <select id="transferDepartmentSelect" class="transfer-select">
+          <option value="" data-ar="اختر القسم" data-en="Select Department">اختر القسم</option>
+        </select>
+        <div class="modal-actions">
+          <button onclick="transferComplaint()" class="btn blue" data-ar="تحويل" data-en="Transfer">تحويل</button>
+          <button onclick="closeTransferModal()" class="btn gray" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="general-complaints.js"></script>
 </body>

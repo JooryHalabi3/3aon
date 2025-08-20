@@ -20,6 +20,7 @@
     <!-- Link to external CSS file -->
     <link rel="stylesheet" href="inperson-complaints.css">
 </head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <body class="flex h-screen overflow-hidden lang-ar">
 
     <!-- Header Section -->
@@ -77,8 +78,8 @@
                 <!-- سيتم ملء هذا القسم ديناميكياً من قاعدة البيانات -->
             </div>
             
-            <div class="relative w-full" style="height: 400px;">
-                <canvas id="dailyCommunicationChart"></canvas>
+            <div class="relative w-full chart-container" style="height: 500px;">
+                <canvas id="dailyCommunicationChart" style="width: 100%; height: 500px; max-width: 100%; max-height: 500px;"></canvas>
             </div>
         </div>
 
@@ -91,6 +92,10 @@
         </div>
     </div>
 
+    <!-- jsPDF for client-side PDF export -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <!-- Arabic shaping plugin for jsPDF -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-arabic/dist/jspdf-arabic.min.js"></script>
     <!-- Link to external JavaScript file -->
     <script src="inperson-complaints.js"></script>
     <!-- Flatpickr JS -->

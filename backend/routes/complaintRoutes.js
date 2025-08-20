@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const complaintController = require('../controllers/complaintController');
+const auth = require('../middleware/auth'); // Added auth middleware
 
-// جلب جميع الشكاوى
-router.get('/all', complaintController.getAllComplaints);
+// جلب جميع الشكاوى (مع التحقق من الصلاحيات)
+router.get('/all', complaintController.checkUserPermissions, complaintController.getAllComplaints);
+
+// جلب شكاوى المستخدم الشخصية (للمستخدمين العاديين فقط)
+router.get('/my-complaints', complaintController.checkUserPermissions, complaintController.getUserComplaints);
 
 // جلب جميع الأقسام
 router.get('/departments', complaintController.getDepartments);
@@ -17,10 +21,19 @@ router.get('/subtypes/:complaintTypeID', complaintController.getSubTypes);
 // جلب جميع شكاوى المريض
 router.get('/patient/:nationalId', complaintController.getPatientComplaints);
 
+// التحقق من هوية المريض
+router.get('/verify-patient/:nationalId', complaintController.verifyPatientIdentity);
+
 // جلب تفاصيل شكوى محددة
 router.get('/details/:complaintId', complaintController.getComplaintDetails);
 
 // حفظ شكوى جديدة مع المرفقات
-router.post('/submit', complaintController.upload.array('attachments', 5), complaintController.submitComplaint);
+router.post('/submit', complaintController.checkUserPermissions, complaintController.upload.array('attachments', 5), complaintController.submitComplaint);
+
+// تحديث حالة الشكوى
+router.put('/update-status/:complaintId', complaintController.updateComplaintStatus);
+
+// تحويل الشكوى إلى قسم آخر
+router.put('/transfer/:complaintId', auth, complaintController.transferComplaint);
 
 module.exports = router; 

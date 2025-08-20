@@ -50,30 +50,50 @@ async function loadComplaintDetails() {
 function populateComplaintDetails() {
   if (!complaintData) return;
 
-  // تحديث عنوان الشكوى
+  // تحديث عنوان الشكوى مع تنسيق رقم الشكوى
   const complaintTitle = document.querySelector('.complaint-title');
   if (complaintTitle) {
-    complaintTitle.textContent = `تفاصيل الشكوى رقم ${complaintData.ComplaintID}`;
+    const complaintNumber = String(complaintData.ComplaintID).padStart(6, '0');
+    complaintTitle.textContent = `تفاصيل الشكوى رقم #${complaintNumber}`;
+    complaintTitle.setAttribute('data-ar', `تفاصيل الشكوى رقم #${complaintNumber}`);
+    complaintTitle.setAttribute('data-en', `Complaint Details No. #${complaintNumber}`);
   }
 
-  // تحديث تاريخ الشكوى
+  // تحديث تاريخ الشكوى مع الوقت
   const complaintDate = document.querySelector('.complaint-date');
   if (complaintDate) {
     const date = new Date(complaintData.ComplaintDate);
     const formattedDate = date.toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
-    complaintDate.textContent = formattedDate;
+    const formattedTime = date.toLocaleTimeString('ar-SA', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    const fullDateTime = `${formattedDate} - الساعة ${formattedTime}`;
+    complaintDate.textContent = fullDateTime;
+    complaintDate.setAttribute('data-ar', fullDateTime);
+    complaintDate.setAttribute('data-en', `${date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })} - ${date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    })}`);
   }
 
   // تحديث حالة الشكوى
   const complaintStatus = document.querySelector('.complaint-status');
   if (complaintStatus) {
-    complaintStatus.textContent = complaintData.CurrentStatus || 'جديدة';
+    const status = complaintData.CurrentStatus || 'جديدة';
+    complaintStatus.textContent = status;
+    complaintStatus.setAttribute('data-ar', status);
+    complaintStatus.setAttribute('data-en', status);
   }
 
   // تحديث بيانات مقدم الشكوى
@@ -133,11 +153,21 @@ function updateComplaintInfo() {
     departmentElement.textContent = complaintData.DepartmentName || 'غير محدد';
   }
   
-  // تحديث تاريخ الزيارة
+  // تحديث تاريخ الزيارة مع الوقت
   const visitDateElement = document.getElementById('visitDate');
   if (visitDateElement) {
     const visitDate = new Date(complaintData.ComplaintDate);
-    visitDateElement.textContent = visitDate.toLocaleDateString('ar-SA');
+    const formattedVisitDate = visitDate.toLocaleDateString('ar-SA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const formattedVisitTime = visitDate.toLocaleTimeString('ar-SA', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    visitDateElement.innerHTML = `${formattedVisitDate}<br><small style="color: #666;">${formattedVisitTime}</small>`;
   }
   
   // تحديث نوع الشكوى الرئيسي
@@ -211,15 +241,19 @@ function updateResponse() {
       const formattedReplyDate = replyDate.toLocaleDateString('ar-SA', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: 'numeric'
       });
+      const formattedReplyTime = replyDate.toLocaleTimeString('ar-SA', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      const fullReplyDateTime = `${formattedReplyDate} - الساعة ${formattedReplyTime}`;
 
       replyBox.innerHTML = `
         <div class="reply-header">
           <span class="reply-from" data-ar="إدارة تجربة المريض" data-en="Patient Experience Department">إدارة تجربة المريض</span>
-          <span class="reply-date">${formattedReplyDate}</span>
+          <span class="reply-date">${fullReplyDateTime}</span>
         </div>
         <div class="reply-text">${complaintData.ResolutionDetails}</div>
         <span class="reply-status" data-ar="تم الرد" data-en="Responded">تم الرد</span>
@@ -258,19 +292,23 @@ function updateHistory() {
 
   const historyHTML = complaintData.history.map(item => {
     const timestamp = new Date(item.Timestamp);
-    const formattedDate = timestamp.toLocaleDateString('ar-SA', {
+    const formattedHistoryDate = timestamp.toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      day: 'numeric'
     });
+    const formattedHistoryTime = timestamp.toLocaleTimeString('ar-SA', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    const fullHistoryDateTime = `${formattedHistoryDate} - الساعة ${formattedHistoryTime}`;
 
     return `
       <div class="history-item">
         <div class="history-header">
           <span class="history-stage">${item.Stage}</span>
-          <span class="history-date">${formattedDate}</span>
+          <span class="history-date">${fullHistoryDateTime}</span>
         </div>
         <div class="history-text">${item.Remarks}</div>
         ${item.EmployeeName ? `<div class="history-employee">بواسطة: ${item.EmployeeName}</div>` : ''}
@@ -329,6 +367,124 @@ function goBack() {
 }
 
 // تطبيق اللغة
+// مراقبة تحديثات حالة الشكاوى
+function listenForStatusUpdates() {
+  // مراقبة تغيير localStorage
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'complaintStatusUpdated') {
+      const updateData = JSON.parse(e.newValue);
+      if (updateData && updateData.complaintId && complaintData && complaintData.ComplaintID === updateData.complaintId) {
+        console.log('تم اكتشاف تحديث حالة الشكوى في التفاصيل:', updateData);
+        updateComplaintStatusInDetails(updateData.newStatus);
+      }
+    }
+  });
+
+  // مراقبة التحديثات في نفس النافذة
+  setInterval(() => {
+    const updateData = localStorage.getItem('complaintStatusUpdated');
+    if (updateData) {
+      const parsed = JSON.parse(updateData);
+      const timeDiff = Date.now() - parsed.timestamp;
+      
+      // إذا كان التحديث حديث وللشكوى المعروضة حالياً
+      if (timeDiff < 5000 && !window.complaintStatusUpdateProcessed && 
+          complaintData && complaintData.ComplaintID === parsed.complaintId) {
+        console.log('تم اكتشاف تحديث حالة محلي في التفاصيل:', parsed);
+        updateComplaintStatusInDetails(parsed.newStatus);
+        window.complaintStatusUpdateProcessed = true;
+        
+        // إزالة العلامة بعد 10 ثواني
+        setTimeout(() => {
+          window.complaintStatusUpdateProcessed = false;
+        }, 10000);
+      }
+    }
+  }, 1000);
+}
+
+// تحديث حالة الشكوى في صفحة التفاصيل
+function updateComplaintStatusInDetails(newStatus) {
+  if (!complaintData) return;
+
+  const oldStatus = complaintData.CurrentStatus;
+  
+  // تحديث البيانات
+  complaintData.CurrentStatus = newStatus;
+
+  // تحديث العرض في الواجهة
+  const complaintStatus = document.querySelector('.complaint-status');
+  if (complaintStatus) {
+    complaintStatus.textContent = newStatus;
+    complaintStatus.setAttribute('data-ar', newStatus);
+    complaintStatus.setAttribute('data-en', newStatus); // يمكن إضافة الترجمة لاحقاً
+  }
+
+  // تحديث localStorage
+  localStorage.setItem("selectedComplaint", JSON.stringify(complaintData));
+
+  // إظهار رسالة تنبيه للمستخدم
+  showStatusUpdateNotification(oldStatus, newStatus);
+
+  console.log(`تم تحديث حالة الشكوى في صفحة التفاصيل من "${oldStatus}" إلى "${newStatus}"`);
+}
+
+// إظهار رسالة تنبيه عن تحديث الحالة
+function showStatusUpdateNotification(oldStatus, newStatus) {
+  // إنشاء رسالة تنبيه مؤقتة
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px;
+    max-width: 300px;
+    animation: slideIn 0.3s ease-out;
+  `;
+  
+  notification.innerHTML = `
+    <strong>تم تحديث حالة الشكوى</strong><br>
+    من: ${oldStatus}<br>
+    إلى: <strong>${newStatus}</strong>
+  `;
+
+  // إضافة CSS للرسوم المتحركة
+  if (!document.getElementById('notification-style')) {
+    const style = document.createElement('style');
+    style.id = 'notification-style';
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.body.appendChild(notification);
+
+  // إزالة الرسالة بعد 4 ثواني
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease-in';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 4000);
+}
+
 let currentLang = localStorage.getItem('lang') || 'ar';
 
 function applyLanguage(lang) {
@@ -371,6 +527,9 @@ document.addEventListener('DOMContentLoaded', () => {
       applyLanguage(newLang);
     });
   }
+
+  // بدء مراقبة تحديثات الحالة
+  listenForStatusUpdates();
 
   // تحميل تفاصيل الشكوى
   loadComplaintDetails();

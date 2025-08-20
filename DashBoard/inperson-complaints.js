@@ -5,6 +5,83 @@ let currentLang = localStorage.getItem('lang') || 'ar';
 let dailyCommunicationChart;
 let dateFromPicker;
 let dateToPicker;
+let percentageMode = 'global'; // 'global' or 'column'
+
+// لوحة ألوان افتراضية عند غياب ألوان من الباك إند
+const DEFAULT_COLORS = [
+    '#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#14b8a6','#f97316','#22c55e',
+    '#e11d48','#0ea5e9','#a855f7','#84cc16','#06b6d4','#f43f5e','#facc15'
+];
+
+// تعيين لون ثابت لكل نوع شكوى (مفتاح بالعربي)
+const TYPE_COLOR_MAP = {
+    'الخدمات الطبية والعلاجية': '#2563eb',
+    'الكوادر الصحية وسلوكهم': '#ef4444',
+    'الصيدلية والدواء': '#10b981',
+    'المواعيد والتحويلات': '#f59e0b',
+    'الإجراءات الإدارية': '#8b5cf6',
+    'الخدمات الإلكترونية والتطبيقات': '#14b8a6',
+    'الاستقبال وخدمة العملاء': '#f97316',
+    'خدمات المرضى العامة': '#22c55e',
+    'الدعم المنزلي والرعاية المستمرة': '#0ea5e9',
+    'تجربة الزوار والمرافقين': '#a855f7',
+    'خدمات الطوارئ والإسعاف': '#e11d48',
+    'خدمات التأهيل والعلاج الطبيعي': '#84cc16',
+    'الخصوصية وسرية المعلومات': '#06b6d4',
+    'التثقيف والتوعية الصحية': '#f43f5e',
+    'بيئة المستشفى والبنية التحتية': '#facc15',
+    'السلامة ومكافحة العدوى': '#1f2937',
+    'خدمات الدعم الفني والأنظمة': '#0e7490',
+    'القبول والتحويل الداخلي بين الأقسام': '#7c3aed',
+    'التقييم بعد المعالجة': '#059669',
+    'ملاحظات المرضى الدوليين': '#b91c1c'
+};
+
+function getColorForType(arabicType, index) {
+    return TYPE_COLOR_MAP[arabicType] || DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+}
+
+// تحميل خط عربي وتضمينه داخل jsPDF لتجنب تشويه الحروف
+const ARABIC_PDF_FONT = {
+    name: 'Amiri',
+    fileName: 'Amiri-Regular.ttf',
+    url: 'https://cdn.jsdelivr.net/gh/alif-type/amiri@latest/ttf/Amiri-Regular.ttf'
+};
+let isArabicPdfFontLoaded = false;
+
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+async function ensureArabicPdfFont(doc) {
+    if (isArabicPdfFontLoaded) {
+        doc.setFont(ARABIC_PDF_FONT.name, 'normal');
+        return;
+    }
+    const res = await fetch(ARABIC_PDF_FONT.url);
+    if (!res.ok) throw new Error('فشل تحميل خط PDF العربي');
+    const buf = await res.arrayBuffer();
+    const base64 = arrayBufferToBase64(buf);
+    doc.addFileToVFS(ARABIC_PDF_FONT.fileName, base64);
+    doc.addFont(ARABIC_PDF_FONT.fileName, ARABIC_PDF_FONT.name, 'normal');
+    doc.setFont(ARABIC_PDF_FONT.name, 'normal');
+    isArabicPdfFontLoaded = true;
+}
+
+function waitNextFrame() {
+    return new Promise(resolve => requestAnimationFrame(() => resolve()));
+}
+
+// تسجيل إضافة ChartDataLabels إذا كانت متاحة من الـ CDN
+if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+    Chart.register(ChartDataLabels);
+}
 
 // إعدادات API
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -30,26 +107,28 @@ async function loadInPersonComplaintsData() {
             chartContainer.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p class="mt-4 text-gray-600">جاري تحميل البيانات...</p></div></div>';
         }
         
-        // تحديد الفترة الزمنية من التواريخ المحددة أو آخر 30 يوم افتراضياً
-        let toDate = new Date().toISOString().split('T')[0];
-        let fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        // بناء URL مع فلاتر التاريخ فقط إذا تم تحديدها
+        let url = `${API_BASE_URL}/inperson-complaints/stats`;
+        const params = new URLSearchParams();
         
-        // استخدام التواريخ المحددة من المستخدم إذا كانت متوفرة
+        // إضافة فلاتر التاريخ فقط إذا تم تحديدها من المستخدم
         if (dateFromPicker && dateFromPicker.selectedDates[0]) {
-            fromDate = dateFromPicker.selectedDates[0].toISOString().split('T')[0];
+            const fromDate = dateFromPicker.selectedDates[0].toLocaleDateString('sv-SE'); // YYYY-MM-DD
+            params.append('fromDate', fromDate);
+            console.log('📅 تاريخ البداية المحدد:', fromDate);
         }
         if (dateToPicker && dateToPicker.selectedDates[0]) {
-            toDate = dateToPicker.selectedDates[0].toISOString().split('T')[0];
+            const toDate = dateToPicker.selectedDates[0].toLocaleDateString('sv-SE'); // YYYY-MM-DD
+            params.append('toDate', toDate);
+            console.log('📅 تاريخ النهاية المحدد:', toDate);
         }
         
-        console.log('📅 الفترة الزمنية:', { fromDate, toDate });
+        // إضافة المعاملات للرابط إذا وجدت
+        if (params.toString()) {
+            url += `?${params.toString()}`;
+        }
         
-        const params = new URLSearchParams({
-            fromDate,
-            toDate
-        });
-
-        const url = `${API_BASE_URL}/inperson-complaints/stats?${params}`;
+        console.log('📅 فلاتر التاريخ:', params.toString() || 'بدون فلاتر - جلب جميع البيانات');
         console.log('🌐 إرسال طلب إلى:', url);
 
         const response = await fetch(url);
@@ -108,15 +187,16 @@ async function loadInPersonComplaintsData() {
             chartContainer.innerHTML = `
                 <div class="flex items-center justify-center h-full">
                     <div class="text-center">
-                        <div class="text-red-500 text-xl mb-4">⚠️</div>
-                        <p class="text-red-600 text-lg">فشل في تحميل البيانات</p>
-                        <p class="text-gray-500 text-sm mt-2">${error.message}</p>
-                        <div class="mt-4 space-y-2">
-                            <p class="text-xs text-gray-400">تأكد من:</p>
-                            <ul class="text-xs text-gray-400 text-right">
+                        <div class="text-red-500 text-6xl mb-4">⚠️</div>
+                        <h3 class="text-xl font-semibold text-red-600 mb-2">فشل في تحميل البيانات</h3>
+                        <p class="text-gray-600 mb-4">${error.message}</p>
+                        <div class="text-sm text-gray-500 text-right">
+                            <p class="mb-2">تأكد من:</p>
+                            <ul class="space-y-1">
                                 <li>• تشغيل الباك إند على المنفذ 3001</li>
                                 <li>• وجود بيانات في قاعدة البيانات</li>
                                 <li>• صحة إعدادات قاعدة البيانات</li>
+                                <li>• الاتصال بالإنترنت</li>
                             </ul>
                         </div>
                         <button onclick="loadInPersonComplaintsData()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
@@ -179,7 +259,7 @@ function processChartData(data) {
     chartData.labels.ar = backendChartData.labels || [];
     chartData.labels.en = backendChartData.labels.map(label => getEnglishDepartmentName(label)) || [];
     
-    // تحديث مجموعات البيانات (أنواع الشكاوى)
+    // تحديث مجموعات البيانات (أنواع الشكاوى) مع ترتيب ثابت حسب الاسم لضمان تنظيم العرض
     chartData.datasets = backendChartData.datasets.map(dataset => ({
         label: { ar: dataset.label, en: getEnglishComplaintType(dataset.label) },
         data: dataset.data || [],
@@ -187,7 +267,11 @@ function processChartData(data) {
         borderColor: dataset.borderColor,
         borderWidth: dataset.borderWidth || 1,
         borderRadius: dataset.borderRadius || 3,
-    }));
+    })).sort((a, b) => {
+        const aLabel = (a.label?.ar || '').toString();
+        const bLabel = (b.label?.ar || '').toString();
+        return aLabel.localeCompare(bLabel, 'ar');
+    });
     
     console.log('📈 البيانات النهائية للرسم البياني:', chartData);
     
@@ -318,14 +402,58 @@ function showError(message) {
 function createDailyCommunicationBarChart(ctx, chartData) {
     console.log('🎨 إنشاء الرسم البياني مع البيانات:', chartData);
     
-    const datasets = chartData.datasets.map(dataset => ({
-        label: dataset.label[currentLang],
-        data: dataset.data,
-        backgroundColor: dataset.backgroundColor,
-        borderColor: dataset.borderColor,
-        borderWidth: dataset.borderWidth,
-        borderRadius: dataset.borderRadius,
-    }));
+    // إجمالي جميع القيم (لكل الأعمدة) لحساب النِّسب العالمية
+    const grandTotal = (chartData.datasets || []).reduce((sum, ds) => {
+        return sum + (ds.data || []).reduce((s, v) => s + (Number(v) || 0), 0);
+    }, 0);
+
+    const labelsForLang = chartData.labels[currentLang] || [];
+
+    // حساب سماكة الأعمدة ديناميكياً بحسب عدد الأنواع وعدد الأقسام وعرض الكانفاس
+    const numDatasets = (chartData.datasets || []).length || 1;
+    const numCategories = (chartData.labels[currentLang] || []).length || 1;
+    const canvasEl = ctx && ctx.clientWidth ? ctx : (ctx && ctx.canvas ? ctx.canvas : null);
+    const canvasWidth = canvasEl && canvasEl.clientWidth ? canvasEl.clientWidth : 800;
+    const groupWidthPx = canvasWidth / Math.max(1, numCategories);
+    const barThicknessValue = Math.max(25, Math.min(60, Math.floor((groupWidthPx * 0.8) / Math.max(1, numDatasets))));
+
+    const datasets = chartData.datasets.map((dataset, idx) => {
+        const rawCounts = (dataset.data || []).map(v => Number(v) || 0);
+        return {
+            label: dataset.label[currentLang],
+            data: rawCounts,
+            backgroundColor: dataset.backgroundColor || getColorForType(dataset.label.ar || dataset.label[currentLang], idx),
+            borderColor: dataset.borderColor || getColorForType(dataset.label.ar || dataset.label[currentLang], idx),
+            borderWidth: dataset.borderWidth ?? 1,
+            borderRadius: dataset.borderRadius ?? 3,
+            barThickness: barThicknessValue,
+            maxBarThickness: 70,
+            datalabels: {
+                display: true,
+                anchor: 'center',
+                align: 'center',
+                clamp: true,
+                offset: 0,
+                color: '#ffffff',
+                font: { family: getFont(), weight: '700', size: 12 },
+                formatter: function(value, context) {
+                    const v = Number(value) || 0;
+                    if (v <= 0) return '';
+                    const typeLabel = context.dataset.label || '';
+                    const dept = labelsForLang[context.dataIndex] || '';
+                    
+                    // حساب النسبة المئوية
+                    const percentage = grandTotal > 0 ? ((v / grandTotal) * 100).toFixed(1) : 0;
+                    
+                    return `${dept}\n${typeLabel}: ${v} (${percentage}%)`;
+                }
+            }
+        };
+    });
+
+    // حساب أعلى قيمة عبر جميع الأعمدة لضبط مقياس Y (ضمان 1..5 على الأقل)
+    const maxRawAcross = Math.max(0, ...datasets.flatMap(ds => ds.data || [0]));
+    const yMax = maxRawAcross <= 5 ? 5 : undefined;
 
     return new Chart(ctx, {
         type: 'bar',
@@ -336,56 +464,60 @@ function createDailyCommunicationBarChart(ctx, chartData) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            aspectRatio: 2.5,
+            layout: {
+                padding: {
+                    top: 15,
+                    right: 15,
+                    bottom: 15,
+                    left: 15
+                }
+            },
             plugins: {
                 legend: {
                     display: false, // Legend is custom HTML, not Chart.js legend
                 },
                 tooltip: {
                     rtl: currentLang === 'ar',
-                    bodyFont: { family: getFont() },
-                    titleFont: { family: getFont() },
+                    bodyFont: { family: getFont(), size: 13 },
+                    titleFont: { family: getFont(), size: 13 },
                     callbacks: {
                         label: function(context) {
-                            return `${context.dataset.label}: ${context.parsed.y}`;
+                            const value = context.parsed.y;
+                            const percentage = grandTotal > 0 ? ((value / grandTotal) * 100).toFixed(1) : 0;
+                            return `${context.dataset.label}: ${value} (${percentage}%)`;
                         }
                     }
-                },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    color: '#333',
-                    font: {
-                        weight: 'bold',
-                        size: 14,
-                        family: getFont()
-                    },
-                    formatter: value => (value > 0 ? value : '')
                 }
             },
             scales: {
                 x: {
+                    stacked: false,
                     ticks: {
                         font: {
                             family: getFont(),
-                            size: 12,
+                            size: 13,
                             color: '#333'
                         },
                         maxRotation: 45,
                         minRotation: 0
                     },
                     grid: { display: false },
-                    barPercentage: 0.8,
-                    categoryPercentage: 0.7
+                    barPercentage: 0.85,
+                    categoryPercentage: 0.8
                 },
                 y: {
+                    stacked: false,
                     beginAtZero: true,
+                    max: yMax,
                     ticks: {
                         stepSize: 1,
                         font: {
                             family: getFont(),
-                            size: 12,
+                            size: 14,
                             color: '#333'
-                        }
+                        },
+                        callback: function(value) { return value === 0 ? '' : value; }
                     },
                     grid: {
                         drawBorder: false,
@@ -393,8 +525,7 @@ function createDailyCommunicationBarChart(ctx, chartData) {
                     },
                 }
             }
-        },
-        plugins: [ChartDataLabels]
+        }
     });
 }
 
@@ -416,7 +547,9 @@ function updateAllContent() {
         dailyCommunicationChart.options.plugins.tooltip.rtl = currentLang === 'ar';
         dailyCommunicationChart.options.plugins.tooltip.bodyFont.family = font;
         dailyCommunicationChart.options.plugins.tooltip.titleFont.family = font;
-        dailyCommunicationChart.options.plugins.datalabels.font.family = font;
+        if (dailyCommunicationChart.options.plugins && dailyCommunicationChart.options.plugins.datalabels && dailyCommunicationChart.options.plugins.datalabels.font) {
+            dailyCommunicationChart.options.plugins.datalabels.font.family = font;
+        }
         dailyCommunicationChart.options.scales.x.ticks.font.family = font;
         dailyCommunicationChart.options.scales.y.ticks.font.family = font;
         dailyCommunicationChart.update();
@@ -483,9 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const langToggleBtn = document.getElementById('langToggle');
     const exportReportBtn = document.getElementById('exportReportBtn');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
-
-    // Register ChartDataLabels plugin
-    Chart.register(ChartDataLabels);
+    // لا يوجد رفع إكسل من هذه الصفحة بناءً على طلبك
 
     // Initialize Flatpickr
     dateFromPicker = flatpickr("#dateFrom", {
@@ -501,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
         maxDate: 'today'
     });
 
-    // جلب البيانات من الباك إند عند تحميل الصفحة
+    // تحميل البيانات الأولية
     loadInPersonComplaintsData();
 
     // Now, call applyLanguage to set initial language and update all content
@@ -540,55 +671,92 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // لا يوجد رفع إكسل من هذه الصفحة
+    
     console.log('✅ تم تحميل صفحة الشكاوى الحضورية بنجاح');
 });
 
 // تصدير تقرير الشكاوى الحضورية
 async function exportInPersonComplaintsReport() {
     try {
-        console.log('📊 بدء تصدير تقرير الشكاوى الحضورية...');
-        
-        // تحديد الفترة الزمنية من التواريخ المحددة أو آخر 30 يوم افتراضياً
-        let toDate = new Date().toISOString().split('T')[0];
-        let fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
-        // استخدام التواريخ المحددة من المستخدم إذا كانت متوفرة
-        if (dateFromPicker && dateFromPicker.selectedDates[0]) {
-            fromDate = dateFromPicker.selectedDates[0].toISOString().split('T')[0];
+        console.log('📄 إنشاء PDF باستخدام jsPDF (عنوان وصفي كنُسخ صور لتفادي مشاكل الخطوط)...');
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error('jsPDF غير محمل');
         }
-        if (dateToPicker && dateToPicker.selectedDates[0]) {
-            toDate = dateToPicker.selectedDates[0].toISOString().split('T')[0];
-        }
-        
-        const params = new URLSearchParams({
-            fromDate,
-            toDate
-        });
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape', 'pt', 'a4');
 
-        const url = `${API_BASE_URL}/inperson-complaints/export-data?${params}`;
-        console.log('🌐 إرسال طلب تصدير إلى:', url);
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 40;
+        let cursorY = margin;
 
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const blob = await response.blob();
-        
-        // إنشاء رابط تحميل
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `inperson-complaints-report-${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(downloadUrl);
-        document.body.removeChild(a);
-        
-        console.log('✅ تم تصدير التقرير بنجاح');
-        showNotification('تم تصدير التقرير بنجاح!', 'success');
-        
+        // إنشاء صورة عنوان ونطاق التاريخ باستخدام Canvas للمتصفح (حل آمن للعربية)
+        const dpr = 2;
+        const titleCanvas = document.createElement('canvas');
+        const titleWidth = pageWidth - margin * 2;
+        const titleHeight = 90; // px
+        titleCanvas.width = titleWidth * dpr;
+        titleCanvas.height = titleHeight * dpr;
+        const tctx = titleCanvas.getContext('2d');
+        tctx.scale(dpr, dpr);
+        tctx.fillStyle = '#000';
+        tctx.textAlign = 'center';
+        tctx.textBaseline = 'top';
+        // العنوان
+        const title = currentLang === 'ar' ? 'مؤشر الشكاوى الحضورية' : 'In-person Complaints Index';
+        tctx.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+        tctx.font = '700 20px Tajawal, Arial, sans-serif';
+        tctx.fillText(title, titleWidth / 2, 8);
+        // الفترة الزمنية
+        const fromText = (dateFromPicker && dateFromPicker.selectedDates[0])
+            ? dateFromPicker.selectedDates[0].toLocaleDateString('sv-SE')
+            : (currentLang === 'ar' ? 'الكل' : 'All');
+        const toText = (dateToPicker && dateToPicker.selectedDates[0])
+            ? dateToPicker.selectedDates[0].toLocaleDateString('sv-SE')
+            : (currentLang === 'ar' ? 'الكل' : 'All');
+        const range = currentLang === 'ar' ? `الفترة: من ${fromText} إلى ${toText}` : `Range: From ${fromText} to ${toText}`;
+        tctx.font = '400 13px Tajawal, Arial, sans-serif';
+        tctx.fillText(range, titleWidth / 2, 40);
+        const titleImg = titleCanvas.toDataURL('image/png', 1.0);
+        doc.addImage(titleImg, 'PNG', margin, cursorY, titleWidth, titleHeight);
+        cursorY += titleHeight + 6;
+
+        // صورة الرسم
+        const canvas = document.getElementById('dailyCommunicationChart');
+        if (!canvas) throw new Error('لا يوجد رسم جاهز للتصدير');
+        // انتظر استقرار الرسم إطارين
+        await waitNextFrame();
+        await waitNextFrame();
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const imgMaxWidth = pageWidth - margin * 2;
+        const imgHeight = canvas.height * (imgMaxWidth / canvas.width);
+        doc.addImage(imgData, 'PNG', margin, cursorY, imgMaxWidth, Math.min(imgHeight, pageHeight - cursorY - margin));
+
+        // تذييل (كنسخة صورة لضمان العربية)
+        const footerCanvas = document.createElement('canvas');
+        const footerWidth = pageWidth - margin * 2;
+        const footerHeight = 24;
+        const fdpr = 2;
+        footerCanvas.width = footerWidth * fdpr;
+        footerCanvas.height = footerHeight * fdpr;
+        const fctx = footerCanvas.getContext('2d');
+        fctx.scale(fdpr, fdpr);
+        fctx.fillStyle = '#000';
+        fctx.textAlign = currentLang === 'ar' ? 'right' : 'left';
+        fctx.textBaseline = 'bottom';
+        fctx.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+        fctx.font = '400 10px Tajawal, Arial, sans-serif';
+        const footerBase = currentLang === 'ar' ? 'تاريخ التوليد: ' : 'Generated on: ';
+        const footerText = `${footerBase}${new Date().toLocaleString()}`;
+        const footerX = currentLang === 'ar' ? footerWidth : 0;
+        fctx.fillText(footerText, footerX, footerHeight);
+        const footerImg = footerCanvas.toDataURL('image/png', 1.0);
+        doc.addImage(footerImg, 'PNG', margin, pageHeight - margin - footerHeight, footerWidth, footerHeight);
+
+        const filename = `inperson-complaints-report-${new Date().toLocaleDateString('sv-SE')}.pdf`;
+        doc.save(filename);
+        showNotification(currentLang === 'ar' ? 'تم إنشاء ملف PDF بنجاح' : 'PDF created successfully', 'success');
     } catch (error) {
         console.error('💥 خطأ في تصدير التقرير:', error);
         showNotification('خطأ في تصدير التقرير: ' + error.message, 'error');

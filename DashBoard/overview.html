@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -7,15 +6,15 @@
     <title>Dashboard</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for Inter, Tajawal, and Merriweather -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Chart.js Library -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
-    <!-- Chart.js Datalabels Plugin -->
+    <!-- Chart.js Datalabels -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <!-- Link to external CSS file -->
+    <!-- CSS -->
     <link rel="stylesheet" href="overview.css">
 </head>
 <body class="flex h-screen overflow-hidden lang-ar">
@@ -23,19 +22,16 @@
     <!-- Header Section -->
     <header class="header">
         <div class="header-content">
-            <!-- Placeholder for hospital-logo.png -->
-              <div class="header-title" data-ar="عُــــــونَك" data-en="AOUNAK">عُــــــونَك</div>
-               <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
-         
+            <div class="header-title" data-ar="عُــــــونَك" data-en="AOUNAK">عُــــــونَك</div>
+            <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
             <button id="langToggle" class="lang-toggle-btn">
-                <!-- Placeholder for lang.png -->
                 <img src="/icon/lang.png" alt="language" class="lang-icon" />
                 <span id="langText">العربية | English</span>
             </button>
         </div>
     </header>
 
-    <!-- Sidebar Section -->
+    <!-- Sidebar -->
     <aside>
         <ul class="sidebar-menu">
             <li><a href="/login/home.html" class="menu-link" data-ar="الصفحة الرئيسية" data-en="Home Page">الصفحة الرئيسية</a></li>
@@ -49,40 +45,40 @@
         </ul>
     </aside>
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col p-8 overflow-auto" style="margin-right: 250px; margin-top: 75px;">
+    <!-- Main -->
+    <div class="flex-1 flex flex-col p-4 md:p-8 overflow-auto" style="margin-right: 250px; margin-top: 75px;">
         <!-- Top Stats Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center text-center">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-4 flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform">
                 <i class="fas fa-chart-pie text-blue-500 text-2xl mb-2"></i>
                 <p class="text-sm text-gray-500 mb-1" data-ar="نسبة الشفافية" data-en="Transparency Rate">نسبة الشفافية</p>
-                <p class="text-2xl font-bold text-blue-600" id="transparencyRate">75%</p>
+                <p class="text-2xl font-bold text-blue-600" id="transparencyRate">جاري التحميل...</p>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center text-center">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-4 flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform">
                 <i class="fas fa-hourglass-half text-yellow-500 text-2xl mb-2"></i>
                 <p class="text-sm text-gray-500 mb-1" data-ar="قيد المراجعة" data-en="Under Review">قيد المراجعة</p>
-                <p class="text-2xl font-bold text-yellow-600" id="underReview">15</p>
+                <p class="text-2xl font-bold text-yellow-600" id="underReview">جاري التحميل...</p>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center text-center">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-4 flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform">
                 <i class="fas fa-plus-circle text-green-500 text-2xl mb-2"></i>
                 <p class="text-sm text-gray-500 mb-1" data-ar="شكوى جديدة" data-en="New Complaint">شكوى جديدة</p>
-                <p class="text-2xl font-bold text-green-600" id="newComplaint">12</p>
+                <p class="text-2xl font-bold text-green-600" id="newComplaint">جاري التحميل...</p>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center text-center">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-4 flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform">
                 <i class="fas fa-redo-alt text-orange-500 text-2xl mb-2"></i>
                 <p class="text-sm text-gray-500 mb-1" data-ar="الشكاوى المتكررة" data-en="Repeated Complaints">الشكاوى المتكررة</p>
-                <p class="text-2xl font-bold text-orange-600" id="repeatedComplaints">23</p>
+                <p class="text-2xl font-bold text-orange-600" id="repeatedComplaints">جاري التحميل...</p>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center text-center">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 p-4 flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform">
                 <i class="fas fa-list-alt text-red-500 text-2xl mb-2"></i>
                 <p class="text-sm text-gray-500 mb-1" data-ar="إجمالي الشكاوى" data-en="Total Complaints">إجمالي الشكاوى</p>
-                <p class="text-2xl font-bold text-red-600" id="totalComplaints">84</p>
+                <p class="text-2xl font-bold text-red-600" id="totalComplaints">جاري التحميل...</p>
             </div>
         </div>
 
-        <!-- Filters Section (Dropdowns) -->
+        <!-- Filters -->
         <div class="flex flex-wrap justify-end gap-4 mb-8">
-            <!-- Day Filter Dropdown -->
+            <!-- Day -->
             <div class="custom-select-wrapper">
                 <div class="custom-select" id="daySelect">
                     <span id="selectedDay" data-ar="اختر اليوم" data-en="Choose Day">اختر اليوم</span>
@@ -95,7 +91,7 @@
                     <div class="custom-select-option" data-value="last30" data-ar="آخر 30 يومًا" data-en="Last 30 Days">آخر 30 يومًا</div>
                 </div>
             </div>
-            <!-- Month Filter Dropdown -->
+            <!-- Month -->
             <div class="custom-select-wrapper">
                 <div class="custom-select" id="monthSelect">
                     <span id="selectedMonth" data-ar="اختر الشهر" data-en="Choose Month">اختر الشهر</span>
@@ -116,7 +112,7 @@
                     <div class="custom-select-option" data-value="dec" data-ar="ديسمبر" data-en="December">ديسمبر</div>
                 </div>
             </div>
-            <!-- Quarter Filter Dropdown -->
+            <!-- Quarter -->
             <div class="custom-select-wrapper">
                 <div class="custom-select" id="quarterSelect">
                     <span id="selectedQuarter" data-ar="ربع سنوي" data-en="Quarterly">ربع سنوي</span>
@@ -129,7 +125,7 @@
                     <div class="custom-select-option" data-value="q4" data-ar="الربع الرابع" data-en="Q4">الربع الرابع</div>
                 </div>
             </div>
-            <!-- Custom Date Filter Dropdown -->
+            <!-- Custom Date -->
             <div class="custom-select-wrapper">
                 <div class="custom-select" id="customDateSelect">
                     <span id="selectedCustomDate" data-ar="تخصيص التاريخ" data-en="Custom Date">تخصيص التاريخ</span>
@@ -141,7 +137,7 @@
             </div>
         </div>
 
-        <!-- Top Complaints Chart Section -->
+        <!-- Chart -->
         <div class="chart-container mb-8">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold text-gray-800 text-center" data-ar="أكثر الشكاوى تكراراً" data-en="Most Frequent Complaints">أكثر الشكاوى تكراراً</h2>
@@ -150,12 +146,19 @@
                     <span data-ar="تحديث البيانات" data-en="Refresh Data">تحديث البيانات</span>
                 </button>
             </div>
+
             <div class="relative w-full" style="height: 300px;">
                 <canvas id="topComplaintsChart"></canvas>
+
+                <!-- ✅ رسالة لا توجد بيانات (تختفي تلقائياً عند توفر بيانات) -->
+                <div id="noDataMsg"
+                     class="hidden absolute inset-0 flex items-center justify-center text-gray-500 font-semibold pointer-events-none">
+                     لا توجد شكاوى في هذه الفترة
+                </div>
             </div>
         </div>
 
-        <!-- Repeated Complaints Alert Section -->
+        <!-- Repeated Complaints Alert -->
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
@@ -177,7 +180,7 @@
             </div>
         </div>
 
-        <!-- Buttons for Export Report -->
+        <!-- Export -->
         <div class="flex justify-center mt-8">
             <button id="exportReportBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg flex items-center">
                 <i class="fas fa-download ml-2"></i>
@@ -186,7 +189,7 @@
         </div>
     </div>
 
-    <!-- Link to external JavaScript file -->
+    <!-- JS -->
     <script src="overview.js"></script>
 </body>
 </html>

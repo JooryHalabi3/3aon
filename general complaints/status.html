@@ -37,17 +37,18 @@
 
     <div class="modal-body">
       <p><strong data-ar="رقم الشكوى:" data-en="Complaint ID:">رقم الشكوى:</strong>
-         <span class="complaint-id">#2025-00123</span>
+         <span class="complaint-id" id="complaintNumber">جاري التحميل...</span>
       </p>
 
       <label data-ar="الحالة الحالية:" data-en="Current Status:">الحالة الحالية:</label>
-      <input type="text" value="قيد المراجعة" disabled class="readonly-input">
+      <input type="text" id="currentStatus" value="جاري التحميل..." disabled class="readonly-input">
 
       <label data-ar="تحديث الحالة إلى:" data-en="Update Status To:">تحديث الحالة إلى:</label>
-      <select id="new-status">
+      <select id="newStatus">
+        <option value="">اختر الحالة الجديدة</option>
         <option value="قيد المراجعة" data-ar="قيد المراجعة" data-en="Under Review">قيد المراجعة</option>
+        <option value="قيد المعالجة" data-ar="قيد المعالجة" data-en="Under Processing">قيد المعالجة</option>
         <option value="تم الحل" data-ar="تم الحل" data-en="Resolved">تم الحل</option>
-        <option value="مرفوضة" data-ar="مرفوضة" data-en="Rejected">مرفوضة</option>
         <option value="مغلقة" data-ar="مغلقة" data-en="Closed">مغلقة</option>
       </select>
 
@@ -59,8 +60,8 @@
     </div>
 
     <div class="modal-footer">
-      <button class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
-      <button class="save-btn" data-ar="حفظ التغييرات" data-en="Save Changes">حفظ التغييرات</button>
+      <button class="cancel-btn" onclick="goBack()" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+      <button class="save-btn" onclick="updateComplaintStatus()" data-ar="حفظ التغييرات" data-en="Save Changes">حفظ التغييرات</button>
     </div>
 
     <div class="success-message hidden" id="successMessage"

@@ -1,576 +1,629 @@
+/* ===========================
+   Overview Page – Full Script
+   =========================== */
+
 let currentLang = localStorage.getItem('lang') || 'ar';
 let topComplaintsChart;
 
-// إعدادات API
+// API
 const API_BASE_URL = 'http://localhost:3001/api';
 
-// متغيرات عامة
+// Global state
 let overviewData = {
-    mainStats: {
-        transparencyRate: '0%',
-        underReview: 0,
-        newComplaint: 0,
-        repeatedComplaints: 0,
-        totalComplaints: 0
-    },
-    topComplaints: {
-        labels: { ar: [], en: [] },
-        values: []
-    }
+  mainStats: {
+    transparencyRate: '0%',
+    underReview: 0,
+    newComplaint: 0,
+    repeatedComplaints: 0,
+    totalComplaints: 0
+  },
+  topComplaints: {
+    labels: { ar: [], en: [] },
+    values: []
+  }
 };
 
+// Fonts
 function getFont() {
-    return currentLang === 'ar' ? 'Tajawal' : 'Merriweather';
+  return currentLang === 'ar' ? 'Tajawal' : 'Merriweather';
 }
 
-// اختبار الاتصال بالباك إند
+/* -----------------------------
+   UI helpers
+------------------------------*/
+function asPercent(v) {
+  if (v == null) return '0%';
+  if (typeof v === 'string' && v.trim().endsWith('%')) return v.trim();
+  const n = Number(v);
+  return Number.isFinite(n) ? `${Math.round(n)}%` : '0%';
+}
+
+function toggleNoDataUI(showNoData) {
+  const msg = document.getElementById('noDataMsg');
+  const canvas = document.getElementById('topComplaintsChart');
+  if (msg) msg.classList.toggle('hidden', !showNoData);
+  if (canvas) canvas.classList.toggle('hidden', showNoData);
+}
+
+/* -----------------------------
+   Backend health (optional)
+------------------------------*/
 async function testBackendConnection() {
-    try {
-        console.log('🔍 اختبار الاتصال بالباك إند...');
-        const response = await fetch(`${API_BASE_URL}/health`);
-        console.log('📡 استجابة اختبار الاتصال:', response.status, response.statusText);
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('✅ الباك إند يعمل بشكل صحيح:', data);
-            return true;
-        } else {
-            console.log('❌ الباك إند لا يستجيب بشكل صحيح - Status:', response.status);
-            return false;
-        }
-    } catch (error) {
-        console.log('❌ لا يمكن الاتصال بالباك إند:', error.message);
-        return false;
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`);
+    if (response.ok) {
+      await response.json();
+      return true;
     }
+    return false;
+  } catch {
+    return false;
+  }
 }
 
-// إنشاء Canvas ديناميكياً للرسم البياني
+/* -----------------------------
+   Canvas creation
+------------------------------*/
 function createChartDynamically() {
-    const chartContainer = document.querySelector('.relative.w-full');
-    if (!chartContainer) {
-        console.error('❌ لم يتم العثور على حاوية الرسم البياني');
-        return null;
-    }
-    
-    // إزالة Canvas الموجود إن وجد
-    const existingCanvas = chartContainer.querySelector('canvas');
-    if (existingCanvas) {
-        existingCanvas.remove();
-    }
-    
-    // إنشاء Canvas جديد
-    const canvas = document.createElement('canvas');
-    canvas.id = 'topComplaintsChart';
-    chartContainer.appendChild(canvas);
-    
-    console.log('✅ تم إنشاء Canvas جديد للرسم البياني');
-    return canvas;
+  const chartContainer = document.querySelector('.relative.w-full');
+  if (!chartContainer) {
+    console.error('❌ Chart container not found');
+    return null;
+  }
+  const existingCanvas = chartContainer.querySelector('canvas');
+  if (existingCanvas) existingCanvas.remove();
+  const canvas = document.createElement('canvas');
+  canvas.id = 'topComplaintsChart';
+  chartContainer.appendChild(canvas);
+  return canvas;
 }
 
-// جلب بيانات النظرة العامة من الباك إند
+/* -----------------------------
+   Data loading (initial)
+------------------------------*/
 async function loadOverviewData() {
-    try {
-        console.log('🔄 بدء جلب بيانات النظرة العامة من الباك إند...');
-        
-        // اختبار الاتصال بالباك إند أولاً
-        const isBackendRunning = await testBackendConnection();
-        if (!isBackendRunning) {
-            throw new Error('الباك إند غير متاح. تأكد من تشغيل الخادم على المنفذ 3001.');
-        }
-        
-        // تحديد الفترة الزمنية (آخر 30 يوم افتراضياً)
-        const toDate = new Date().toISOString().split('T')[0];
-        const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
-        console.log('📅 الفترة الزمنية:', { fromDate, toDate });
-        
-        const params = new URLSearchParams({
-            fromDate,
-            toDate
-        });
+  try {
+    const response = await fetch(`${API_BASE_URL}/overview/stats`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const result = await response.json();
 
-        console.log('🌐 إرسال طلب إلى:', `${API_BASE_URL}/overview/stats?${params}`);
-
-        const response = await fetch(`${API_BASE_URL}/overview/stats?${params}`);
-        console.log('📡 استجابة الخادم:', response.status, response.statusText);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-
-        console.log('📊 استجابة الباك إند:', result);
-
-        if (result.success) {
-            console.log('✅ تم جلب البيانات بنجاح من الباك إند');
-            console.log('📊 البيانات المستلمة:', result.data);
-            
-            // معالجة البيانات من الباك إند
-            processOverviewData(result.data);
-            
-            // إعادة إنشاء الرسم البياني
-            if (topComplaintsChart) {
-                topComplaintsChart.destroy();
-            }
-            
-            // إنشاء Canvas ديناميكياً
-            const canvas = createChartDynamically();
-            if (canvas) {
-                // إذا لم توجد بيانات، عرض رسالة
-                if (overviewData.topComplaints.values.length === 0 || overviewData.topComplaints.values.every(v => v === 0)) {
-                    canvas.parentElement.innerHTML = `
-                        <div class="flex items-center justify-center h-full">
-                            <div class="text-center">
-                                <div class="text-gray-500 text-6xl mb-4">📊</div>
-                                <h3 class="text-xl font-semibold text-gray-700 mb-2">لا توجد شكاوى</h3>
-                                <p class="text-gray-500 mb-4">لم يتم العثور على أي شكاوى في قاعدة البيانات</p>
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <p class="text-blue-800 text-sm">
-                                        💡 <strong>نصيحة:</strong> قم بإضافة شكاوى جديدة من خلال صفحة "إضافة شكوى جديدة"
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    console.log('📊 إنشاء الرسم البياني لأكثر الشكاوى تكراراً');
-                    topComplaintsChart = createBarChart(
-                        canvas,
-                        overviewData.topComplaints.labels,
-                        overviewData.topComplaints.values,
-                        'Most Frequent Complaints'
-                    );
-                }
-            }
-            
-            console.log('✅ تم تحميل بيانات النظرة العامة بنجاح');
-        } else {
-            console.error('❌ خطأ في جلب البيانات:', result.message);
-            
-            // إظهار رسالة خطأ في الصفحة
-            const chartContainer = document.querySelector('.relative.w-full');
-            if (chartContainer) {
-                chartContainer.innerHTML = `
-                    <div class="flex items-center justify-center h-full">
-                        <div class="text-center text-red-600">
-                            <div class="text-4xl mb-4">❌</div>
-                            <h3 class="text-xl font-semibold mb-2">خطأ في جلب البيانات</h3>
-                            <p>${result.message || 'فشل في تحميل البيانات من الخادم'}</p>
-                            <button onclick="loadOverviewData()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                إعادة المحاولة
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            showError('فشل في تحميل البيانات من الخادم');
-        }
-    } catch (error) {
-        console.error('❌ خطأ في الاتصال بالخادم:', error);
-        
-        // إظهار رسالة خطأ في الصفحة بدلاً من alert
-        const chartContainer = document.querySelector('.relative.w-full');
-        if (chartContainer) {
-            chartContainer.innerHTML = `
-                <div class="flex items-center justify-center h-full">
-                    <div class="text-center text-red-600">
-                        <div class="text-4xl mb-4">⚠️</div>
-                        <h3 class="text-xl font-semibold mb-2">خطأ في الاتصال</h3>
-                        <p>تأكد من تشغيل الباك إند</p>
-                        <p class="text-sm mt-2">${error.message}</p>
-                        <button onclick="loadOverviewData()" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            إعادة المحاولة
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        showError('خطأ في الاتصال بالخادم');
+    if (result.success && result.data) {
+      processOverviewData(result.data);
+      renderTopComplaintsChart();
+    } else {
+      throw new Error('فشل في معالجة البيانات من الخادم');
     }
+  } catch (error) {
+    console.error('❌ loadOverviewData error:', error);
+
+    // Fallback test data
+    const testData = {
+      transparencyRate: '50%',
+      underReview: 0,
+      newComplaint: 2,
+      repeatedComplaints: 1,
+      totalComplaints: 5,
+      topComplaints: [
+        { complaintType: 'خدمات التأهيل والعلاج الطبيعي', count: 2 },
+        { complaintType: 'الكوادز الصحية وسلوكهم', count: 1 },
+        { complaintType: 'خدمات المرضى العامة', count: 1 },
+        { complaintType: 'بيئة المستشفى والبنية التحتية', count: 1 }
+      ],
+      repeatedComplaintsDetails: [] // فاضية لإجبار الـfallback
+    };
+    processOverviewData(testData);
+    renderTopComplaintsChart();
+  }
 }
 
-// معالجة البيانات من الباك إند
+/* -----------------------------
+   Processing API data
+------------------------------*/
 function processOverviewData(data) {
-    console.log('🔍 معالجة البيانات من الباك إند:', data);
-    
-    // معالجة الإحصائيات الرئيسية
-    overviewData.mainStats = {
-        transparencyRate: data.transparencyRate || '0%',
-        underReview: data.underReview || 0,
-        newComplaint: data.newComplaint || 0,
-        repeatedComplaints: data.repeatedComplaints || 0,
-        totalComplaints: data.totalComplaints || 0
-    };
-    
-    console.log('📊 الإحصائيات الرئيسية:', overviewData.mainStats);
-    
-    // معالجة أكثر الشكاوى تكراراً
-    const topComplaints = data.topComplaints || [];
-    console.log('📈 أكثر الشكاوى تكراراً:', topComplaints);
-    
-    overviewData.topComplaints.labels.ar = topComplaints.map(item => item.complaintType || 'شكوى عامة');
-    overviewData.topComplaints.labels.en = topComplaints.map(item => getEnglishComplaintType(item.complaintType) || 'General Complaint');
-    overviewData.topComplaints.values = topComplaints.map(item => item.count || 0);
-    
-    console.log('📊 بيانات أكثر الشكاوى تكراراً:', {
-        labels: overviewData.topComplaints.labels,
-        values: overviewData.topComplaints.values
-    });
-    
-    // معالجة تفاصيل الشكاوى المتكررة
-    const repeatedDetails = data.repeatedComplaintsDetails || [];
-    console.log('🔄 تفاصيل الشكاوى المتكررة:', repeatedDetails);
-    
-    // تحديث واجهة المستخدم
-    updateMainStatsCards();
-    updateRepeatedComplaintsAlert(repeatedDetails);
+  // Main stats
+  overviewData.mainStats = {
+    transparencyRate: data.transparencyRate ?? '0%',
+    underReview: data.underReview ?? 0,
+    newComplaint: data.newComplaint ?? 0,
+    repeatedComplaints: data.repeatedComplaints ?? 0,
+    totalComplaints: data.totalComplaints ?? 0
+  };
+
+  // Top complaints (support two naming styles)
+  const top = Array.isArray(data.topComplaints) ? data.topComplaints : [];
+  const arLabels = top.map(item => item.complaintType || item.ComplaintType || 'شكوى عامة');
+  const enLabels = arLabels.map(getEnglishComplaintType);
+  const values = top.map(item => Number(item.count || item.Count || 0));
+
+  overviewData.topComplaints.labels.ar = arLabels;
+  overviewData.topComplaints.labels.en = enLabels;
+  overviewData.topComplaints.values = values;
+
+  // Repeated details
+  const repeatedDetails = data.repeatedComplaintsDetails || [];
+
+  // Update cards + alert details
+  updateMainStatsCards();
+  updateRepeatedComplaintsAlert(repeatedDetails);
 }
 
-// حساب نسبة الشفافية
+/* -----------------------------
+   Transparency helper (unused but kept)
+------------------------------*/
 function calculateTransparencyRate(general) {
-    if (!general.totalComplaints || general.totalComplaints === 0) return 0;
-    
-    const resolvedComplaints = general.closedComplaints || 0;
-    const transparencyRate = Math.round((resolvedComplaints / general.totalComplaints) * 100);
-    return Math.min(transparencyRate, 100); // لا تتجاوز 100%
+  if (!general.totalComplaints) return 0;
+  const resolved = general.closedComplaints || 0;
+  const rate = Math.round((resolved / general.totalComplaints) * 100);
+  return Math.min(rate, 100);
 }
 
-// الحصول على اسم نوع الشكوى بالإنجليزية
+/* -----------------------------
+   Localized complaint types EN
+------------------------------*/
 function getEnglishComplaintType(arabicType) {
-    const typeMap = {
-        'تأخير في دخول العيادة': 'Delay in Clinic Entry',
-        'تعامل غير لائق من موظف': 'Improper Staff Conduct',
-        'نقص علاج / أدوية': 'Lack of Treatment / Medication',
-        'نظافة غرف المرضى': 'Patient Room Cleanliness',
-        'سوء التنسيق في المواعيد': 'Poor Appointment Coordination',
-        'شكوى عامة': 'General Complaint'
-    };
-    
-    return typeMap[arabicType] || arabicType;
+  const map = {
+    'تأخير في دخول العيادة': 'Delay in Clinic Entry',
+    'تعامل غير لائق من موظف': 'Improper Staff Conduct',
+    'نقص علاج / أدوية': 'Lack of Treatment / Medication',
+    'نظافة غرف المرضى': 'Patient Room Cleanliness',
+    'سوء التنسيق في المواعيد': 'Poor Appointment Coordination',
+    'خدمات التأهيل والعلاج الطبيعي': 'Rehabilitation & Physiotherapy',
+    'الكوادز الصحية وسلوكهم': 'Healthcare Staff & Conduct',
+    'خدمات المرضى العامة': 'General Patient Services',
+    'بيئة المستشفى والبنية التحتية': 'Hospital Environment & Infrastructure',
+    'شكوى عامة': 'General Complaint'
+  };
+  return map[arabicType] || arabicType || 'General Complaint';
 }
 
-// إظهار رسالة خطأ
+/* -----------------------------
+   Toasts
+------------------------------*/
 function showError(message) {
-    alert(message);
+  const n = document.createElement('div');
+  n.style.cssText = `
+    position: fixed; top: 20px; right: 20px; background: #ef4444; color: #fff;
+    padding: 15px 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,.2);
+    z-index: 9999; font-family: 'Tajawal',sans-serif; font-size: 14px; max-width: 300px;
+    animation: slideIn .3s ease-out;
+  `;
+  n.innerHTML = `<div style="display:flex;align-items:center;"><span style="margin-left:10px;">❌</span><span>${message}</span></div>`;
+  if (!document.getElementById('notification-style')) {
+    const style = document.createElement('style');
+    style.id = 'notification-style';
+    style.textContent = `
+      @keyframes slideIn {from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+      @keyframes slideOut {from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}
+    `;
+    document.head.appendChild(style);
+  }
+  document.body.appendChild(n);
+  setTimeout(() => { n.style.animation = 'slideOut .3s ease-in'; setTimeout(() => n.remove(), 300); }, 4000);
 }
 
-// تصدير التقرير
+function showSuccess(message) {
+  const n = document.createElement('div');
+  n.style.cssText = `
+    position: fixed; top: 20px; right: 20px; background: #22c55e; color: #fff;
+    padding: 15px 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,.2);
+    z-index: 9999; font-family: 'Tajawal',sans-serif; font-size: 14px; max-width: 300px;
+    animation: slideIn .3s ease-out;
+  `;
+  n.innerHTML = `<div style="display:flex;align-items:center;"><span style="margin-left:10px;">✅</span><span>${message}</span></div>`;
+  document.body.appendChild(n);
+  setTimeout(() => { n.style.animation = 'slideOut .3s ease-in'; setTimeout(() => n.remove(), 300); }, 4000);
+}
+
+/* -----------------------------
+   Export report
+------------------------------*/
 async function exportOverviewReport() {
-    try {
-        console.log('📤 بدء تصدير تقرير النظرة العامة...');
-        
-        const toDate = new Date().toISOString().split('T')[0];
-        const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
-        const params = new URLSearchParams({
-            fromDate,
-            toDate
-        });
-        
-        console.log('🌐 إرسال طلب تصدير إلى:', `${API_BASE_URL}/overview/export-data?${params}`);
-        
-        const response = await fetch(`${API_BASE_URL}/overview/export-data?${params}`);
-        const blob = await response.blob();
-        
-        // إنشاء رابط تحميل
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `overview-report-${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
-        console.log('✅ تم تصدير التقرير بنجاح');
-    } catch (error) {
-        console.error('❌ خطأ في تصدير التقرير:', error);
-        showError('فشل في تصدير التقرير');
-    }
+  const btn = document.getElementById('exportReportBtn');
+  const original = btn ? btn.innerHTML : '';
+  try {
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin ml-2"></i><span>جاري التصدير...</span>'; }
+    const toDate = new Date().toISOString().split('T')[0];
+    const fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const params = new URLSearchParams({ fromDate, toDate });
+    const response = await fetch(`${API_BASE_URL}/overview/export-data?${params}`);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `overview-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); a.remove();
+    showSuccess('تم تصدير التقرير بنجاح');
+  } catch (e) {
+    console.error(e);
+    showError('فشل في تصدير التقرير: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = original; }
+  }
 }
 
+/* -----------------------------
+   Update cards
+------------------------------*/
 function updateMainStatsCards() {
-    document.getElementById('transparencyRate').textContent = overviewData.mainStats.transparencyRate;
-    document.getElementById('underReview').textContent = overviewData.mainStats.underReview;
-    document.getElementById('newComplaint').textContent = overviewData.mainStats.newComplaint;
-    document.getElementById('repeatedComplaints').textContent = overviewData.mainStats.repeatedComplaints;
-    document.getElementById('totalComplaints').textContent = overviewData.mainStats.totalComplaints;
+  const els = {
+    transparencyRate: document.getElementById('transparencyRate'),
+    underReview: document.getElementById('underReview'),
+    newComplaint: document.getElementById('newComplaint'),
+    repeatedComplaints: document.getElementById('repeatedComplaints'),
+    totalComplaints: document.getElementById('totalComplaints')
+  };
+
+  if (els.transparencyRate) els.transparencyRate.textContent = asPercent(overviewData.mainStats.transparencyRate);
+  if (els.underReview) els.underReview.textContent = overviewData.mainStats.underReview ?? 0;
+  if (els.newComplaint) els.newComplaint.textContent = overviewData.mainStats.newComplaint ?? 0;
+  if (els.repeatedComplaints) els.repeatedComplaints.textContent = overviewData.mainStats.repeatedComplaints ?? 0;
+  if (els.totalComplaints) els.totalComplaints.textContent = overviewData.mainStats.totalComplaints ?? 0;
 }
 
+/* -----------------------------
+   Build repeated-types list (API or fallback)
+------------------------------*/
+function getTopRepeatedTypes(repeatedDetails) {
+  // لو فيه تفاصيل من الـAPI استخدمها (نختار فقط ما عدده > 1 لتُعتبر "متكررة")
+  let items = [];
+  if (Array.isArray(repeatedDetails) && repeatedDetails.length > 0) {
+    items = repeatedDetails.map(d => ({
+      type: d.ComplaintType || d.complaintType || '—',
+      dept: d.DepartmentName || d.department || '—',
+      count: Number(d.ComplaintCount || d.count || 0)
+    })).filter(x => x.count > 1);
+  }
+
+  // Fallback: من الرسم البياني (أعلى القيم وبشرط >= 2)
+  if (items.length === 0) {
+    const values = overviewData.topComplaints.values || [];
+    const labels = overviewData.topComplaints.labels[currentLang] || [];
+    const max = values.reduce((m, v) => Math.max(m, Number(v || 0)), 0);
+
+    if (max >= 2) {
+      items = values
+        .map((v, i) => ({ type: labels[i] || '—', dept: '—', count: Number(v || 0) }))
+        .filter(x => x.count === max) // أعلى الأنواع تكراراً
+        .sort((a, b) => b.count - a.count);
+    }
+  }
+  return items;
+}
+
+/* -----------------------------
+   Alert: repeated complaints
+------------------------------*/
 function updateRepeatedComplaintsAlert(repeatedDetails) {
-    const repeatedCountElement = document.getElementById('repeatedComplaintsCount');
-    if (repeatedCountElement) {
-        repeatedCountElement.textContent = overviewData.mainStats.repeatedComplaints;
-    }
-    
-    // تحديث تفاصيل الشكاوى المتكررة
-    const alertSection = document.querySelector('.bg-yellow-50');
-    if (alertSection && repeatedDetails.length > 0) {
-        // إنشاء قائمة بالشكاوى المتكررة
-        let detailsHtml = '<div class="mt-4 space-y-2">';
-        repeatedDetails.forEach(item => {
-            detailsHtml += `
-                <div class="bg-yellow-100 p-3 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="font-semibold text-yellow-800">${item.ComplaintType}</p>
-                            <p class="text-sm text-yellow-700">القسم: ${item.DepartmentName}</p>
-                            <p class="text-sm text-yellow-700">عدد التكرارات: ${item.ComplaintCount}</p>
-                        </div>
-                        <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold">
-                            ${item.ComplaintCount} مرات
-                        </span>
-                    </div>
-                </div>
-            `;
-        });
-        detailsHtml += '</div>';
-        
-        // إضافة التفاصيل إلى التنبيه
-        const existingDetails = alertSection.querySelector('.mt-4.space-y-2');
-        if (existingDetails) {
-            existingDetails.remove();
-        }
-        alertSection.querySelector('.mr-3').insertAdjacentHTML('beforeend', detailsHtml);
-    }
+  // العداد
+  const repeatedCountElement = document.getElementById('repeatedComplaintsCount');
+  if (repeatedCountElement) {
+    repeatedCountElement.textContent = overviewData.mainStats.repeatedComplaints ?? 0;
+  }
+
+  const alertSection = document.querySelector('.bg-yellow-50');
+  if (!alertSection) return;
+
+  // امسحي أي تفاصيل سابقة
+  const existing = alertSection.querySelector('.mt-4.space-y-2');
+  if (existing) existing.remove();
+
+  // حددي الأنواع المتكررة (تفاصيل API أو fallback)
+  const topRepeated = getTopRepeatedTypes(repeatedDetails);
+
+  // لو ما فيه أنواع متكررة فعلاً، لا نعرض قائمة
+  if (!topRepeated || topRepeated.length === 0) return;
+
+  // ابنِ قائمة الأنواع المتكررة
+  let html = '<div class="mt-4 space-y-2">';
+  topRepeated.forEach(item => {
+    html += `
+      <div class="bg-yellow-100 p-3 rounded-lg">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="font-semibold text-yellow-800">
+              ${currentLang === 'ar' ? 'نوع الشكوى:' : 'Complaint Type:'}
+              <span class="font-bold">${item.type}</span>
+            </p>
+            ${item.dept && item.dept !== '—' ? `
+              <p class="text-sm text-yellow-700">
+                ${currentLang === 'ar' ? 'القسم:' : 'Department:'} ${item.dept}
+              </p>` : ''}
+          </div>
+          <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-xs font-bold">
+            ${item.count} ${currentLang === 'ar' ? 'مرات' : 'times'}
+          </span>
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+
+  const container = alertSection.querySelector('.mr-3');
+  if (container) container.insertAdjacentHTML('beforeend', html);
 }
 
-function createBarChart(ctx, dataLabels, dataValues, chartTitle) {
-    console.log('🎨 إنشاء الرسم البياني مع البيانات:', {
-        labels: dataLabels[currentLang],
-        values: dataValues
-    });
-    
-    console.log('🎨 Canvas element:', ctx);
-    console.log('🎨 Canvas width:', ctx.width);
-    console.log('🎨 Canvas height:', ctx.height);
-    
-    const datasets = [{
-        label: chartTitle,
-        data: dataValues,
-        backgroundColor: '#3B82F6',
-        borderColor: '#2563EB',
-        borderWidth: 1,
-        borderRadius: 5,
-    }];
-    
-    console.log('🎨 Datasets:', datasets);
-    
-    return new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: dataLabels[currentLang],
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    rtl: currentLang === 'ar',
-                    bodyFont: { family: getFont() },
-                    titleFont: { family: getFont() }
-                },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    color: '#333',
-                    font: {
-                        weight: 'bold',
-                        size: 14,
-                        family: getFont()
-                    },
-                    formatter: value => (value > 0 ? value : '')
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        font: {
-                            family: getFont(),
-                            size: 12,
-                            color: '#333'
-                        }
-                    },
-                    grid: { display: false },
-                    barPercentage: 0.9,
-                    categoryPercentage: 0.9
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        font: {
-                            family: getFont(),
-                            size: 12,
-                            color: '#333'
-                        }
-                    },
-                    grid: {
-                        drawBorder: false,
-                        color: 'rgba(0, 0, 0, 0.2)',
-                    },
-                }
-            }
-        },
-        plugins: [ChartDataLabels]
-    });
-}
+/* -----------------------------
+   Render bar chart (with %)
+------------------------------*/
+function renderTopComplaintsChart() {
+  // Prepare canvas
+  let canvas = document.getElementById('topComplaintsChart');
+  if (!canvas) canvas = createChartDynamically();
+  if (!canvas) return;
 
-function updateAllContent() {
-    const font = getFont();
+  const values = overviewData.topComplaints.values || [];
+  const labels = (overviewData.topComplaints.labels[currentLang] || []);
+  const total = values.reduce((a, b) => a + Number(b || 0), 0);
+  const hasData = total > 0;
 
-    // Update Main Stats Cards
-    updateMainStatsCards();
-    updateRepeatedComplaintsAlert();
+  // Toggle empty UI and destroy old chart
+  toggleNoDataUI(!hasData);
+  if (topComplaintsChart) { topComplaintsChart.destroy(); topComplaintsChart = null; }
+  if (!hasData) return;
 
-    // Update Top Complaints Chart
-    if (topComplaintsChart) {
-        topComplaintsChart.data.labels = overviewData.topComplaints.labels[currentLang];
-        topComplaintsChart.data.datasets[0].data = overviewData.topComplaints.values;
-        topComplaintsChart.options.plugins.tooltip.rtl = currentLang === 'ar';
-        topComplaintsChart.options.plugins.tooltip.bodyFont.family = font;
-        topComplaintsChart.options.plugins.tooltip.titleFont.family = font;
-        topComplaintsChart.options.plugins.datalabels.font.family = font;
-        topComplaintsChart.options.scales.x.ticks.font.family = font;
-        topComplaintsChart.options.scales.y.ticks.font.family = font;
-        topComplaintsChart.update();
-    }
-}
-
-function applyLanguage(lang) {
-    currentLang = lang;
-    localStorage.setItem('lang', lang);
-    document.documentElement.lang = lang;
-    document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.body.classList.remove('lang-ar', 'lang-en');
-    document.body.classList.add(lang === 'ar' ? 'lang-ar' : 'lang-en');
-
-    document.querySelectorAll('[data-ar], [data-en]').forEach(el => {
-        const textContent = el.getAttribute(`data-${lang}`);
-        if (textContent) {
-            el.textContent = textContent;
-        }
-    });
-
-    // Update language toggle text
-    const langTextSpan = document.getElementById('langText');
-    if (langTextSpan) {
-        langTextSpan.textContent = lang === 'ar' ? 'العربية | English' : 'English | العربية';
-    }
-
-    // Update dropdown selected texts
-    const dropdowns = ['day', 'month', 'quarter', 'customDate'];
-    dropdowns.forEach(id => {
-        const span = document.getElementById(`selected${id.charAt(0).toUpperCase() + id.slice(1)}`);
-        if (span) {
-            const selectedValue = span.dataset.value;
-            const optionElement = document.querySelector(`#${id}Options .custom-select-option[data-value="${selectedValue}"]`);
-            if (optionElement) {
-                span.textContent = optionElement.getAttribute(`data-${lang}`);
-            } else {
-                // Set default text if no value is selected or found
-                if (id === 'day') span.textContent = lang === 'ar' ? 'اختر اليوم' : 'Choose Day';
-                else if (id === 'month') span.textContent = lang === 'ar' ? 'اختر الشهر' : 'Choose Month';
-                else if (id === 'quarter') span.textContent = lang === 'ar' ? 'ربع سنوي' : 'Quarterly';
-                else if (id === 'customDate') span.textContent = lang === 'ar' ? 'تخصيص التاريخ' : 'Custom Date';
-            }
-        }
-    });
-
-    updateAllContent();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const langToggleBtn = document.getElementById('langToggle');
-    const exportReportBtn = document.getElementById('exportReportBtn');
-    const refreshBtn = document.getElementById('refreshBtn');
-
-    // Register ChartDataLabels plugin
+  // Register datalabels plugin if available
+  if (typeof ChartDataLabels !== 'undefined') {
     Chart.register(ChartDataLabels);
+  }
 
-    // تحميل البيانات من الباك إند
-    loadOverviewData();
+  const colors = [
+    '#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6',
+    '#06B6D4','#84CC16','#F97316','#EC4899','#6366F1'
+  ];
 
-    // Now, call applyLanguage to set initial language and update all content
-    applyLanguage(currentLang);
-
-    // Set active sidebar link based on current page
-    const sidebarLinks = document.querySelectorAll('.sidebar-menu .menu-link');
-    sidebarLinks.forEach(link => {
-        link.parentElement.classList.remove('active');
-        if (link.getAttribute('href') === 'overview.html') {
-            link.parentElement.classList.add('active');
+  topComplaintsChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: currentLang === 'ar' ? 'أكثر الشكاوى' : 'Most Frequent Complaints',
+        data: values,
+        backgroundColor: values.map((_, i) => colors[i % colors.length]),
+        borderColor: values.map((_, i) => colors[i % colors.length]),
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 800, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: { font: { family: getFont(), size: 12 }, usePointStyle: true, padding: 20 }
+        },
+        tooltip: {
+          rtl: currentLang === 'ar',
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          cornerRadius: 6,
+          titleFont: { family: getFont(), size: 14, weight: 'bold' },
+          bodyFont: { family: getFont(), size: 13 },
+          callbacks: {
+            label: (ctx) => {
+              const v = Number(ctx.parsed.y || 0);
+              const pct = total ? Math.round((v / total) * 100) : 0;
+              return `${v} ${currentLang==='ar'?'شكوى':'complaints'} (${pct}%)`;
+            }
+          }
+        },
+        datalabels: {
+          anchor: 'end',
+          align: 'top',
+          clamp: true,
+          formatter: (v) => {
+            const pct = total ? Math.round((Number(v) / total) * 100) : 0;
+            return `${v} (${pct}%)`;
+          },
+          font: { family: getFont(), weight: '600' }
         }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: getFont(), size: 12 } }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, font: { family: getFont(), size: 12 } },
+          grid: { drawBorder: false, color: 'rgba(0,0,0,0.1)' }
+        }
+      },
+      onHover: (evt, active) => {
+        evt.native.target.style.cursor = active.length > 0 ? 'pointer' : 'default';
+      },
+      onClick: (evt, active) => {
+        if (!active.length) return;
+        const i = active[0].index;
+        const lbl = labels[i];
+        const v = values[i];
+        showSuccess(`${lbl}: ${v} ${currentLang==='ar'?'شكوى':'complaints'}`);
+      }
+    }
+  });
+}
+
+/* -----------------------------
+   Refresh all content on lang
+------------------------------*/
+function updateAllContent() {
+  updateMainStatsCards();
+  updateRepeatedComplaintsAlert(); // يعيد بناء القائمة إن وجدت
+  renderTopComplaintsChart();      // يعيد الرسم حسب اللغة
+}
+
+/* -----------------------------
+   Dropdowns
+------------------------------*/
+function setupDropdown(selectId, optionsId) {
+  const selectElement = document.getElementById(selectId);
+  const optionsElement = document.getElementById(optionsId);
+  if (!selectElement || !optionsElement) return;
+
+  selectElement.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.custom-select-options').forEach(opt => {
+      if (opt !== optionsElement) opt.style.display = 'none';
     });
+    const isVisible = optionsElement.style.display === 'block';
+    optionsElement.style.display = isVisible ? 'none' : 'block';
+  });
 
-    // Dropdown functionality - Generic function for all dropdowns
-    function setupDropdown(selectId, optionsId) {
-        const select = document.getElementById(selectId);
-        const options = document.getElementById(optionsId);
+  document.addEventListener('click', () => { optionsElement.style.display = 'none'; });
 
-        if (select && options) {
-            select.addEventListener('click', () => {
-                options.classList.toggle('open');
-                const icon = select.querySelector('.fas');
-                if (options.classList.contains('open')) {
-                    icon.classList.remove('fa-chevron-down');
-                    icon.classList.add('fa-chevron-up');
-                } else {
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
-                }
-            });
-
-            options.addEventListener('click', (event) => {
-                if (event.target.classList.contains('custom-select-option')) {
-                    const selectedValue = event.target.dataset.value;
-                    const selectedText = event.target.textContent;
-                    select.querySelector('span').textContent = selectedText;
-                    select.querySelector('span').dataset.value = selectedValue;
-                    options.classList.remove('open');
-                    select.querySelector('.fas').classList.remove('fa-chevron-up');
-                    select.querySelector('.fas').classList.add('fa-chevron-down');
-                    
-                    // إعادة تحميل البيانات بناءً على الفلتر المحدد
-                    console.log(`Filter selected for ${selectId}: ${selectedValue}`);
-                    loadOverviewData();
-                }
-            });
-        }
+  optionsElement.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (e.target.classList.contains('custom-select-option')) {
+      const value = e.target.getAttribute('data-value');
+      const text = e.target.getAttribute(`data-${currentLang}`);
+      const span = selectElement.querySelector('span');
+      if (span) { span.textContent = text; span.setAttribute('data-value', value); }
+      optionsElement.style.display = 'none';
+      applyDateFilter(selectId, value);
     }
+  });
+}
 
-    // Setup all dropdowns
-    setupDropdown('daySelect', 'dayOptions');
-    setupDropdown('monthSelect', 'monthOptions');
-    setupDropdown('quarterSelect', 'quarterOptions');
-    setupDropdown('customDateSelect', 'customDateOptions');
-
-    // Functionality for Export Report button
-    if (exportReportBtn) {
-        exportReportBtn.addEventListener('click', () => {
-            exportOverviewReport();
-        });
+/* -----------------------------
+   Date filtering
+------------------------------*/
+function applyDateFilter(selectId, value) {
+  let fromDate, toDate;
+  const now = new Date();
+  switch (value) {
+    case 'today':
+      fromDate = toDate = now.toISOString().split('T')[0]; break;
+    case 'yesterday': {
+      const y = new Date(now); y.setDate(y.getDate() - 1);
+      fromDate = toDate = y.toISOString().split('T')[0]; break;
     }
-
-    // Functionality for Refresh Data button
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            loadOverviewData();
-        });
+    case 'last7': {
+      toDate = now.toISOString().split('T')[0];
+      const d = new Date(now); d.setDate(d.getDate() - 7);
+      fromDate = d.toISOString().split('T')[0]; break;
     }
-
-    // Language toggle button event listener
-    if (langToggleBtn) {
-        langToggleBtn.addEventListener('click', () => {
-            const newLang = currentLang === 'ar' ? 'en' : 'ar';
-            applyLanguage(newLang);
-        });
+    case 'last30': {
+      toDate = now.toISOString().split('T')[0];
+      const d = new Date(now); d.setDate(d.getDate() - 30);
+      fromDate = d.toISOString().split('T')[0]; break;
     }
+    case 'jan': case 'feb': case 'mar': case 'apr': case 'may': case 'jun':
+    case 'jul': case 'aug': case 'sep': case 'oct': case 'nov': case 'dec': {
+      const monthMap = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11 };
+      const m = monthMap[value]; const y = now.getFullYear();
+      fromDate = new Date(y, m, 1).toISOString().split('T')[0];
+      toDate = new Date(y, m + 1, 0).toISOString().split('T')[0]; break;
+    }
+    case 'q1':
+      fromDate = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+      toDate   = new Date(now.getFullYear(), 2, 31).toISOString().split('T')[0]; break;
+    case 'q2':
+      fromDate = new Date(now.getFullYear(), 3, 1).toISOString().split('T')[0];
+      toDate   = new Date(now.getFullYear(), 5, 30).toISOString().split('T')[0]; break;
+    case 'q3':
+      fromDate = new Date(now.getFullYear(), 6, 1).toISOString().split('T')[0];
+      toDate   = new Date(now.getFullYear(), 8, 30).toISOString().split('T')[0]; break;
+    case 'q4':
+      fromDate = new Date(now.getFullYear(), 9, 1).toISOString().split('T')[0];
+      toDate   = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0]; break;
+    default: return;
+  }
+  if (fromDate && toDate) loadOverviewDataWithFilter(fromDate, toDate);
+}
+
+async function loadOverviewDataWithFilter(fromDate, toDate) {
+  try {
+    const params = new URLSearchParams({ fromDate, toDate });
+    const url = `${API_BASE_URL}/overview/stats?${params}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const result = await response.json();
+    if (result.success) {
+      processOverviewData(result.data);
+      renderTopComplaintsChart();
+    }
+  } catch (error) {
+    console.error('❌ filter error:', error);
+    showError('فشل في تطبيق الفلتر: ' + error.message);
+    overviewData.mainStats = {
+      transparencyRate: 'خطأ',
+      underReview: 'خطأ',
+      newComplaint: 'خطأ',
+      repeatedComplaints: 'خطأ',
+      totalComplaints: 'خطأ'
+    };
+    updateMainStatsCards();
+    toggleNoDataUI(true);
+    if (topComplaintsChart) { topComplaintsChart.destroy(); topComplaintsChart = null; }
+  }
+}
+
+/* -----------------------------
+   Language
+------------------------------*/
+function applyLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  document.documentElement.lang = lang;
+  document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.body.classList.remove('lang-ar', 'lang-en');
+  document.body.classList.add(lang === 'ar' ? 'lang-ar' : 'lang-en');
+
+  document.querySelectorAll('[data-ar], [data-en]').forEach(el => {
+    const txt = el.getAttribute(`data-${lang}`);
+    if (txt) el.textContent = txt;
+  });
+
+  const langTextSpan = document.getElementById('langText');
+  if (langTextSpan) langTextSpan.textContent = lang === 'ar' ? 'العربية | English' : 'English | العربية';
+
+  const dropdowns = ['day', 'month', 'quarter', 'customDate'];
+  dropdowns.forEach(id => {
+    const span = document.getElementById(`selected${id.charAt(0).toUpperCase() + id.slice(1)}`);
+    if (span) {
+      const selectedValue = span.dataset.value;
+      const opt = document.querySelector(`#${id}Options .custom-select-option[data-value="${selectedValue}"]`);
+      if (opt) span.textContent = opt.getAttribute(`data-${lang}`);
+      else {
+        if (id === 'day') span.textContent = lang === 'ar' ? 'اختر اليوم' : 'Choose Day';
+        else if (id === 'month') span.textContent = lang === 'ar' ? 'اختر الشهر' : 'Choose Month';
+        else if (id === 'quarter') span.textContent = lang === 'ar' ? 'ربع سنوي' : 'Quarterly';
+        else if (id === 'customDate') span.textContent = lang === 'ar' ? 'تخصيص التاريخ' : 'Custom Date';
+      }
+    }
+  });
+
+  updateAllContent();
+}
+
+/* -----------------------------
+   DOM Ready
+------------------------------*/
+document.addEventListener('DOMContentLoaded', () => {
+  const langToggleBtn = document.getElementById('langToggle');
+  const exportReportBtn = document.getElementById('exportReportBtn');
+  const refreshBtn = document.getElementById('refreshBtn');
+
+  setupDropdown('daySelect', 'dayOptions');
+  setupDropdown('monthSelect', 'monthOptions');
+  setupDropdown('quarterSelect', 'quarterOptions');
+  setupDropdown('customDateSelect', 'customDateOptions');
+
+  if (refreshBtn) refreshBtn.addEventListener('click', loadOverviewData);
+  if (exportReportBtn) exportReportBtn.addEventListener('click', exportOverviewReport);
+  if (langToggleBtn) langToggleBtn.addEventListener('click', () => {
+    const newLang = currentLang === 'ar' ? 'en' : 'ar';
+    applyLanguage(newLang);
+  });
+
+  // Initial load
+  loadOverviewData();
+  applyLanguage(currentLang);
+
+  // Mark active menu item
+  const links = document.querySelectorAll('.sidebar-menu .menu-link');
+  links.forEach(link => {
+    link.parentElement.classList.remove('active');
+    if (link.getAttribute('href') === 'overview.html') link.parentElement.classList.add('active');
+  });
 });

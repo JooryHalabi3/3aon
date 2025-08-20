@@ -3,6 +3,58 @@
         let horizontalBarChart;
         let donutChart;
 
+        // ====== PERSISTENCE (LocalStorage) ======
+        const STORAGE_KEY = 'secret-visitor:data:v1';
+        let uploadedExcelData = []; // لتخزين البيانات المرفوعة من Excel
+
+        // ====== SAVE/LOAD FUNCTIONS ======
+        function saveToLocal() {
+            try {
+                const payload = {
+                    excelData: uploadedExcelData,
+                    cardData: cardData,
+                    horizontalChartRawData: horizontalChartRawData,
+                    donutChartRawData: donutChartRawData,
+                    lang: currentLang,
+                    ts: Date.now()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+                console.log('✅ Saved to localStorage.');
+            } catch (err) {
+                console.error('❌ Failed to save:', err);
+            }
+        }
+
+        function loadFromLocal() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return false;
+                const data = JSON.parse(raw);
+
+                if (data.excelData) {
+                    uploadedExcelData = data.excelData;
+                }
+                if (data.cardData) {
+                    Object.assign(cardData, data.cardData);
+                }
+                if (data.horizontalChartRawData) {
+                    Object.assign(horizontalChartRawData, data.horizontalChartRawData);
+                }
+                if (data.donutChartRawData) {
+                    Object.assign(donutChartRawData, data.donutChartRawData);
+                }
+                if (data.lang) {
+                    currentLang = data.lang;
+                    localStorage.setItem('lang', currentLang);
+                }
+                console.log('ℹ️ Loaded from localStorage.');
+                return true;
+            } catch (err) {
+                console.warn('⚠️ Could not load saved data:', err);
+                return false;
+            }
+        }
+
         // Dummy Data for Cards
         const cardData = {
             totalObservationLocations: 5,
@@ -167,8 +219,12 @@
             const departmentSelect = document.getElementById('departmentSelect');
             const departmentOptions = document.getElementById('departmentOptions');
 
-            // Register ChartDataLabels plugin
-            Chart.register(ChartDataLabels);
+            // تحميل البيانات المحفوظة
+            const hasLoadedData = loadFromLocal();
+            if (hasLoadedData && uploadedExcelData.length > 0) {
+                updateExcelDataTable(uploadedExcelData);
+                updateChartsFromExcelData(uploadedExcelData);
+            }
 
             // Initialize Cards
             updateCardData();
@@ -228,7 +284,7 @@
                         }
                     }
                 },
-                plugins: [ChartDataLabels]
+                plugins: []
             });
 
             // Initialize Donut Chart
@@ -265,7 +321,7 @@
                         }
                     }
                 },
-                plugins: [ChartDataLabels]
+                plugins: []
             });
 
             // Initial language setting and chart updates
@@ -417,6 +473,203 @@
                     window.print();
                 });
             }
+
+            // ===== وظائف رفع ملفات Excel =====
+            
+            // دالة لقراءة ملف Excel
+            function readExcelFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            const firstSheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[firstSheetName];
+                            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                            
+                            resolve(jsonData);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    };
+                    
+                    reader.onerror = function(error) {
+                        reject(error);
+                    };
+                    
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            // دالة لمعالجة بيانات Excel
+            function processExcelData(rawData) {
+                if (!rawData || rawData.length < 2) {
+                    throw new Error('الملف لا يحتوي على بيانات صحيحة');
+                }
+
+                const headers = rawData[0];
+                const dataRows = rawData.slice(1);
+                
+                // البحث عن أعمدة البيانات المطلوبة
+                const departmentIndex = headers.findIndex(h => 
+                    h && (h.includes('قسم') || h.includes('Department') || h.includes('القسم')));
+                const locationIndex = headers.findIndex(h => 
+                    h && (h.includes('موقع') || h.includes('Location') || h.includes('الموقع')));
+                const statusIndex = headers.findIndex(h => 
+                    h && (h.includes('حالة') || h.includes('Status') || h.includes('الحالة')));
+                const dateIndex = headers.findIndex(h => 
+                    h && (h.includes('تاريخ') || h.includes('Date') || h.includes('التاريخ')));
+                const notesIndex = headers.findIndex(h => 
+                    h && (h.includes('ملاحظات') || h.includes('Notes') || h.includes('الملاحظات')));
+
+                if (departmentIndex === -1 || locationIndex === -1 || statusIndex === -1) {
+                    throw new Error('الملف لا يحتوي على الأعمدة المطلوبة (القسم، الموقع، الحالة)');
+                }
+
+                const processedData = dataRows.map(row => ({
+                    department: row[departmentIndex] || '',
+                    location: row[locationIndex] || '',
+                    status: row[statusIndex] || '',
+                    date: row[dateIndex] || '',
+                    notes: row[notesIndex] || ''
+                })).filter(item => item.department && item.location); // إزالة الصفوف الفارغة
+
+                return processedData;
+            }
+
+            // دالة لتحديث الجدول
+            function updateExcelDataTable(data) {
+                const tableBody = document.getElementById('excelDataTableBody');
+                
+                if (!data || data.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500" data-ar="لا توجد بيانات" data-en="No data">لا توجد بيانات</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tableBody.innerHTML = data.map(row => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${row.department}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${row.location}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                row.status.includes('منفذ') || row.status.includes('Executed') 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-red-100 text-red-800'
+                            }">
+                                ${row.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${row.date}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">${row.notes}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // دالة لتحديث الرسوم البيانية بناءً على البيانات المرفوعة
+            function updateChartsFromExcelData(data) {
+                if (!data || data.length === 0) return;
+
+                // تجميع البيانات حسب القسم والحالة
+                const departmentStats = {};
+                const locationStats = {};
+
+                data.forEach(row => {
+                    const dept = row.department;
+                    const loc = row.location;
+                    const isExecuted = row.status.includes('منفذ') || row.status.includes('Executed');
+
+                    // إحصائيات القسم
+                    if (!departmentStats[dept]) {
+                        departmentStats[dept] = { executed: 0, notExecuted: 0 };
+                    }
+                    if (isExecuted) {
+                        departmentStats[dept].executed++;
+                    } else {
+                        departmentStats[dept].notExecuted++;
+                    }
+
+                    // إحصائيات الموقع
+                    if (!locationStats[loc]) {
+                        locationStats[loc] = 0;
+                    }
+                    locationStats[loc]++;
+                });
+
+                // تحديث البيانات للرسوم البيانية
+                horizontalChartRawData = departmentStats;
+                donutChartRawData = locationStats;
+
+                // تحديث البطاقات العلوية
+                cardData.totalResponsibleDepartments = Object.keys(departmentStats).length;
+                cardData.totalObservationLocations = Object.keys(locationStats).length;
+                cardData.totalSecretVisitorNotes = data.length;
+
+                // تحديث الرسوم البيانية
+                updateCardData();
+                updateHorizontalBarChart();
+                updateDonutChart();
+            }
+
+            // ===== EVENT LISTENERS =====
+            const importExcelBtn = document.getElementById('importExcelBtn');
+            const saveToServerBtn = document.getElementById('saveToServerBtn');
+            const excelInput = document.getElementById('excelInput');
+
+            // زر استيراد ملفات Excel
+            if (importExcelBtn) {
+                importExcelBtn.addEventListener('click', () => {
+                    excelInput.click();
+                });
+            }
+
+            // معالجة اختيار الملفات
+            if (excelInput) {
+                excelInput.addEventListener('change', async (event) => {
+                    const files = event.target.files;
+                    if (!files || files.length === 0) return;
+
+                    try {
+                        let allData = [];
+                        
+                        for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
+                            console.log(`Processing file: ${file.name}`);
+                            
+                            const rawData = await readExcelFile(file);
+                            const processedData = processExcelData(rawData);
+                            allData = allData.concat(processedData);
+                        }
+
+                        uploadedExcelData = allData;
+                        updateExcelDataTable(allData);
+                        updateChartsFromExcelData(allData);
+                        
+                        // رسالة نجاح
+                        alert(`تم استيراد ${files.length} ملف بنجاح! تم تحميل ${allData.length} صف من البيانات.`);
+                        
+                    } catch (error) {
+                        console.error('خطأ في معالجة الملفات:', error);
+                        alert(`خطأ في معالجة الملفات: ${error.message}`);
+                    } finally {
+                        // إعادة تعيين input
+                        excelInput.value = '';
+                    }
+                });
+            }
+
+            // زر حفظ البيانات
+            if (saveToServerBtn) {
+                saveToServerBtn.addEventListener('click', () => {
+                    saveToLocal();
+                    alert('تم حفظ البيانات محلياً بنجاح!');
+                });
+            }
         });
           const sidebarLinks = document.querySelectorAll('.sidebar-menu .menu-link');
     sidebarLinks.forEach(link => {
@@ -425,3 +678,4 @@
             link.parentElement.classList.add('active'); // Add active to the correct one
         }
     });
+

@@ -12,9 +12,9 @@ function generateComplaintNumber() {
 // وظيفة لتنسيق التاريخ
 function formatSubmissionDate() {
   const now = new Date();
-  const options = { 
-    year: 'numeric', 
-    month: 'long', 
+  const options = {
+    year: 'numeric',
+    month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
@@ -27,7 +27,7 @@ async function getDepartmentName(departmentID) {
   try {
     const response = await fetch(`${API_BASE_URL}/complaints/departments`);
     const data = await response.json();
-    
+
     if (data.success) {
       const department = data.data.find(dept => dept.DepartmentID == departmentID);
       return department ? department.DepartmentName : 'غير محدد';
@@ -43,7 +43,7 @@ async function getComplaintTypeName(typeID) {
   try {
     const response = await fetch(`${API_BASE_URL}/complaints/types`);
     const data = await response.json();
-    
+
     if (data.success) {
       const type = data.data.find(t => t.ComplaintTypeID == typeID);
       return type ? type.TypeName : 'غير محدد';
@@ -59,7 +59,7 @@ async function getSubTypeName(subTypeID, complaintTypeID) {
   try {
     const response = await fetch(`${API_BASE_URL}/complaints/subtypes/${complaintTypeID}`);
     const data = await response.json();
-    
+
     if (data.success) {
       const subType = data.data.find(st => st.SubTypeID == subTypeID);
       return subType ? subType.SubTypeName : 'غير محدد';
@@ -82,7 +82,7 @@ async function populateComplaintData() {
   // تعبئة رقم الشكوى وتاريخ الإرسال
   const complaintNumber = document.getElementById('complaint-number');
   const submissionDate = document.getElementById('submission-date');
-  
+
   if (complaintNumber) {
     // استخدام رقم الشكوى الفعلي من قاعدة البيانات إذا كان متوفراً
     if (data.complaintID) {
@@ -91,24 +91,24 @@ async function populateComplaintData() {
       complaintNumber.textContent = generateComplaintNumber();
     }
   }
-  
+
   if (submissionDate) {
     submissionDate.textContent = formatSubmissionDate();
   }
 
   // جلب الأسماء الفعلية من قاعدة البيانات
-  const departmentName = await getDepartmentName(data.dept);
-  const complaintTypeName = await getComplaintTypeName(data.mainType);
-  const subTypeName = await getSubTypeName(data.subType, data.mainType);
+  const departmentName = await getDepartmentName(data.departmentID);
+  const complaintTypeName = await getComplaintTypeName(data.complaintTypeID);
+  const subTypeName = await getSubTypeName(data.subTypeID, data.complaintTypeID);
 
   // تعبئة بيانات المريض
   const patientInfo = document.querySelector('.section-box');
   if (patientInfo) {
     patientInfo.innerHTML = `
-      <div class="row"><span data-ar="الاسم:" data-en="Name:">الاسم:</span> ${data.name}</div>
-      <div class="row"><span data-ar="رقم الهوية:" data-en="ID Number:">رقم الهوية:</span> ${data.id}</div>
+      <div class="row"><span data-ar="الاسم:" data-en="Name:">الاسم:</span>${data.patientName}</div>
+      <div class="row"><span data-ar="رقم الهوية:" data-en="ID Number:">رقم الهوية:</span> ${data.nationalId}</div>
       <div class="row"><span data-ar="الجنس:" data-en="Gender:">الجنس:</span> ${data.gender}</div>
-      <div class="row"><span data-ar="رقم الجوال:" data-en="Mobile Number:">رقم الجوال:</span> ${data.mobile}</div>
+      <div class="row"><span data-ar="رقم الجوال:" data-en="Mobile Number:">رقم الجوال:</span> ${data.contactNumber}</div>
     `;
   }
 
@@ -119,8 +119,8 @@ async function populateComplaintData() {
       <div class="row"><span data-ar="القسم المتعلق:" data-en="Related Department:">القسم المتعلق:</span> ${departmentName}</div>
       <div class="row"><span data-ar="نوع الشكوى الرئيسي:" data-en="Main Complaint Type:">نوع الشكوى الرئيسي:</span> ${complaintTypeName}</div>
       <div class="row"><span data-ar="التصنيف الفرعي:" data-en="Subcategory:">التصنيف الفرعي:</span> ${subTypeName}</div>
-      <div class="row"><span data-ar="تاريخ الزيارة:" data-en="Visit Date:">تاريخ الزيارة:</span> ${data.date}</div>
-      <div class="row"><span data-ar="الوصف:" data-en="Description:">الوصف:</span> ${data.desc}</div>
+      <div class="row"><span data-ar="تاريخ الزيارة:" data-en="Visit Date:">تاريخ الزيارة:</span> ${data.visitDate}</div>
+      <div class="row"><span data-ar="الوصف:" data-en="Description:">الوصف:</span> ${data.complaintDetails}</div>
     `;
   }
 
@@ -134,7 +134,7 @@ async function populateComplaintData() {
         ${attachment.name} - <a href="#" data-ar="تحميل الملف" data-en="Download">تحميل الملف</a>
       `;
     }).join('<br>');
-    
+
     attachmentBox.innerHTML = attachmentsHTML;
   } else if (attachmentBox) {
     attachmentBox.innerHTML = `
@@ -203,9 +203,9 @@ function goHome() {
 
 function followUp() {
   const data = JSON.parse(localStorage.getItem("complaint"));
-  if (data && data.id) {
-    // حفظ رقم الهوية في localStorage للوصول إليه في صفحة المتابعة
-    localStorage.setItem("patientNationalId", data.id);
+  if (data && data.nationalId) {
+
+    localStorage.setItem("patientNationalId", data.nationalId);
     window.location.href = "/Complaints-followup/all-Complaints.html";
   } else {
     alert("لا توجد بيانات شكوى متاحة للمتابعة");

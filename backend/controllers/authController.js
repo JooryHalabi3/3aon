@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
+const { logActivity } = require('./logsController');
 
 // تسجيل موظف جديد
 const register = async (req, res) => {
@@ -74,6 +75,16 @@ const register = async (req, res) => {
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
+    );
+
+    // تسجيل نشاط التسجيل
+    await logActivity(
+      newEmployee[0].EmployeeID,
+      newEmployee[0].Username,
+      'register',
+      `تم إنشاء حساب جديد: ${fullName} (${newEmployee[0].RoleName})`,
+      req.ip,
+      req.get('User-Agent')
     );
 
     res.status(201).json({
@@ -150,6 +161,16 @@ const login = async (req, res) => {
 
     // إزالة كلمة المرور من الاستجابة
     delete employee.PasswordHash;
+
+    // تسجيل نشاط تسجيل الدخول
+    await logActivity(
+      employee.EmployeeID,
+      employee.Username,
+      'login',
+      `تم تسجيل الدخول بنجاح`,
+      req.ip,
+      req.get('User-Agent')
+    );
 
     res.json({
       success: true,
