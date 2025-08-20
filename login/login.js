@@ -42,11 +42,11 @@ function showTab(tab) {
 
 // ✅ تسجيل الدخول (بدون خانة هوية/إقامة)
 async function login() {
-  const username = document.getElementById("email").value.trim();
+  const loginIdentifier = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  if (!username || !password) {
-    showError("يرجى إدخال اسم المستخدم وكلمة المرور.");
+  if (!loginIdentifier || !password) {
+    showError("يرجى إدخال البريد الإلكتروني أو رقم الموظف وكلمة المرور.");
     return;
   }
 
@@ -54,7 +54,7 @@ async function login() {
     const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ loginIdentifier, password })
     });
     const data = await response.json();
 
