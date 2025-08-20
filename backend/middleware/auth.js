@@ -20,7 +20,7 @@ const authenticateToken = async (req, res, next) => {
             `SELECT e.*, r.RoleName, r.Description as RoleDescription, d.DepartmentName
              FROM employees e
              JOIN roles r ON e.RoleID = r.RoleID
-             LEFT JOIN departments d ON e.department_id = d.DepartmentID
+             LEFT JOIN departments d ON e.DepartmentID = d.DepartmentID
              WHERE e.EmployeeID = ?`,
             [decoded.employeeID]
         );
@@ -38,7 +38,7 @@ const authenticateToken = async (req, res, next) => {
         req.user = {
             ...user,
             role: user.RoleName,
-            departmentId: user.department_id,
+            departmentId: user.DepartmentID,
             departmentName: user.DepartmentName,
             permissions: getUserPermissions(user.RoleName)
         };

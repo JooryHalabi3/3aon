@@ -18,14 +18,15 @@ const checkAdminPermissions = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    console.log('🔍 تم فك تشفير Token:', decoded.employeeId);
+    console.log('🔍 تم فك تشفير Token:', decoded.employeeID);
 
     const [rows] = await pool.execute(
-      `SELECT e.EmployeeID, e.FullName, e.Email, e.RoleID, r.RoleName 
+      `SELECT e.EmployeeID, e.FullName, e.Email, e.RoleID, e.DepartmentID, r.RoleName, d.DepartmentName
        FROM employees e 
        LEFT JOIN roles r ON e.RoleID = r.RoleID 
+       LEFT JOIN departments d ON e.DepartmentID = d.DepartmentID
        WHERE e.EmployeeID = ?`,
-      [decoded.employeeId]
+      [decoded.employeeID]
     );
 
     if (rows.length === 0) {
@@ -42,7 +43,9 @@ const checkAdminPermissions = async (req, res, next) => {
       EmployeeID: user.EmployeeID, 
       FullName: user.FullName, 
       RoleID: user.RoleID, 
-      RoleName: user.RoleName 
+      RoleName: user.RoleName,
+      DepartmentID: user.DepartmentID,
+      DepartmentName: user.DepartmentName
     });
 
     // السماح لـ Admin (RoleID = 2) و Super Admin (RoleID = 1)
@@ -63,7 +66,9 @@ const checkAdminPermissions = async (req, res, next) => {
       fullName: user.FullName, 
       email: user.Email, 
       roleID: user.RoleID, 
-      roleName: user.RoleName 
+      roleName: user.RoleName,
+      departmentID: user.DepartmentID,
+      departmentName: user.DepartmentName
     };
     next();
   } catch (error) {

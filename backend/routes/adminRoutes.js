@@ -573,4 +573,275 @@ router.delete('/employees/:id', async (req, res) => {
   }
 });
 
+// الحصول على موظفي القسم الحالي للمدير
+router.get('/department/employees', async (req, res) => {
+  try {
+    const adminId = req.user.employeeID;
+    const adminDepartmentId = req.user.departmentID;
+
+    // التحقق من أن المدير لديه قسم محدد
+    if (!adminDepartmentId) {
+      return res.status(400).json({
+        success: false,
+        message: 'المدير يجب أن يكون مرتبط بقسم معين'
+      });
+    }
+
+    const [rows] = await pool.execute(`
+      SELECT 
+        e.EmployeeID,
+        e.FullName,
+        e.Email,
+        e.PhoneNumber,
+        e.RoleID,
+        r.RoleName,
+        e.JoinDate as HireDate,
+        'active' as Status
+      FROM employees e
+      LEFT JOIN roles r ON e.RoleID = r.RoleID
+      WHERE e.DepartmentID = ? AND e.Status = 'active'
+      ORDER BY e.FullName
+    `, [adminDepartmentId]);
+
+    res.json({
+      success: true,
+      data: rows
+    });
+  } catch (error) {
+    console.error('خطأ في جلب موظفي القسم:', error);
+    res.status(500).json({
+      success: false,
+      message: 'خطأ في الخادم'
+    });
+  }
+});
+
+// الحصول على شكاوى القسم الحالي للمدير
+router.get('/department/complaints', async (req, res) => {
+  try {
+    const adminId = req.user.employeeID;
+    const adminDepartmentId = req.user.departmentID;
+
+    // التحقق من أن المدير لديه قسم محدد
+    if (!adminDepartmentId) {
+      return res.status(400).json({
+        success: false,
+        message: 'المدير يجب أن يكون مرتبط بقسم معين'
+      });
+    }
+
+    const [rows] = await pool.execute(`
+      SELECT 
+        c.ComplaintID,
+        c.ComplaintDate,
+        c.ComplaintDetails,
+        c.CurrentStatus,
+        c.Priority,
+        c.MedicalRecordNumber,
+        p.FullName as PatientName,
+        p.NationalID as PatientNationalID,
+        e.FullName as EmployeeName,
+        ct.TypeName as ComplaintType,
+        cst.SubTypeName as ComplaintSubType,
+        d.DepartmentName,
+        ca.AssignedTo,
+        ca.AssignedAt,
+        assigned_emp.FullName as AssignedEmployeeName
+      FROM complaints c
+      LEFT JOIN patients p ON c.PatientID = p.PatientID
+      LEFT JOIN employees e ON c.EmployeeID = e.EmployeeID
+      LEFT JOIN complainttypes ct ON c.ComplaintTypeID = ct.ComplaintTypeID
+      LEFT JOIN complaintsubtypes cst ON c.SubTypeID = cst.SubTypeID
+      LEFT JOIN departments d ON c.DepartmentID = d.DepartmentID
+      LEFT JOIN complaint_assignments ca ON c.ComplaintID = ca.ComplaintID AND ca.Status = 'assigned'
+      LEFT JOIN employees assigned_emp ON ca.AssignedTo = assigned_emp.EmployeeID
+      WHERE c.DepartmentID = ?
+      ORDER BY c.ComplaintDate DESC
+    `, [adminDepartmentId]);
+
+    res.json({
+      success: true,
+      data: rows
+    });
+  } catch (error) {
+    console.error('خطأ في جلب شكاوى القسم:', error);
+    res.status(500).json({
+      success: false,
+      message: 'خطأ في الخادم'
+    });
+  }
+});
+
+// تعيين شكوى لموظف في نفس القسم
+router.post('/complaints/:complaintId/assign', async (req, res) => {
+  try {
+    const complaintId = req.params.complaintId;
+    const { employeeId, reason } = req.body;
+    const adminId = req.user.employeeID;
+    const adminDepartmentId = req.user.departmentID;
+
+    // التحقق من وجود الشكوى
+    const [complaintRows] = await pool.execute(
+      'SELECT * FROM complaints WHERE ComplaintID = ? AND DepartmentID = ?',
+      [complaintId, adminDepartmentId]
+    );
+
+    if (complaintRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'الشكوى غير موجودة أو لا تنتمي لقسمك'
+      });
+    }
+
+    // التحقق من أن الموظف ينتمي لنفس القسم
+    const [employeeRows] = await pool.execute(
+      'SELECT * FROM employees WHERE EmployeeID = ? AND DepartmentID = ? AND Status = "active"',
+      [employeeId, adminDepartmentId]
+    );
+
+    if (employeeRows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'الموظف غير موجود أو لا ينتمي لقسمك'
+      });
+    }
+
+    // إلغاء التعيينات السابقة للشكوى
+    await pool.execute(
+      'UPDATE complaint_assignments SET Status = "reassigned" WHERE ComplaintID = ? AND Status = "assigned"',
+      [complaintId]
+    );
+
+    // إنشاء تعيين جديد
+    await pool.execute(
+      'INSERT INTO complaint_assignments (ComplaintID, AssignedBy, AssignedTo, Reason, Status, AssignedAt) VALUES (?, ?, ?, ?, "assigned", NOW())',
+      [complaintId, adminId, employeeId, reason || null]
+    );
+
+    // تحديث حالة الشكوى
+    await pool.execute(
+      'UPDATE complaints SET CurrentStatus = "قيد المعالجة" WHERE ComplaintID = ?',
+      [complaintId]
+    );
+
+    // إضافة سجل في السجل
+    await pool.execute(
+      'INSERT INTO activitylogs (EmployeeID, ActivityType, Description, IPAddress, RelatedID, RelatedType, CreatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+      [adminId, 'assign_complaint', `تم تعيين الشكوى ${complaintId} إلى ${employeeRows[0].FullName}`, req.ip || 'unknown', complaintId, 'complaint']
+    );
+
+    res.json({
+      success: true,
+      message: 'تم تعيين الشكوى بنجاح',
+      data: {
+        complaintId: complaintId,
+        assignedTo: employeeId,
+        assignedEmployeeName: employeeRows[0].FullName,
+        assignedAt: new Date()
+      }
+    });
+  } catch (error) {
+    console.error('خطأ في تعيين الشكوى:', error);
+    res.status(500).json({
+      success: false,
+      message: 'خطأ في الخادم'
+    });
+  }
+});
+
+// الحصول على تفاصيل شكوى محددة مع معلومات التعيين
+router.get('/complaints/:complaintId/details', async (req, res) => {
+  try {
+    const complaintId = req.params.complaintId;
+    const adminDepartmentId = req.user.departmentID;
+
+    const [rows] = await pool.execute(`
+      SELECT 
+        c.*,
+        p.FullName as PatientName,
+        p.NationalID as PatientNationalID,
+        e.FullName as EmployeeName,
+        ct.TypeName as ComplaintType,
+        cst.SubTypeName as ComplaintSubType,
+        d.DepartmentName,
+        ca.AssignedTo,
+        ca.AssignedAt,
+        ca.Reason as AssignmentReason,
+        assigned_emp.FullName as AssignedEmployeeName,
+        assigned_emp.Email as AssignedEmployeeEmail
+      FROM complaints c
+      LEFT JOIN patients p ON c.PatientID = p.PatientID
+      LEFT JOIN employees e ON c.EmployeeID = e.EmployeeID
+      LEFT JOIN complainttypes ct ON c.ComplaintTypeID = ct.ComplaintTypeID
+      LEFT JOIN complaintsubtypes cst ON c.SubTypeID = cst.SubTypeID
+      LEFT JOIN departments d ON c.DepartmentID = d.DepartmentID
+      LEFT JOIN complaint_assignments ca ON c.ComplaintID = ca.ComplaintID AND ca.Status = 'assigned'
+      LEFT JOIN employees assigned_emp ON ca.AssignedTo = assigned_emp.EmployeeID
+      WHERE c.ComplaintID = ? AND c.DepartmentID = ?
+    `, [complaintId, adminDepartmentId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'الشكوى غير موجودة أو لا تنتمي لقسمك'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: rows[0]
+    });
+  } catch (error) {
+    console.error('خطأ في جلب تفاصيل الشكوى:', error);
+    res.status(500).json({
+      success: false,
+      message: 'خطأ في الخادم'
+    });
+  }
+});
+
+// الحصول على سجل تعيينات الشكوى
+router.get('/complaints/:complaintId/assignments', async (req, res) => {
+  try {
+    const complaintId = req.params.complaintId;
+    const adminDepartmentId = req.user.departmentID;
+
+    // التحقق من أن الشكوى تنتمي لقسم المدير
+    const [complaintCheck] = await pool.execute(
+      'SELECT DepartmentID FROM complaints WHERE ComplaintID = ?',
+      [complaintId]
+    );
+
+    if (complaintCheck.length === 0 || complaintCheck[0].DepartmentID !== adminDepartmentId) {
+      return res.status(403).json({
+        success: false,
+        message: 'لا يمكنك الوصول لهذه الشكوى'
+      });
+    }
+
+    const [rows] = await pool.execute(`
+      SELECT 
+        ca.*,
+        assigned_by.FullName as AssignedByName,
+        assigned_to.FullName as AssignedToName
+      FROM complaint_assignments ca
+      LEFT JOIN employees assigned_by ON ca.AssignedBy = assigned_by.EmployeeID
+      LEFT JOIN employees assigned_to ON ca.AssignedTo = assigned_to.EmployeeID
+      WHERE ca.ComplaintID = ?
+      ORDER BY ca.AssignedAt DESC
+    `, [complaintId]);
+
+    res.json({
+      success: true,
+      data: rows
+    });
+  } catch (error) {
+    console.error('خطأ في جلب سجل التعيينات:', error);
+    res.status(500).json({
+      success: false,
+      message: 'خطأ في الخادم'
+    });
+  }
+});
+
 module.exports = router;
