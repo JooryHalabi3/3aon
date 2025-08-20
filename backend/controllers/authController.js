@@ -111,17 +111,17 @@ const register = async (req, res) => {
 // تسجيل الدخول
 const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { loginIdentifier, password } = req.body;
 
     // التحقق من البيانات المطلوبة
-    if (!username || !password) {
+    if (!loginIdentifier || !password) {
       return res.status(400).json({ 
         success: false, 
-        message: 'اسم المستخدم وكلمة المرور مطلوبان' 
+        message: 'البريد الإلكتروني أو رقم الموظف وكلمة المرور مطلوبان' 
       });
     }
 
-    // البحث عن المستخدم
+    // البحث عن المستخدم باستخدام البريد الإلكتروني أو رقم الموظف
     const [employees] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.PasswordHash, e.Email, 
               e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID, 
@@ -129,14 +129,14 @@ const login = async (req, res) => {
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
        LEFT JOIN departments d ON e.department_id = d.DepartmentID
-       WHERE e.Username = ?`,
-      [username]
+       WHERE e.Email = ? OR e.Username = ?`,
+      [loginIdentifier, loginIdentifier]
     );
 
     if (employees.length === 0) {
       return res.status(401).json({ 
         success: false, 
-        message: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
+        message: 'البريد الإلكتروني أو رقم الموظف أو كلمة المرور غير صحيحة' 
       });
     }
 
@@ -148,7 +148,7 @@ const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ 
         success: false, 
-        message: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
+        message: 'البريد الإلكتروني أو رقم الموظف أو كلمة المرور غير صحيحة' 
       });
     }
 
