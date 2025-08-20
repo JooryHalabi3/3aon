@@ -1,5 +1,6 @@
 // إعدادات API
 const API_BASE_URL = 'http://localhost:3001/api/auth';
+const COMPLAINTS_API_URL = 'http://localhost:3001/api/complaints';
 
 // رسائل
 function showError(message) { alert(message); }
