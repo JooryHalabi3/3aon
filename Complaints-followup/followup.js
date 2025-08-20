@@ -9,8 +9,12 @@ const API_BASE_URL = 'http://localhost:3001/api';
 async function handleSubmit(e) {
   e.preventDefault();
 
-  const name = document.querySelector('input[data-ar-placeholder="ادخل اسم المريض الكامل"]').value;
-  const id = document.querySelector('input[data-ar-placeholder="رقم الهوية / الإقامة"]').value;
+  const name = document.getElementById('patientName').value;
+  const id = document.getElementById('fileNumber').value;
+  
+  console.log('بيانات النموذج المدخلة:');
+  console.log('- الاسم:', name);
+  console.log('- رقم الملف:', id);
 
   if (!name || !id) {
     alert("يرجى تعبئة جميع الحقول المطلوبة");
@@ -27,20 +31,61 @@ async function handleSubmit(e) {
     // التحقق من هوية المريض عبر API الجديد
     const verifyResponse = await fetch(`${API_BASE_URL}/complaints/verify-patient/${id}`);
     const verifyData = await verifyResponse.json();
+    
+    console.log('استجابة API التحقق من المريض:', verifyData);
 
     if (verifyData.success) {
       // التحقق من تطابق الاسم
       const patientName = verifyData.data.patient.name.toLowerCase().trim();
       const enteredName = name.toLowerCase().trim();
       
-      if (patientName === enteredName || patientName.includes(enteredName) || enteredName.includes(patientName)) {
-        // تخزين البيانات في localStorage
-        localStorage.setItem('patientName', verifyData.data.patient.name);
-        localStorage.setItem('patientId', id);
-        localStorage.setItem('patientNationalId', id);
+      console.log('اسم المريض من قاعدة البيانات:', verifyData.data.patient.name);
+      console.log('الاسم المدخل من المستخدم:', name);
+      console.log('اسم المريض بعد المعالجة:', patientName);
+      console.log('الاسم المدخل بعد المعالجة:', enteredName);
+      
+      // تحقق أكثر دقة من تطابق الاسم
+      // أولاً: التحقق من التطابق الكامل
+      if (patientName === enteredName) {
+        // تطابق كامل - متابعة
+      } else {
+        // التحقق من التطابق الجزئي مع شروط أكثر صرامة
+        const patientWords = patientName.split(' ').filter(word => word.length > 2);
+        const enteredWords = enteredName.split(' ').filter(word => word.length > 2);
+        
+        // التحقق من أن 70% على الأقل من الكلمات متطابقة
+        const matchingWords = patientWords.filter(word => 
+          enteredWords.some(enteredWord => 
+            enteredWord.includes(word) || word.includes(enteredWord)
+          )
+        );
+        
+        const matchPercentage = matchingWords.length / Math.max(patientWords.length, enteredWords.length);
+        
+        console.log('كلمات المريض:', patientWords);
+        console.log('كلمات المستخدم:', enteredWords);
+        console.log('الكلمات المتطابقة:', matchingWords);
+        console.log('نسبة التطابق:', matchPercentage);
+        
+        if (matchPercentage < 0.7) {
+          alert("الاسم المدخل لا يتطابق مع البيانات المسجلة. يرجى التأكد من صحة الاسم ورقم الهوية.");
+          return;
+                }
+      }
+      
+      console.log('تم التحقق من الاسم بنجاح - الانتقال لصفحة الشكاوى');
+      
+      // تخزين البيانات في localStorage
+      // حفظ الاسم المدخل من المستخدم بدلاً من الاسم من قاعدة البيانات
+      localStorage.setItem('patientName', name);
+      localStorage.setItem('patientId', id);
+      localStorage.setItem('patientNationalId', id);
         
         // التحقق من وجود شكاوى
+        console.log('عدد الشكاوى للمريض:', verifyData.data.totalComplaints);
+        
         if (verifyData.data.totalComplaints > 0) {
+          console.log('تم العثور على شكاوى - الانتقال لصفحة الشكاوى');
           // الانتقال إلى صفحة الشكاوى
           window.location.href = "/Complaints-followup/all-complaints.html";
         } else {
@@ -59,7 +104,10 @@ async function handleSubmit(e) {
     // إعادة تفعيل الزر
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
+    console.log('تم إعادة تفعيل زر الإرسال');
   }
+  
+  console.log('=== انتهت معالجة النموذج ===');
 }
 
 
@@ -92,6 +140,8 @@ function applyLanguage(lang) {
 
   // تغيير الخط
   document.body.style.fontFamily = lang === 'ar' ? "'Tajawal', sans-serif" : "serif";
+  
+  console.log('تم تطبيق اللغة في صفحة المتابعة بنجاح');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -104,5 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
       applyLanguage(newLang);
     });
   }
+  
+  console.log('تم تحميل صفحة متابعة الشكاوى بنجاح');
+  console.log('=== انتهى تحميل صفحة المتابعة ===');
 });
 
