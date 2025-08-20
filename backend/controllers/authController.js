@@ -45,7 +45,7 @@ const register = async (req, res) => {
 
     // إدخال الموظف الجديد
     const [result] = await pool.execute(
-      `INSERT INTO Employees (FullName, Username, PasswordHash, Email, PhoneNumber, RoleID, Specialty, department_id, NationalID_Iqama) 
+      `INSERT INTO Employees (FullName, Username, PasswordHash, Email, PhoneNumber, RoleID, Specialty, DepartmentID, NationalID_Iqama) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [fullName, username, passwordHash, email, phoneNumber, roleID, specialty, departmentID, nationalID]
     );
@@ -56,7 +56,7 @@ const register = async (req, res) => {
               e.Specialty, e.JoinDate, r.RoleName, r.RoleID, d.DepartmentName
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
-       LEFT JOIN departments d ON e.department_id = d.DepartmentID
+       LEFT JOIN departments d ON e.DepartmentID = d.DepartmentID
        WHERE e.EmployeeID = ?`,
       [result.insertId]
     );
@@ -124,7 +124,7 @@ const login = async (req, res) => {
     // البحث عن المستخدم باستخدام البريد الإلكتروني أو رقم الموظف فقط
     const [employees] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.PasswordHash, e.Email, 
-              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID
+              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID, d.DepartmentName
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
        WHERE e.Email = ? OR e.Username = ?`,
