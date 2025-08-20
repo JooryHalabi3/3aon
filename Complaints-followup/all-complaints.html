@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة شكاوى المرضى - مستشفى الملك عبد العزيز</title>
+    <title>نظام إدارة شكاوى المرضى - شكاوىي</title>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="all-complaints.css">
@@ -22,12 +22,17 @@
     </div>   
   </header>
 
+  <!-- عنوان الصفحة -->
+  <div class="page-title" style="text-align: center; margin: 100px 0 20px 0; color: #333;">
+    <h1 data-ar="شكاوىي المسجلة" data-en="My Registered Complaints">شكاوىي المسجلة</h1>
+    <p data-ar="عرض جميع الشكاوى التي قمت بتسجيلها" data-en="View all complaints you have registered">عرض جميع الشكاوى التي قمت بتسجيلها</p>
+  </div>
 
 <section class="patient-summary-new">
   <div class="info-group">
     <i class="fas fa-user"></i>
     <div class="info-text">
-      <span class="label" data-ar="اسم المريض" data-en="Patient Name">اسم المريض</span>
+      <span class="label" data-ar="اسم الموظف" data-en="Employee Name">اسم الموظف</span>
       <span class="value" id="patientName">جاري التحميل...</span>
     </div>
   </div>
@@ -35,7 +40,7 @@
   <div class="info-group">
     <i class="fas fa-file-alt"></i>
     <div class="info-text">
-      <span class="label" data-ar="رقم الملف" data-en="File Number">رقم الملف</span>
+      <span class="label" data-ar="رقم الموظف" data-en="Employee ID">رقم الموظف</span>
       <span class="value" id="patientId">جاري التحميل...</span>
     </div>
   </div>
