@@ -121,14 +121,12 @@ const login = async (req, res) => {
       });
     }
 
-    // البحث عن المستخدم باستخدام البريد الإلكتروني أو رقم الموظف
+    // البحث عن المستخدم باستخدام البريد الإلكتروني أو رقم الموظف فقط
     const [employees] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.PasswordHash, e.Email, 
-              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID, 
-              e.department_id, d.DepartmentName
+              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
-       LEFT JOIN departments d ON e.department_id = d.DepartmentID
        WHERE e.Email = ? OR e.Username = ?`,
       [loginIdentifier, loginIdentifier]
     );
