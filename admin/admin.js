@@ -11,6 +11,7 @@
             }
         });
     });
+    
         // تقليل عدد الإشعارات عند الضغط
     let notifBtn = document.getElementById("notif-btn");
     let notifCount = document.getElementById("notif-count");
