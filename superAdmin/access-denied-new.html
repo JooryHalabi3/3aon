@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رفض الوصول - Super Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .access-denied-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .error-title {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .error-message {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.8;
+            font-size: 18px;
+        }
+
+        .error-code {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            color: #e74c3c;
+            font-weight: bold;
+            border-left: 4px solid #e74c3c;
+            font-size: 16px;
+        }
+
+        .role-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+
+        .role-info strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .permissions-list {
+            background: #d1ecf1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #17a2b8;
+            text-align: right;
+        }
+
+        .permissions-list h4 {
+            color: #0c5460;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .permissions-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .permissions-list li {
+            padding: 5px 0;
+            color: #0c5460;
+            font-size: 14px;
+        }
+
+        .permissions-list li::before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .contact-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .security-note {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .access-denied-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .error-title {
+                font-size: 24px;
+            }
+            
+            .error-message {
+                font-size: 16px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="access-denied-container">
+        <div class="error-icon">🚫</div>
+        <h1 class="error-title">رفض الوصول</h1>
+        
+        <p class="error-message">
+            عذراً، لا يمكنك الوصول إلى هذه الصفحة.<br>
+            هذه المنطقة مخصصة لـ <strong>Super Admin</strong> فقط.
+        </p>
+
+        <div class="error-code" id="errorCode">
+            خطأ 403: Forbidden - Access Denied
+        </div>
+
+        <div class="role-info" id="roleInfo">
+            <strong>دورك الحالي:</strong>
+            <span id="currentRole">غير محدد</span>
+        </div>
+
+        <div class="permissions-list">
+            <h4>صلاحيات Super Admin تشمل:</h4>
+            <ul>
+                <li>إدارة جميع المستخدمين والأدوار</li>
+                <li>الوصول إلى سجلات النظام الكاملة</li>
+                <li>استرجاع البيانات المحذوفة</li>
+                <li>تتبع جميع الشكاوى والطلبات</li>
+                <li>عرض الدليل التنظيمي الكامل</li>
+                <li>إدارة صلاحيات النظام</li>
+                <li>الوصول إلى تقارير متقدمة</li>
+            </ul>
+        </div>
+
+        <div class="security-note">
+            <strong>ملاحظة أمنية:</strong> تم تسجيل محاولة الوصول هذه لأغراض الأمان. 
+            إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع مدير النظام.
+        </div>
+
+        <div class="action-buttons">
+            <a href="/login/login.html" class="btn btn-primary">
+                🔐 تسجيل الدخول
+            </a>
+            <button onclick="window.history.back()" class="btn btn-secondary">
+                ↩️ العودة للصفحة السابقة
+            </button>
+            <button onclick="goToHomePage()" class="btn btn-success">
+                🏠 الصفحة الرئيسية
+            </button>
+        </div>
+
+        <div class="contact-info">
+            <p><strong>تحتاج مساعدة؟</strong></p>
+            <p>تواصل مع مدير النظام أو قسم تقنية المعلومات للحصول على الصلاحيات المطلوبة.</p>
+        </div>
+    </div>
+
+    <script>
+        // عرض معلومات المستخدم الحالي
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const currentRoleElement = document.getElementById('currentRole');
+            const errorCodeElement = document.getElementById('errorCode');
+            
+            if (user.RoleName) {
+                currentRoleElement.textContent = user.RoleName;
+                errorCodeElement.textContent = `خطأ 403: دورك الحالي (${user.RoleName}) لا يسمح بالوصول لهذه الصفحة`;
+            }
+
+            // إذا كان المستخدم Super Admin، قم بتوجيهه للصفحة المطلوبة
+            if (user.RoleID === 1) {
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const targetPage = urlParams.get('page') || 'superAdmin.html';
+                    window.location.href = `/superAdmin/${targetPage}`;
+                }, 2000);
+            }
+        });
+
+        function goToHomePage() {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            // توجيه المستخدم حسب دوره
+            if (user.RoleID === 1) {
+                window.location.href = '/superAdmin/superAdmin.html';
+            } else if (user.RoleID === 2) {
+                window.location.href = '/admin/admin.html';
+            } else {
+                window.location.href = '/DashBoard/overview.html';
+            }
+        }
+
+        // تسجيل محاولة الوصول (للأمان)
+        async function logAccessAttempt() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    await fetch('http://localhost:3001/api/logs/access-denied', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            page: window.location.pathname,
+                            timestamp: new Date().toISOString(),
+                            userAgent: navigator.userAgent
+                        })
+                    });
+                }
+            } catch (error) {
+                console.error('خطأ في تسجيل محاولة الوصول:', error);
+            }
+        }
+
+        // تسجيل محاولة الوصول عند تحميل الصفحة
+        logAccessAttempt();
+    </script>
+</body>
+</html>

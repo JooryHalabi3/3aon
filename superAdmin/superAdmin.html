@@ -11,10 +11,11 @@
 <!-- خط إنجليزي: Merriweather (serif) -->
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="superAdmin.css">
 </head>
 
-<body>  
+<body>
+  
     <div class="back-button">
       <a href="#" onclick="goBack()">
         <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
@@ -53,36 +54,35 @@
         <img src="/icon/list.png" alt="السجلات">
         <h3 data-ar="السجلات" data-en="Logs">السجلات</h3>
         <p data-ar="الاطلاع على سجلات العمليات والشكاوى" data-en="View operation and complaint logs">الاطلاع على سجلات العمليات والشكاوى</p>
-        <a href="/superDamin/logs.html" class="btn" data-ar="عرض السجلات" data-en="View Logs">عرض السجلات</a>
+        <a href="/superAdmin/logs.html" class="btn" data-ar="عرض السجلات" data-en="View Logs">عرض السجلات</a>
       </div>
 
       <div class="card">
         <img src="/icon/group.png" alt="الصلاحيات">
         <h3 data-ar="الصلاحيات" data-en="Permissions">الصلاحيات</h3>
         <p data-ar="إدارة صلاحيات الوصول داخل النظام" data-en="Manage access permissions within the system">إدارة صلاحيات الوصول داخل النظام</p>
-        <a href="/superDamin/permissions.html" class="btn" data-ar="إدارة الصلاحيات" data-en="Manage Permissions">إدارة الصلاحيات</a>
+        <a href="/superAdmin/permissions.html" class="btn" data-ar="إدارة الصلاحيات" data-en="Manage Permissions">إدارة الصلاحيات</a>
       </div>
 
-      <!-- الصفحات الجديدة -->
+      <div class="card">
+        <img src="/icon/status.png" alt="تتبع الشكاوى">
+        <h3 data-ar="تتبع الشكاوى" data-en="Complaint Tracking">تتبع الشكاوى</h3>
+        <p data-ar="متابعة حالة الشكاوى والإشعارات والتأخيرات" data-en="Track complaint status, notifications and delays">متابعة حالة الشكاوى والإشعارات والتأخيرات</p>
+        <a href="/superAdmin/complaint-tracking.html" class="btn" data-ar="تتبع الشكاوى" data-en="Track Complaints">تتبع الشكاوى</a>
+      </div>
+
+      <div class="card">
+        <img src="/icon/Staaff.png" alt="الموظفين">
+        <h3 data-ar="الموظفين" data-en="Employees">الموظفين</h3>
+        <p data-ar="عرض معلومات الموظفين وأقسامهم والمديرين" data-en="View employee information, departments and managers">عرض معلومات الموظفين وأقسامهم والمديرين</p>
+        <a href="/superAdmin/organizational-directory.html" class="btn" data-ar="عرض الموظفين" data-en="View Employees">عرض الموظفين</a>
+      </div>
+
       <div class="card">
         <img src="/icon/savew.png" alt="استرجاع المحذوفات">
         <h3 data-ar="استرجاع المحذوفات" data-en="Recycle Bin">استرجاع المحذوفات</h3>
         <p data-ar="استرجاع البيانات المحذوفة من النظام" data-en="Restore deleted data from the system">استرجاع البيانات المحذوفة من النظام</p>
-        <a href="/superDamin/recycle-bin.html" class="btn" data-ar="استرجاع البيانات" data-en="Restore Data">استرجاع البيانات</a>
-      </div>
-
-      <div class="card">
-        <img src="/icon/group.png" alt="الدليل التنظيمي">
-        <h3 data-ar="الدليل التنظيمي" data-en="Organizational Directory">الدليل التنظيمي</h3>
-        <p data-ar="عرض هيكل الموظفين والأقسام والمديرين" data-en="View employee structure, departments and managers">عرض هيكل الموظفين والأقسام والمديرين</p>
-        <a href="/superDamin/organizational-directory.html" class="btn" data-ar="عرض الدليل" data-en="View Directory">عرض الدليل</a>
-      </div>
-
-      <div class="card">
-        <img src="/icon/track.png" alt="تتبع الشكاوى">
-        <h3 data-ar="تتبع الشكاوى والإشعارات" data-en="Complaint Tracking">تتبع الشكاوى والإشعارات</h3>
-        <p data-ar="متابعة حالة الشكاوى والإشعارات والتأخيرات" data-en="Track complaint status, notifications and delays">متابعة حالة الشكاوى والإشعارات والتأخيرات</p>
-        <a href="/superDamin/complaint-tracking.html" class="btn" data-ar="تتبع الشكاوى" data-en="Track Complaints">تتبع الشكاوى</a>
+        <a href="/superAdmin/recycle-bin.html" class="btn" data-ar="استرجاع البيانات" data-en="Restore Data">استرجاع البيانات</a>
       </div>
 
       <!-- الوصول لصفحات الأدوار الأخرى -->
@@ -102,7 +102,11 @@
 
     </section>
   </main>
-<script src="admin.js"></script>
+
+
+
+<script src="superAdminProtection.js"></script>
+<script src="superAdmin.js"></script>
 </body>
 
 </html>

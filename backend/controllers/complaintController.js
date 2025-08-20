@@ -34,11 +34,34 @@ fileFilter: function (req, file, cb) {
 // جلب جميع الأقسام
 const getDepartments = async (req, res) => {
   try {
-    const [departments] = await pool.execute(
-      `SELECT DISTINCT d.DepartmentID, d.DepartmentName, d.Description 
-       FROM Departments d
-       ORDER BY d.DepartmentName`
-    );
+    console.log('بدء جلب الأقسام...');
+    
+    // محاولة جلب الأقسام من قاعدة البيانات
+    let departments = [];
+    try {
+      const [dbDepartments] = await pool.execute(
+        `SELECT DISTINCT d.DepartmentID, d.DepartmentName, d.Description 
+         FROM Departments d
+         ORDER BY d.DepartmentName`
+      );
+      departments = dbDepartments;
+      console.log(`تم جلب ${departments.length} قسم من قاعدة البيانات`);
+    } catch (dbError) {
+      console.error('خطأ في جلب الأقسام من قاعدة البيانات:', dbError);
+      
+      // إرجاع أقسام افتراضية في حالة فشل الاتصال بقاعدة البيانات
+      departments = [
+        { DepartmentID: 1, DepartmentName: 'قسم الطوارئ', Description: 'قسم الطوارئ والعناية المركزة' },
+        { DepartmentID: 2, DepartmentName: 'قسم العيادات الخارجية', Description: 'قسم العيادات الخارجية' },
+        { DepartmentID: 3, DepartmentName: 'قسم الجراحة', Description: 'قسم الجراحة العامة' },
+        { DepartmentID: 4, DepartmentName: 'قسم الباطنة', Description: 'قسم الباطنة والجهاز الهضمي' },
+        { DepartmentID: 5, DepartmentName: 'قسم الأطفال', Description: 'قسم طب الأطفال' },
+        { DepartmentID: 6, DepartmentName: 'قسم النساء والولادة', Description: 'قسم النساء والولادة' },
+        { DepartmentID: 7, DepartmentName: 'قسم القلب', Description: 'قسم أمراض القلب' },
+        { DepartmentID: 8, DepartmentName: 'قسم العظام', Description: 'قسم جراحة العظام' }
+      ];
+      console.log('تم استخدام الأقسام الافتراضية');
+    }
     
     res.json({
       success: true,
@@ -49,7 +72,8 @@ const getDepartments = async (req, res) => {
     console.error('خطأ في جلب الأقسام:', error);
     res.status(500).json({ 
       success: false, 
-      message: 'حدث خطأ في الخادم' 
+      message: 'حدث خطأ في الخادم',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

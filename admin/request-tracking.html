@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تتبع الطلبات - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="request-tracking.css">
+</head>
+<body>
+  <div class="back-button">
+    <a href="/admin/admin.html">
+      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
+      <span data-ar="عودة" data-en="Back">عودة</span>
+    </a>
+  </div>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title" data-ar="تتبع الطلبات - Admin" data-en="Request Tracking - Admin">تتبع الطلبات - Admin</div>
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
+    </div>
+  </header>
+
+  <br> <br><br> <br> <br><br>
+  <main class="main-content">
+    <!-- إحصائيات سريعة -->
+    <div class="stats-section">
+      <div class="stat-card">
+        <div class="stat-number" id="totalRequests">0</div>
+        <div class="stat-label" data-ar="إجمالي الطلبات" data-en="Total Requests">إجمالي الطلبات</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="pendingRequests">0</div>
+        <div class="stat-label" data-ar="الطلبات المعلقة" data-en="Pending Requests">الطلبات المعلقة</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="urgentRequests">0</div>
+        <div class="stat-label" data-ar="طلبات عاجلة" data-en="Urgent Requests">طلبات عاجلة</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="completedRequests">0</div>
+        <div class="stat-label" data-ar="الطلبات المكتملة" data-en="Completed Requests">الطلبات المكتملة</div>
+      </div>
+    </div>
+
+    <!-- فلاتر البحث -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label data-ar="حالة الطلب:" data-en="Request Status:">حالة الطلب:</label>
+        <select id="statusFilter">
+          <option value="" data-ar="جميع الحالات" data-en="All Status">جميع الحالات</option>
+          <option value="pending" data-ar="معلق" data-en="Pending">معلق</option>
+          <option value="in_progress" data-ar="قيد المعالجة" data-en="In Progress">قيد المعالجة</option>
+          <option value="completed" data-ar="مكتمل" data-en="Completed">مكتمل</option>
+          <option value="rejected" data-ar="مرفوض" data-en="Rejected">مرفوض</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="نوع الشكوى:" data-en="Complaint Type:">نوع الشكوى:</label>
+        <select id="typeFilter">
+          <option value="" data-ar="جميع الأنواع" data-en="All Types">جميع الأنواع</option>
+          <option value="medical" data-ar="شكوى طبية" data-en="Medical Complaint">شكوى طبية</option>
+          <option value="administrative" data-ar="شكوى إدارية" data-en="Administrative Complaint">شكوى إدارية</option>
+          <option value="technical" data-ar="شكوى تقنية" data-en="Technical Complaint">شكوى تقنية</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="البحث:" data-en="Search:">البحث:</label>
+        <input type="text" id="searchFilter" placeholder="البحث في الطلبات...">
+      </div>
+
+      <button onclick="applyFilters()" class="filter-btn" data-ar="تطبيق الفلاتر" data-en="Apply Filters">تطبيق الفلاتر</button>
+      <button onclick="clearFilters()" class="clear-btn" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
+    </div>
+
+    <!-- جدول تتبع الطلبات -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2 data-ar="تتبع الطلبات" data-en="Request Tracking">تتبع الطلبات</h2>
+        <div class="table-actions">
+          <button onclick="refreshData()" class="refresh-btn" data-ar="تحديث البيانات" data-en="Refresh Data">تحديث البيانات</button>
+        </div>
+      </div>
+
+      <table id="requestTable" class="data-table">
+        <thead>
+          <tr>
+            <th data-ar="رقم الطلب" data-en="Request ID">رقم الطلب</th>
+            <th data-ar="نوع الشكوى" data-en="Complaint Type">نوع الشكوى</th>
+            <th data-ar="الموضوع" data-en="Subject">الموضوع</th>
+            <th data-ar="مقدم الطلب" data-en="Requester">مقدم الطلب</th>
+            <th data-ar="تاريخ التقديم" data-en="Submission Date">تاريخ التقديم</th>
+            <th data-ar="المدة المتبقية" data-en="Time Remaining">المدة المتبقية</th>
+            <th data-ar="الحالة" data-en="Status">الحالة</th>
+            <th data-ar="المسؤول" data-en="Assigned To">المسؤول</th>
+            <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="requestTableBody">
+          <!-- البيانات ستُضاف هنا ديناميكياً -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- رسالة عدم وجود بيانات -->
+    <div id="noDataMessage" class="no-data-message" style="display: none;">
+      <div class="no-data-icon">📋</div>
+      <p data-ar="لا توجد طلبات" data-en="No requests found">لا توجد طلبات</p>
+    </div>
+
+    <!-- رسالة التحميل -->
+    <div id="loadingMessage" class="loading-message">
+      <div class="loading-spinner"></div>
+      <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
+    </div>
+  </main>
+
+  <!-- Modal تحويل الشكوى -->
+  <div id="transferModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-ar="تحويل الشكوى" data-en="Transfer Complaint">تحويل الشكوى</h3>
+        <span class="close" onclick="closeTransferModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="transfer-info">
+          <h4 data-ar="معلومات الشكوى" data-en="Complaint Information">معلومات الشكوى</h4>
+          <p><strong data-ar="رقم الشكوى:" data-en="Complaint ID:">رقم الشكوى:</strong> <span id="transferComplaintId"></span></p>
+          <p><strong data-ar="الموضوع:" data-en="Subject:">الموضوع:</strong> <span id="transferComplaintSubject"></span></p>
+          <p><strong data-ar="النوع:" data-en="Type:">النوع:</strong> <span id="transferComplaintType"></span></p>
+        </div>
+        
+        <div class="transfer-form">
+          <div class="form-group">
+            <label data-ar="اختر القسم:" data-en="Select Department:">اختر القسم:</label>
+            <select id="transferDepartment" onchange="loadDepartmentEmployees()">
+              <option value="" data-ar="اختر القسم" data-en="Select Department">اختر القسم</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label data-ar="اختر الموظف:" data-en="Select Employee:">اختر الموظف:</label>
+            <select id="transferEmployee" disabled>
+              <option value="" data-ar="اختر الموظف" data-en="Select Employee">اختر الموظف</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label data-ar="ملاحظات التحويل:" data-en="Transfer Notes:">ملاحظات التحويل:</label>
+            <textarea id="transferNotes" rows="3" placeholder="أضف ملاحظات حول سبب التحويل..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="confirmTransfer()" class="transfer-btn" data-ar="تأكيد التحويل" data-en="Confirm Transfer">تأكيد التحويل</button>
+        <button onclick="closeTransferModal()" class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal خط سير الشكوى -->
+  <div id="workflowModal" class="modal" style="display: none;">
+    <div class="modal-content workflow-modal">
+      <div class="modal-header">
+        <h3 data-ar="خط سير الشكوى" data-en="Complaint Workflow">خط سير الشكوى</h3>
+        <span class="close" onclick="closeWorkflowModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="workflow-info">
+          <h4 data-ar="معلومات الشكوى" data-en="Complaint Information">معلومات الشكوى</h4>
+          <p><strong data-ar="رقم الشكوى:" data-en="Complaint ID:">رقم الشكوى:</strong> <span id="workflowComplaintId"></span></p>
+          <p><strong data-ar="الموضوع:" data-en="Subject:">الموضوع:</strong> <span id="workflowComplaintSubject"></span></p>
+          <p><strong data-ar="الحالة الحالية:" data-en="Current Status:">الحالة الحالية:</strong> <span id="workflowCurrentStatus"></span></p>
+        </div>
+        
+        <div class="workflow-timeline">
+          <h4 data-ar="خط سير المعالجة" data-en="Processing Timeline">خط سير المعالجة</h4>
+          <div id="workflowTimeline" class="timeline">
+            <!-- خط سير الشكوى سيُضاف هنا ديناميكياً -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeWorkflowModal()" class="close-btn" data-ar="إغلاق" data-en="Close">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="request-tracking.js"></script>
+</body>
+</html>

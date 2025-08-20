@@ -36,50 +36,10 @@ const API_BASE_URL = 'http://localhost:3001/api';
 
 // التحقق من الصلاحيات عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-  checkSuperAdminPermissions();
+  // نظام الحماية سيعمل تلقائياً من خلال superAdminProtection.js
   setupLanguageToggle();
   loadNotifications();
 });
-
-// التحقق من أن المستخدم Super Admin
-async function checkSuperAdminPermissions() {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = '/login/login.html';
-      return;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/auth/current-user`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    const data = await response.json();
-    
-    if (!data.success) {
-      window.location.href = '/login/login.html';
-      return;
-    }
-
-    const user = data.data;
-    
-    // التحقق من أن المستخدم Super Admin
-    if (user.RoleName !== 'SUPER_ADMIN') {
-      alert('ليس لديك صلاحية للوصول لهذه الصفحة');
-      window.location.href = '/login/home.html';
-      return;
-    }
-
-    // إخفاء عناصر الواجهة حسب الصلاحيات
-    hideUnauthorizedElements();
-    
-  } catch (error) {
-    console.error('خطأ في التحقق من الصلاحيات:', error);
-    window.location.href = '/login/login.html';
-  }
-}
 
 // إخفاء العناصر غير المصرح بها
 function hideUnauthorizedElements() {

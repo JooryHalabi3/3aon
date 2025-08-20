@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بيانات الموظفين - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="employee-data.css">
+</head>
+
+<body>
+  <div class="back-button">
+    <a href="/admin/admin.html">
+      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
+      <span data-ar="عودة" data-en="Back">عودة</span>
+    </a>
+  </div>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title" data-ar="بيانات الموظفين - Admin" data-en="Employee Data - Admin">بيانات الموظفين - Admin</div>
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
+    </div>
+  </header>
+
+  <br> <br><br> <br> <br><br>
+  <main class="main-content">
+    <!-- إحصائيات سريعة -->
+    <div class="stats-section">
+      <div class="stat-card">
+        <div class="stat-number" id="totalEmployees">0</div>
+        <div class="stat-label" data-ar="إجمالي الموظفين" data-en="Total Employees">إجمالي الموظفين</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="activeEmployees">0</div>
+        <div class="stat-label" data-ar="الموظفين النشطين" data-en="Active Employees">الموظفين النشطين</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalDepartments">0</div>
+        <div class="stat-label" data-ar="عدد الأقسام" data-en="Total Departments">عدد الأقسام</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="managers">0</div>
+        <div class="stat-label" data-ar="المديرين" data-en="Managers">المديرين</div>
+      </div>
+    </div>
+
+    <!-- فلاتر البحث -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label data-ar="القسم:" data-en="Department:">القسم:</label>
+        <select id="departmentFilter">
+          <option value="" data-ar="جميع الأقسام" data-en="All Departments">جميع الأقسام</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="الوظيفة:" data-en="Role:">الوظيفة:</label>
+        <select id="roleFilter">
+          <option value="" data-ar="جميع الوظائف" data-en="All Roles">جميع الوظائف</option>
+          <option value="1" data-ar="سوبر أدمن" data-en="Super Admin">سوبر أدمن</option>
+          <option value="2" data-ar="موظف" data-en="Employee">موظف</option>
+          <option value="3" data-ar="أدمن (رئيس قسم)" data-en="Admin (Department Head)">أدمن (رئيس قسم)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="الحالة:" data-en="Status:">الحالة:</label>
+        <select id="statusFilter">
+          <option value="" data-ar="جميع الحالات" data-en="All Status">جميع الحالات</option>
+          <option value="active" data-ar="نشط" data-en="Active">نشط</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="البحث:" data-en="Search:">البحث:</label>
+        <input type="text" id="searchFilter" placeholder="البحث في بيانات الموظفين...">
+      </div>
+
+      <button onclick="applyFilters()" class="filter-btn" data-ar="تطبيق الفلاتر" data-en="Apply Filters">تطبيق الفلاتر</button>
+      <button onclick="clearFilters()" class="clear-btn" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
+    </div>
+
+    <!-- جدول بيانات الموظفين -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2 data-ar="بيانات الموظفين" data-en="Employee Data">بيانات الموظفين</h2>
+        <div class="table-actions">
+          <button onclick="refreshData()" class="refresh-btn" data-ar="تحديث" data-en="Refresh">تحديث</button>
+          <button onclick="exportData()" class="export-btn" data-ar="تصدير البيانات" data-en="Export Data">تصدير البيانات</button>
+          <button onclick="addEmployee()" class="add-btn" data-ar="إضافة موظف" data-en="Add Employee">إضافة موظف</button>
+        </div>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-ar="الرقم الوظيفي" data-en="Employee ID">الرقم الوظيفي</th>
+            <th data-ar="الاسم الكامل" data-en="Full Name">الاسم الكامل</th>
+            <th data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</th>
+            <th data-ar="رقم الهوية" data-en="National ID">رقم الهوية</th>
+            <th data-ar="القسم" data-en="Department">القسم</th>
+            <th data-ar="الوظيفة" data-en="Role">الوظيفة</th>
+            <th data-ar="اسم المستخدم" data-en="Username">اسم المستخدم</th>
+            <th data-ar="الحالة" data-en="Status">الحالة</th>
+            <th data-ar="تاريخ التعيين" data-en="Hire Date">تاريخ التعيين</th>
+            <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="employeeTableBody">
+          <!-- البيانات ستُضاف هنا ديناميكياً -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- رسالة عدم وجود بيانات -->
+    <div id="noDataMessage" class="no-data-message" style="display: none;">
+      <div class="no-data-icon">👥</div>
+      <p data-ar="لا توجد بيانات موظفين" data-en="No employee data found">لا توجد بيانات موظفين</p>
+    </div>
+
+    <!-- رسالة التحميل -->
+    <div id="loadingMessage" class="loading-message">
+      <div class="loading-spinner"></div>
+      <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
+    </div>
+  </main>
+
+  <!-- Modal إضافة/تعديل موظف -->
+  <div id="employeeModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle" data-ar="إضافة موظف جديد" data-en="Add New Employee">إضافة موظف جديد</h3>
+        <span class="close" onclick="closeEmployeeModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <form id="employeeForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label data-ar="الاسم الكامل:" data-en="Full Name:">الاسم الكامل:</label>
+              <input type="text" id="fullName" required>
+            </div>
+            <div class="form-group">
+              <label data-ar="البريد الإلكتروني:" data-en="Email:">البريد الإلكتروني:</label>
+              <input type="email" id="email" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label data-ar="رقم الهوية:" data-en="National ID:">رقم الهوية:</label>
+              <input type="text" id="nationalID" required>
+            </div>
+            <div class="form-group">
+              <label data-ar="القسم:" data-en="Department:">القسم:</label>
+              <select id="department" required>
+                <option value="" data-ar="اختر القسم" data-en="Select Department">اختر القسم</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label data-ar="الوظيفة:" data-en="Role:">الوظيفة:</label>
+              <select id="role" required>
+                <option value="" data-ar="اختر الوظيفة" data-en="Select Role">اختر الوظيفة</option>
+                <option value="1" data-ar="سوبر أدمن" data-en="Super Admin">سوبر أدمن</option>
+                <option value="2" data-ar="أدمن" data-en="Admin">أدمن</option>
+                <option value="3" data-ar="موظف" data-en="Employee">موظف</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label data-ar="المدير المباشر:" data-en="Manager:">المدير المباشر:</label>
+              <select id="manager">
+                <option value="" data-ar="لا يوجد" data-en="None">لا يوجد</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label data-ar="تاريخ التعيين:" data-en="Hire Date:">تاريخ التعيين:</label>
+              <input type="date" id="hireDate" required>
+            </div>
+            <div class="form-group">
+              <label data-ar="الحالة:" data-en="Status:">الحالة:</label>
+              <select id="status" required>
+                <option value="active" data-ar="نشط" data-en="Active">نشط</option>
+                <option value="inactive" data-ar="غير نشط" data-en="Inactive">غير نشط</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button onclick="saveEmployee()" class="save-btn" data-ar="حفظ" data-en="Save">حفظ</button>
+        <button onclick="closeEmployeeModal()" class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="employee-data.js"></script>
+</body>
+
+</html>

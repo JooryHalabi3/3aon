@@ -15,6 +15,9 @@ const generalComplaintsRoutes = require('./routes/generalComplaintsRoutes');
 const inpersonComplaintsRoutes = require('./routes/inpersonComplaintsRoutes');
 const logsRoutes = require('./routes/logsRoutes');
 const permissionsRoutes = require('./routes/permissionsRoutes');
+const superAdminRoutes = require('./routes/superAdminRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const { checkSuperAdminPageAccess } = require('./middleware/superAdminAuth');
 const db = require('./config/database');
 
 const app = express();
@@ -26,6 +29,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// حماية ملفات Super Admin الثابتة
+app.use('/superAdmin', checkSuperAdminPageAccess);
+
+// إعداد المجلدات الثابتة
+app.use(express.static(path.join(__dirname, '../')));
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -59,6 +68,8 @@ app.use('/api/general-complaints', generalComplaintsRoutes);
 app.use('/api/inperson-complaints', inpersonComplaintsRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api', permissionsRoutes);
+app.use('/api/super-admin', superAdminRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 // 404 handler

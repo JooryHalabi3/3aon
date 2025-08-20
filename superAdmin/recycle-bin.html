@@ -9,8 +9,20 @@
   <link rel="stylesheet" href="recycle-bin.css">
 </head>
 <body>
+  <!-- نظام الحماية - سيتم إخفاؤه إذا كان المستخدم Super Admin -->
+  <div id="accessDenied" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 500px;">
+      <div style="font-size: 80px; margin-bottom: 20px;">🚫</div>
+      <h1 style="color: #e74c3c; margin-bottom: 15px;">رفض الوصول</h1>
+      <p style="color: #666; margin-bottom: 25px;">عذراً، لا يمكنك الوصول لهذه الصفحة. هذه الصفحة مخصصة لـ Super Admin فقط.</p>
+      <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 20px 0; font-family: monospace; color: #e74c3c; font-weight: bold;">خطأ 403: Forbidden</div>
+      <p style="color: #666;">إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع مدير النظام.</p>
+      <a href="/login/login.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 20px;">العودة لصفحة تسجيل الدخول</a>
+    </div>
+  </div>
+
   <div class="back-button">
-    <a href="/superDamin/admin.html">
+    <a href="/superAdmin/superAdmin.html">
       <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
       <span data-ar="عودة" data-en="Back">عودة</span>
     </a>
@@ -113,6 +125,80 @@
     </div>
   </div>
 
+  <script>
+  // نظام الحماية لصفحات Super Admin
+  async function checkSuperAdminAccess() {
+    try {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (!token) {
+        console.log('لا يوجد توكن، عرض رسالة رفض الوصول');
+        showAccessDenied();
+        return false;
+      }
+      
+      // التحقق من أن المستخدم هو Super Admin (RoleID = 1)
+      if (user.RoleID !== 1) {
+        console.log('المستخدم ليس Super Admin، عرض رسالة رفض الوصول');
+        showAccessDenied();
+        return false;
+      }
+      
+      // التحقق من صحة التوكن مع الخادم
+      const response = await fetch('http://localhost:3001/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        console.log('التوكن غير صالح، توجيه لصفحة تسجيل الدخول');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login/login.html';
+        return false;
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success || data.data.RoleID !== 1) {
+        console.log('المستخدم ليس Super Admin، عرض رسالة رفض الوصول');
+        showAccessDenied();
+        return false;
+      }
+      
+      console.log('✅ المستخدم Super Admin، يمكن الوصول للصفحة');
+      hideAccessDenied();
+      return true;
+      
+    } catch (error) {
+      console.error('خطأ في التحقق من الصلاحيات:', error);
+      showAccessDenied();
+      return false;
+    }
+  }
+
+  function showAccessDenied() {
+    document.getElementById('accessDenied').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideAccessDenied() {
+    document.getElementById('accessDenied').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  // تشغيل التحقق عند تحميل الصفحة
+  window.addEventListener('load', function() {
+    checkSuperAdminAccess();
+  });
+
+  // التحقق كل 30 ثانية للتأكد من صحة الجلسة
+  setInterval(checkSuperAdminAccess, 30000);
+  </script>
+
+  <script src="superAdminProtection.js"></script>
   <script src="recycle-bin.js"></script>
 </body>
 </html>

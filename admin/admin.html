@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الصفحة الرئيسية - الشكاوى</title>
+  <title>لوحة تحكم Admin - عونك</title>
  <!-- خط عربي: Tajawal -->
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
 
@@ -14,9 +14,8 @@
   <link rel="stylesheet" href="admin.css">
 </head>
 
-
-
-<body>  
+<body>
+  
     <div class="back-button">
       <a href="#" onclick="goBack()">
         <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
@@ -26,39 +25,72 @@
 
   <header class="header">
     <div class="header-content">
-      <div class="header-title" data-ar="عُــــــونَك" data-en="AOUNAK">عُــــــونَك</div>
+      <div class="header-title" data-ar="عُــــــونَك - Admin" data-en="AOUNAK - Admin">عُــــــونَك - Admin</div>
       <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
-<button id="langToggle" class="lang-toggle-btn">
-  <img src="/icon/lang.png" alt="language" class="lang-icon" />
-  <span id="langText">العربية | English</span>
-</button>
-
-
-
-
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
     </div>
   </header>
+
+  <!-- مركز الإشعارات -->
+  <div id="notificationCenter" class="notification-center" style="display: none;">
+    <div class="notification-header">
+      <span data-ar="الإشعارات" data-en="Notifications">الإشعارات</span>
+      <span id="notificationCount" class="notification-count">0</span>
+      <button onclick="closeNotificationCenter()" class="close-notifications">×</button>
+    </div>
+    <div id="notificationList" class="notification-list">
+      <!-- الإشعارات ستُضاف هنا ديناميكياً -->
+    </div>
+  </div>
+
  <br> <br><br> <br> <br><br>
   <main>
     <section class="dashboard">
+      <!-- الصفحات الأساسية -->
       <div class="card">
         <img src="/icon/list.png" alt="السجلات">
-        <h3 data-ar="السجلات  " data-en="Logs">السجلات</h3>
-        <p data-ar="الاطلاع على سجلات العمليات والشكاوى" data-en="View operation and complaint logs">قم بتسجيل شكوى طبية جديدة</p>
-        <a href="/admin/logs.html" class="btn" data-ar="عرض السجلات " data-en="View Logs"> عرض السجلات</a>
+        <h3 data-ar="السجلات" data-en="Logs">السجلات</h3>
+        <p data-ar="الاطلاع على سجلات العمليات والشكاوى" data-en="View operation and complaint logs">الاطلاع على سجلات العمليات والشكاوى</p>
+        <a href="/admin/logs.html" class="btn" data-ar="عرض السجلات" data-en="View Logs">عرض السجلات</a>
       </div>
 
       <div class="card">
-        <img src="/icon/group.png" alt="الصلاحيات ">
-        <h3 data-ar=" الصلاحيات" data-en="Permissions">الصلاحيات </h3>
-        <p data-ar="صلاحيات الوصول داخل النظام" data-en="Access permissions within the system.">تتبع حالة شكاواك المقدمة</p>
-        <a href="/admin/permissions.html" class="btn" data-ar="إدارة الصلاحيات " data-en="Manage Permissions"> إدارة الصلاحيات</a>
+        <img src="/icon/group.png" alt="الصلاحيات">
+        <h3 data-ar="الصلاحيات" data-en="Permissions">الصلاحيات</h3>
+        <p data-ar="إدارة صلاحيات الوصول داخل النظام" data-en="Manage access permissions within the system">إدارة صلاحيات الوصول داخل النظام</p>
+        <a href="/admin/permissions.html" class="btn" data-ar="إدارة الصلاحيات" data-en="Manage Permissions">إدارة الصلاحيات</a>
       </div>
 
-    
+      <div class="card">
+        <img src="/icon/status.png" alt="تتبع الطلبات">
+        <h3 data-ar="تتبع الطلبات" data-en="Request Tracking">تتبع الطلبات</h3>
+        <p data-ar="متابعة حالة الطلبات والشكاوى مع المدة المتبقية" data-en="Track request status and complaints with remaining time">متابعة حالة الطلبات والشكاوى مع المدة المتبقية</p>
+        <a href="/admin/request-tracking.html" class="btn" data-ar="تتبع الطلبات" data-en="Track Requests">تتبع الطلبات</a>
+      </div>
+
+      <div class="card">
+        <img src="/icon/Staaff.png" alt="الموظفين">
+        <h3 data-ar="بيانات الموظفين" data-en="Employee Data">بيانات الموظفين</h3>
+        <p data-ar="عرض وإدارة بيانات الموظفين وأقسامهم والمديرين" data-en="View and manage employee data, departments and managers">عرض وإدارة بيانات الموظفين وأقسامهم والمديرين</p>
+        <a href="/admin/employee-data.html" class="btn" data-ar="عرض البيانات" data-en="View Data">عرض البيانات</a>
+      </div>
+
+      <div class="card">
+        <img src="/icon/savew.png" alt="استرجاع المحذوفات">
+        <h3 data-ar="استرجاع المحذوفات" data-en="Recycle Bin">استرجاع المحذوفات</h3>
+        <p data-ar="استرجاع البيانات المحذوفة من النظام" data-en="Restore deleted data from the system">استرجاع البيانات المحذوفة من النظام</p>
+        <a href="/admin/recycle-bin.html" class="btn" data-ar="استرجاع البيانات" data-en="Restore Data">استرجاع البيانات</a>
+      </div>
+
+      <!-- الوصول لصفحات الأدوار الأخرى -->
+      
 
     </section>
   </main>
+
 <script src="admin.js"></script>
 </body>
 
