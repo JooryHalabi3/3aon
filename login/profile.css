@@ -84,16 +84,7 @@ main {
   color: #21477c;
   padding: 30px;
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
   border-bottom: 1px solid #f0f0f0;
-}
-
-.profile-icon {
-  width: 60px;
-  height: 60px;
 }
 
 .card-header h2 {
