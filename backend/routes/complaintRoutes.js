@@ -34,6 +34,6 @@ router.post('/submit', complaintController.checkUserPermissions, complaintContro
 router.put('/update-status/:complaintId', complaintController.updateComplaintStatus);
 
 // تحويل الشكوى إلى قسم آخر
-router.put('/transfer/:complaintId', auth, complaintController.transferComplaint);
+router.put('/transfer/:complaintId', auth.authenticateToken, complaintController.transferComplaint);
 
 module.exports = router; 
