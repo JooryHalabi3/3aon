@@ -13,9 +13,7 @@ const register = async (req, res) => {
       email, 
       phoneNumber, 
       roleID, 
-      specialty,
-      departmentID,
-      nationalID 
+      specialty 
     } = req.body;
 
     // التحقق من البيانات المطلوبة
@@ -45,18 +43,17 @@ const register = async (req, res) => {
 
     // إدخال الموظف الجديد
     const [result] = await pool.execute(
-      `INSERT INTO Employees (FullName, Username, PasswordHash, Email, PhoneNumber, RoleID, Specialty, department_id, NationalID_Iqama) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [fullName, username, passwordHash, email, phoneNumber, roleID, specialty, departmentID, nationalID]
+      `INSERT INTO Employees (FullName, Username, PasswordHash, Email, PhoneNumber, RoleID, Specialty) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [fullName, username, passwordHash, email, phoneNumber, roleID, specialty]
     );
 
     // الحصول على بيانات الموظف المحدثة
     const [newEmployee] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.Email, e.PhoneNumber, 
-              e.Specialty, e.JoinDate, r.RoleName, r.RoleID, d.DepartmentName
+              e.Specialty, e.JoinDate, r.RoleName, r.RoleID
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
-       LEFT JOIN departments d ON e.department_id = d.DepartmentID
        WHERE e.EmployeeID = ?`,
       [result.insertId]
     );
@@ -111,30 +108,30 @@ const register = async (req, res) => {
 // تسجيل الدخول
 const login = async (req, res) => {
   try {
-    const { loginIdentifier, password } = req.body;
+    const { username, password } = req.body;
 
     // التحقق من البيانات المطلوبة
-    if (!loginIdentifier || !password) {
+    if (!username || !password) {
       return res.status(400).json({ 
         success: false, 
-        message: 'البريد الإلكتروني أو رقم الموظف وكلمة المرور مطلوبان' 
+        message: 'اسم المستخدم وكلمة المرور مطلوبان' 
       });
     }
 
-    // البحث عن المستخدم باستخدام البريد الإلكتروني أو رقم الموظف فقط
+    // البحث عن المستخدم
     const [employees] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.PasswordHash, e.Email, 
               e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
-       WHERE e.Email = ? OR e.Username = ?`,
-      [loginIdentifier, loginIdentifier]
+       WHERE e.Username = ?`,
+      [username]
     );
 
     if (employees.length === 0) {
       return res.status(401).json({ 
         success: false, 
-        message: 'البريد الإلكتروني أو رقم الموظف أو كلمة المرور غير صحيحة' 
+        message: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
       });
     }
 
@@ -146,7 +143,7 @@ const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ 
         success: false, 
-        message: 'البريد الإلكتروني أو رقم الموظف أو كلمة المرور غير صحيحة' 
+        message: 'اسم المستخدم أو كلمة المرور غير صحيحة' 
       });
     }
 

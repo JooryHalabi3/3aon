@@ -38,7 +38,7 @@ CREATE TABLE `activitylogs` (
   KEY `idx_activity_type` (`ActivityType`),
   KEY `idx_created_at` (`CreatedAt`),
   CONSTRAINT `activitylogs_ibfk_1` FOREIGN KEY (`EmployeeID`) REFERENCES `employees` (`EmployeeID`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,7 +47,7 @@ CREATE TABLE `activitylogs` (
 
 LOCK TABLES `activitylogs` WRITE;
 /*!40000 ALTER TABLE `activitylogs` DISABLE KEYS */;
-INSERT INTO `activitylogs` VALUES (28,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 12:58:49'),(29,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 12:59:28'),(30,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 12:59:48'),(31,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:00:06'),(32,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:11:58'),(33,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:12:29'),(34,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:13:01'),(35,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:15:13'),(36,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:18:28'),(37,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:40:36'),(38,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:41:52'),(39,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:43:30'),(40,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:26:56'),(41,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:30:52'),(42,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:31:11'),(43,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:49:02'),(44,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:49:09'),(45,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:37:51'),(46,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:38:24'),(47,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:38:34'),(48,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:38:52'),(49,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:54:42'),(50,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:55:09'),(51,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:56:01'),(52,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:56:28'),(53,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:57:47'),(54,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:20:17'),(55,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:20:29'),(56,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:22:33'),(57,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:26:23'),(58,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:30:57'),(59,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:31:34'),(60,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:34:33'),(61,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:34:58'),(62,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:35:08'),(63,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:35:26'),(64,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:55:57'),(65,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:56:29'),(66,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:52:08'),(67,1,'12341','export_logs','تم تصدير 66 سجل بصيغة csv','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:55:21'),(68,1,'12341','export_logs','تم تصدير 67 سجل بصيغة pdf','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:55:24'),(69,1,'12341','delete_logs','تم حذف 0 سجل قديم (أقدم من 90 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:55:44'),(70,1,'12341','delete_logs','تم حذف 27 سجل قديم (أقدم من 1 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:55:59'),(71,1,'12341','delete_logs','تم حذف 0 سجل قديم (أقدم من 1 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:56:25'),(72,1,'12341','delete_logs','تم حذف 0 سجل قديم (أقدم من 1 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:56:47'),(73,1,'12341','delete_logs','تم حذف 0 سجل قديم (أقدم من 90 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:56:54'),(74,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 09:55:25'),(75,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 08:54:13'),(76,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 08:58:18'),(77,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 09:00:22'),(78,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 09:00:43'),(79,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 09:15:30'),(80,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:27:54'),(81,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:28:28'),(82,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:28:45'),(83,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:28:59'),(84,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:30:18'),(85,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:32:52'),(86,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:33:40'),(87,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:54:58'),(88,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 07:31:01'),(89,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 07:50:05'),(90,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 09:01:29');
+INSERT INTO `activitylogs` VALUES (28,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 12:58:49'),(29,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 12:59:28'),(30,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 12:59:48'),(31,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:00:06'),(32,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:11:58'),(33,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:12:29'),(34,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:13:01'),(35,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:15:13'),(36,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:18:28'),(37,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:40:36'),(38,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:41:52'),(39,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 13:43:30'),(40,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:26:56'),(41,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:30:52'),(42,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:31:11'),(43,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:49:02'),(44,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 16:49:09'),(45,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:37:51'),(46,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:38:24'),(47,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:38:34'),(48,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:38:52'),(49,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:54:42'),(50,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:55:09'),(51,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:56:01'),(52,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:56:28'),(53,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 18:57:47'),(54,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:20:17'),(55,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:20:29'),(56,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:22:33'),(57,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:26:23'),(58,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:30:57'),(59,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:31:34'),(60,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:34:33'),(61,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:34:58'),(62,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:35:08'),(63,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:35:26'),(64,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:55:57'),(65,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-16 19:56:29'),(66,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:52:08'),(67,1,'12341','export_logs','تم تصدير 66 سجل بصيغة csv','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:55:21'),(68,1,'12341','export_logs','تم تصدير 67 سجل بصيغة pdf','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:55:24'),(69,1,'12341','delete_logs','تم حذف 0 سجل قديم (أقدم من 90 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:55:44'),(70,1,'12341','delete_logs','تم حذف 27 سجل قديم (أقدم من 1 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:55:59'),(71,1,'12341','delete_logs','تم حذف 0 سجل قديم (أقدم من 1 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:56:25'),(72,1,'12341','delete_logs','تم حذف 0 سجل قديم (أقدم من 1 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:56:47'),(73,1,'12341','delete_logs','تم حذف 0 سجل قديم (أقدم من 90 يوم)','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 06:56:54'),(74,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-17 09:55:25'),(75,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 08:54:13'),(76,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 08:58:18'),(77,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 09:00:22'),(78,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 09:00:43'),(79,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 09:15:30'),(80,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:27:54'),(81,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:28:28'),(82,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:28:45'),(83,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:28:59'),(84,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:30:18'),(85,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:32:52'),(86,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:33:40'),(87,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-18 11:54:58'),(88,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 07:31:01'),(89,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 07:50:05'),(90,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 09:01:29'),(91,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 11:01:30'),(92,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 11:02:06'),(93,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 11:29:22'),(94,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 11:56:25'),(95,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 12:02:32'),(96,2,'1333','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 12:14:15'),(97,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 12:14:33'),(98,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 12:17:31'),(99,1,'12341','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 12:17:42'),(100,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 12:18:02'),(101,3,'11','login','تم تسجيل الدخول بنجاح','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36',NULL,NULL,'2025-08-20 12:18:40');
 /*!40000 ALTER TABLE `activitylogs` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -84,6 +84,71 @@ LOCK TABLES `attachments` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `complaint_assignments`
+--
+
+DROP TABLE IF EXISTS `complaint_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `complaint_assignments` (
+  `AssignmentID` int NOT NULL AUTO_INCREMENT,
+  `ComplaintID` int NOT NULL,
+  `AssignedBy` int NOT NULL,
+  `AssignedTo` int NOT NULL,
+  `AssignedAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `DueAt` datetime DEFAULT NULL,
+  `Reason` text COLLATE utf8mb4_unicode_ci,
+  `Status` enum('assigned','reassigned','accepted','rejected','completed') COLLATE utf8mb4_unicode_ci DEFAULT 'assigned',
+  PRIMARY KEY (`AssignmentID`),
+  KEY `fk_ca_by` (`AssignedBy`),
+  KEY `fk_ca_to` (`AssignedTo`),
+  KEY `idx_ca_current` (`ComplaintID`,`Status`),
+  CONSTRAINT `fk_ca_by` FOREIGN KEY (`AssignedBy`) REFERENCES `employees` (`EmployeeID`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_ca_cid` FOREIGN KEY (`ComplaintID`) REFERENCES `complaints` (`ComplaintID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ca_to` FOREIGN KEY (`AssignedTo`) REFERENCES `employees` (`EmployeeID`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `complaint_assignments`
+--
+
+LOCK TABLES `complaint_assignments` WRITE;
+/*!40000 ALTER TABLE `complaint_assignments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `complaint_assignments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `complaint_reminders`
+--
+
+DROP TABLE IF EXISTS `complaint_reminders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `complaint_reminders` (
+  `ReminderID` int NOT NULL AUTO_INCREMENT,
+  `ComplaintID` int NOT NULL,
+  `RecipientEmployeeID` int NOT NULL,
+  `ReminderNumber` tinyint NOT NULL,
+  `SentAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ReminderID`),
+  KEY `fk_cr_cid` (`ComplaintID`),
+  KEY `fk_cr_emp` (`RecipientEmployeeID`),
+  CONSTRAINT `fk_cr_cid` FOREIGN KEY (`ComplaintID`) REFERENCES `complaints` (`ComplaintID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_cr_emp` FOREIGN KEY (`RecipientEmployeeID`) REFERENCES `employees` (`EmployeeID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `complaint_reminders`
+--
+
+LOCK TABLES `complaint_reminders` WRITE;
+/*!40000 ALTER TABLE `complaint_reminders` DISABLE KEYS */;
+/*!40000 ALTER TABLE `complaint_reminders` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `complainthistory`
 --
 
@@ -104,7 +169,7 @@ CREATE TABLE `complainthistory` (
   KEY `EmployeeID` (`EmployeeID`),
   CONSTRAINT `complainthistory_ibfk_1` FOREIGN KEY (`ComplaintID`) REFERENCES `complaints` (`ComplaintID`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `complainthistory_ibfk_2` FOREIGN KEY (`EmployeeID`) REFERENCES `employees` (`EmployeeID`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -113,7 +178,7 @@ CREATE TABLE `complainthistory` (
 
 LOCK TABLES `complainthistory` WRITE;
 /*!40000 ALTER TABLE `complainthistory` DISABLE KEYS */;
-INSERT INTO `complainthistory` VALUES (1,1,1,'2025-08-13 11:56:41','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(2,2,2,'2025-08-13 11:59:59','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(3,3,2,'2025-08-13 12:01:46','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(4,3,1,'2025-08-13 12:11:14','تحديث الحالة','تم تحديث حالة الشكوى من \"جديدة\" إلى \"مغلقة\"','جديدة','مغلقة'),(5,4,3,'2025-08-15 20:33:26','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(6,5,3,'2025-08-15 23:40:11','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(7,6,1,'2025-08-18 12:16:39','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(8,5,1,'2025-08-18 12:22:31','تحديث الحالة','تم تحديث حالة الشكوى من \"جديدة\" إلى \"مغلقة\"','جديدة','مغلقة'),(9,7,1,'2025-08-20 10:32:23','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(10,5,1,'2025-08-20 10:40:10','تحديث الحالة','تم تحديث حالة الشكوى من \"مغلقة\" إلى \"قيد المعالجة\"','مغلقة','قيد المعالجة'),(11,8,1,'2025-08-20 10:42:03','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة');
+INSERT INTO `complainthistory` VALUES (1,1,1,'2025-08-13 11:56:41','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(2,2,2,'2025-08-13 11:59:59','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(3,3,2,'2025-08-13 12:01:46','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(4,3,1,'2025-08-13 12:11:14','تحديث الحالة','تم تحديث حالة الشكوى من \"جديدة\" إلى \"مغلقة\"','جديدة','مغلقة'),(5,4,3,'2025-08-15 20:33:26','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(6,5,3,'2025-08-15 23:40:11','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(7,6,1,'2025-08-18 12:16:39','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(8,5,1,'2025-08-18 12:22:31','تحديث الحالة','تم تحديث حالة الشكوى من \"جديدة\" إلى \"مغلقة\"','جديدة','مغلقة'),(9,7,1,'2025-08-20 10:32:23','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(10,5,1,'2025-08-20 10:40:10','تحديث الحالة','تم تحديث حالة الشكوى من \"مغلقة\" إلى \"قيد المعالجة\"','مغلقة','قيد المعالجة'),(11,8,1,'2025-08-20 10:42:03','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(12,9,1,'2025-08-20 14:30:12','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(13,10,1,'2025-08-20 14:39:34','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(14,11,1,'2025-08-20 14:57:24','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة'),(15,12,1,'2025-08-20 15:03:40','تم تقديم الشكوى','تم استلام الشكوى بنجاح','','جديدة');
 /*!40000 ALTER TABLE `complainthistory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -185,7 +250,7 @@ CREATE TABLE `complaints` (
   CONSTRAINT `complaints_ibfk_3` FOREIGN KEY (`ComplaintTypeID`) REFERENCES `complainttypes` (`ComplaintTypeID`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `complaints_ibfk_4` FOREIGN KEY (`SubTypeID`) REFERENCES `complaintsubtypes` (`SubTypeID`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `complaints_ibfk_5` FOREIGN KEY (`DepartmentID`) REFERENCES `departments` (`DepartmentID`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -194,7 +259,7 @@ CREATE TABLE `complaints` (
 
 LOCK TABLES `complaints` WRITE;
 /*!40000 ALTER TABLE `complaints` DISABLE KEYS */;
-INSERT INTO `complaints` VALUES (1,1,1,12,65,43,'2025-08-04 03:00:00','oo','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(2,1,2,12,69,40,'2025-08-03 03:00:00','no no','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(3,2,2,6,34,43,'2025-07-28 03:00:00','ج','مغلقة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(4,3,3,4,22,64,'2025-08-06 03:00:00','oo','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(5,1,3,15,80,40,'2025-08-12 03:00:00','o','قيد المعالجة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(6,1,1,15,80,62,'2025-08-04 03:00:00','لا يوجد','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(7,1,1,12,69,57,'2025-08-05 03:00:00','p','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(8,3,1,8,46,22,'2025-08-12 03:00:00','جود','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL);
+INSERT INTO `complaints` VALUES (1,1,1,12,65,43,'2025-08-04 03:00:00','oo','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(2,1,2,12,69,40,'2025-08-03 03:00:00','no no','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(3,2,2,6,34,43,'2025-07-28 03:00:00','ج','مغلقة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(4,3,3,4,22,64,'2025-08-06 03:00:00','oo','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(5,1,3,15,80,40,'2025-08-12 03:00:00','o','قيد المعالجة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(6,1,1,15,80,62,'2025-08-04 03:00:00','لا يوجد','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(7,1,1,12,69,57,'2025-08-05 03:00:00','p','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(8,3,1,8,46,22,'2025-08-12 03:00:00','جود','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(9,4,1,2,15,40,'2025-08-18 03:00:00','جميل','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(10,4,1,15,79,38,'2025-08-19 03:00:00','جوووووووووو تو','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(11,5,1,10,58,58,'2025-08-11 03:00:00','سيء','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL),(12,6,1,2,16,64,'2025-07-29 03:00:00','جودي','جديدة','متوسطة',NULL,NULL,0,0,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `complaints` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -284,6 +349,70 @@ LOCK TABLES `dailycommunications` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `deletion_requests`
+--
+
+DROP TABLE IF EXISTS `deletion_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `deletion_requests` (
+  `RequestID` int NOT NULL AUTO_INCREMENT,
+  `TableName` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `RecordPK` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `RequestedBy` int NOT NULL,
+  `Reason` text COLLATE utf8mb4_unicode_ci,
+  `RequestedAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `Status` enum('requested','confirmed','rejected') COLLATE utf8mb4_unicode_ci DEFAULT 'requested',
+  `ConfirmedBy` int DEFAULT NULL,
+  `ConfirmedAt` datetime DEFAULT NULL,
+  `Snapshot` json DEFAULT NULL,
+  PRIMARY KEY (`RequestID`),
+  KEY `fk_dr_req_by` (`RequestedBy`),
+  KEY `fk_dr_conf_by` (`ConfirmedBy`),
+  CONSTRAINT `fk_dr_conf_by` FOREIGN KEY (`ConfirmedBy`) REFERENCES `employees` (`EmployeeID`) ON DELETE SET NULL,
+  CONSTRAINT `fk_dr_req_by` FOREIGN KEY (`RequestedBy`) REFERENCES `employees` (`EmployeeID`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `deletion_requests`
+--
+
+LOCK TABLES `deletion_requests` WRITE;
+/*!40000 ALTER TABLE `deletion_requests` DISABLE KEYS */;
+/*!40000 ALTER TABLE `deletion_requests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `department_admins`
+--
+
+DROP TABLE IF EXISTS `department_admins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `department_admins` (
+  `DepartmentID` int NOT NULL,
+  `AdminEmployeeID` int NOT NULL,
+  `IsPrimary` tinyint(1) DEFAULT '1',
+  `EffectiveFrom` datetime DEFAULT CURRENT_TIMESTAMP,
+  `EffectiveTo` datetime DEFAULT NULL,
+  PRIMARY KEY (`DepartmentID`,`AdminEmployeeID`),
+  KEY `fk_da_admin` (`AdminEmployeeID`),
+  CONSTRAINT `fk_da_admin` FOREIGN KEY (`AdminEmployeeID`) REFERENCES `employees` (`EmployeeID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_da_dept` FOREIGN KEY (`DepartmentID`) REFERENCES `departments` (`DepartmentID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `department_admins`
+--
+
+LOCK TABLES `department_admins` WRITE;
+/*!40000 ALTER TABLE `department_admins` DISABLE KEYS */;
+/*!40000 ALTER TABLE `department_admins` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `departments`
 --
 
@@ -310,6 +439,41 @@ INSERT INTO `departments` VALUES (1,'قسم المدير التنفيذي للم
 UNLOCK TABLES;
 
 --
+-- Table structure for table `employee_permissions`
+--
+
+DROP TABLE IF EXISTS `employee_permissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `employee_permissions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `EmployeeID` int NOT NULL,
+  `permission_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `has_permission` tinyint(1) DEFAULT '0',
+  `granted_by` int DEFAULT NULL,
+  `scope_department_id` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_emp_perm` (`EmployeeID`,`permission_name`,`scope_department_id`),
+  KEY `fk_ep_grantor` (`granted_by`),
+  KEY `fk_ep_dept` (`scope_department_id`),
+  CONSTRAINT `fk_ep_dept` FOREIGN KEY (`scope_department_id`) REFERENCES `departments` (`DepartmentID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_ep_emp` FOREIGN KEY (`EmployeeID`) REFERENCES `employees` (`EmployeeID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_ep_grantor` FOREIGN KEY (`granted_by`) REFERENCES `employees` (`EmployeeID`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `employee_permissions`
+--
+
+LOCK TABLES `employee_permissions` WRITE;
+/*!40000 ALTER TABLE `employee_permissions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `employee_permissions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `employees`
 --
 
@@ -321,10 +485,12 @@ CREATE TABLE `employees` (
   `FullName` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `NationalID_Iqama` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `Username` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `EmployeeNumber` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `PasswordHash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `Email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `PhoneNumber` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `RoleID` int NOT NULL,
+  `DepartmentID` int DEFAULT NULL,
   `JoinDate` datetime DEFAULT CURRENT_TIMESTAMP,
   `Specialty` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `UpdatedAt` datetime DEFAULT NULL,
@@ -333,8 +499,11 @@ CREATE TABLE `employees` (
   UNIQUE KEY `Username` (`Username`),
   UNIQUE KEY `Email` (`Email`),
   UNIQUE KEY `uq_employees_nationalid` (`NationalID_Iqama`),
+  UNIQUE KEY `EmployeeNumber` (`EmployeeNumber`),
   KEY `RoleID` (`RoleID`),
-  CONSTRAINT `employees_ibfk_1` FOREIGN KEY (`RoleID`) REFERENCES `roles` (`RoleID`) ON DELETE RESTRICT ON UPDATE CASCADE
+  KEY `fk_emp_dept` (`DepartmentID`),
+  CONSTRAINT `employees_ibfk_1` FOREIGN KEY (`RoleID`) REFERENCES `roles` (`RoleID`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_emp_dept` FOREIGN KEY (`DepartmentID`) REFERENCES `departments` (`DepartmentID`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -344,7 +513,7 @@ CREATE TABLE `employees` (
 
 LOCK TABLES `employees` WRITE;
 /*!40000 ALTER TABLE `employees` DISABLE KEYS */;
-INSERT INTO `employees` VALUES (1,'جود',NULL,'12341','$2b$10$VODCmMhKpziOmCsnn2lhF..an7g827NjFmXng5AtNjwKngPQyRpjS','gg@gmail.com','0566666666',1,'2025-08-12 13:37:22','',NULL,NULL),(2,'محمود',NULL,'1333','$2b$10$gzMRLO6dj8FvsBkkAyFv1eyAlpO9Y7WgwraifyolpYprZW/Hh/XHa','g@gmail.com','0566696666',2,'2025-08-13 11:59:16','',NULL,NULL),(3,'محمود حامد',NULL,'11','$2b$10$u0Ou1PIgix8HtncpfwGTXe4uDoresT5ywzXRMTT5rkq/3uHj8gUJO','y@gmail.com','0577777777',2,'2025-08-15 20:32:55','',NULL,NULL);
+INSERT INTO `employees` VALUES (1,'جود',NULL,'12341',NULL,'$2b$10$VODCmMhKpziOmCsnn2lhF..an7g827NjFmXng5AtNjwKngPQyRpjS','gg@gmail.com','0566666666',1,NULL,'2025-08-12 13:37:22','',NULL,NULL),(2,'محمود',NULL,'1333',NULL,'$2b$10$gzMRLO6dj8FvsBkkAyFv1eyAlpO9Y7WgwraifyolpYprZW/Hh/XHa','g@gmail.com','0566696666',2,NULL,'2025-08-13 11:59:16','',NULL,NULL),(3,'محمود حامد',NULL,'11',NULL,'$2b$10$u0Ou1PIgix8HtncpfwGTXe4uDoresT5ywzXRMTT5rkq/3uHj8gUJO','y@gmail.com','0577777777',2,NULL,'2025-08-15 20:32:55','',NULL,NULL);
 /*!40000 ALTER TABLE `employees` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -376,6 +545,37 @@ CREATE TABLE `generalrequests` (
 LOCK TABLES `generalrequests` WRITE;
 /*!40000 ALTER TABLE `generalrequests` DISABLE KEYS */;
 /*!40000 ALTER TABLE `generalrequests` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `impersonations`
+--
+
+DROP TABLE IF EXISTS `impersonations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `impersonations` (
+  `ImpersonationID` int NOT NULL AUTO_INCREMENT,
+  `SuperAdminID` int NOT NULL,
+  `TargetEmployeeID` int NOT NULL,
+  `StartedAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `EndedAt` datetime DEFAULT NULL,
+  `Reason` text COLLATE utf8mb4_unicode_ci,
+  PRIMARY KEY (`ImpersonationID`),
+  KEY `fk_imp_sa` (`SuperAdminID`),
+  KEY `fk_imp_target` (`TargetEmployeeID`),
+  CONSTRAINT `fk_imp_sa` FOREIGN KEY (`SuperAdminID`) REFERENCES `employees` (`EmployeeID`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_imp_target` FOREIGN KEY (`TargetEmployeeID`) REFERENCES `employees` (`EmployeeID`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `impersonations`
+--
+
+LOCK TABLES `impersonations` WRITE;
+/*!40000 ALTER TABLE `impersonations` DISABLE KEYS */;
+/*!40000 ALTER TABLE `impersonations` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -455,7 +655,7 @@ CREATE TABLE `patients` (
   `DateOfBirth` date DEFAULT NULL,
   PRIMARY KEY (`PatientID`),
   UNIQUE KEY `NationalID_Iqama` (`NationalID_Iqama`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -464,7 +664,7 @@ CREATE TABLE `patients` (
 
 LOCK TABLES `patients` WRITE;
 /*!40000 ALTER TABLE `patients` DISABLE KEYS */;
-INSERT INTO `patients` VALUES (1,'فاتن','1128161729','0566750324',NULL,'أنثى',NULL),(2,'محمود','123','0563',NULL,'ذكر',NULL),(3,'محمود','12','0588',NULL,'ذكر',NULL);
+INSERT INTO `patients` VALUES (1,'فاتن','1128161729','0566750324',NULL,'أنثى',NULL),(2,'محمود','123','0563',NULL,'ذكر',NULL),(3,'محمود','12','0588',NULL,'ذكر',NULL),(4,'داليا','123456789','0566666666',NULL,'أنثى',NULL),(5,'جمال','1234565431','0588887878',NULL,'ذكر',NULL),(6,'جودي','1234567899','0562495829',NULL,'أنثى',NULL);
 /*!40000 ALTER TABLE `patients` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -514,7 +714,7 @@ CREATE TABLE `rolepermissions` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_role_permission` (`role_name`,`permission_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -550,7 +750,7 @@ CREATE TABLE `roles` (
 
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
-INSERT INTO `roles` VALUES (1,'مدير','مدير النظام مع جميع الصلاحيات',NULL),(2,'موظف','موظف عادي','[]'),(3,'مشرف','مشرف مع صلاحيات محدودة',NULL);
+INSERT INTO `roles` VALUES (1,'سوبر أدمن','صلاحيات كاملة + سويتش يوزر',NULL),(2,'موظف','صلاحيات الموظف الافتراضية','[]'),(3,'أدمن (رئيس قسم)','يدير موظفي قسمه ويحوّل الشكاوى',NULL);
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -616,6 +816,38 @@ LOCK TABLES `systemlogs` WRITE;
 /*!40000 ALTER TABLE `systemlogs` DISABLE KEYS */;
 /*!40000 ALTER TABLE `systemlogs` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Temporary view structure for view `v_effective_permissions`
+--
+
+DROP TABLE IF EXISTS `v_effective_permissions`;
+/*!50001 DROP VIEW IF EXISTS `v_effective_permissions`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `v_effective_permissions` AS SELECT 
+ 1 AS `EmployeeID`,
+ 1 AS `permission_name`,
+ 1 AS `has_permission`*/;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Final view structure for view `v_effective_permissions`
+--
+
+/*!50001 DROP VIEW IF EXISTS `v_effective_permissions`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `v_effective_permissions` AS select `e`.`EmployeeID` AS `EmployeeID`,`p`.`permission_name` AS `permission_name`,greatest(coalesce(max((case when (`rp`.`RoleID` = `e`.`RoleID`) then `rp`.`has_permission` end)),0),coalesce(max((case when (`ep`.`EmployeeID` = `e`.`EmployeeID`) then `ep`.`has_permission` end)),0)) AS `has_permission` from (((`employees` `e` join (select distinct `role_permissions`.`permission_name` AS `permission_name` from `role_permissions` union select distinct `rolepermissions`.`permission_name` AS `permission_name` from `rolepermissions`) `p`) left join `role_permissions` `rp` on((`rp`.`permission_name` = `p`.`permission_name`))) left join `employee_permissions` `ep` on(((`ep`.`permission_name` = `p`.`permission_name`) and (`ep`.`EmployeeID` = `e`.`EmployeeID`)))) group by `e`.`EmployeeID`,`p`.`permission_name` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -626,4 +858,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-20 13:50:37
+-- Dump completed on 2025-08-20 19:12:13
