@@ -282,7 +282,7 @@ const getProfile = async (req, res) => {
       `SELECT 
         e.EmployeeID,
         e.FullName as name,
-        e.EmployeeNumber as empNumber,
+        e.Username as empNumber,
         e.Email as email,
         e.PhoneNumber as phone,
         e.NationalID_Iqama as idNumber
@@ -385,7 +385,7 @@ const updateProfile = async (req, res) => {
     // تحديث البيانات
     const updateQuery = `UPDATE Employees 
        SET FullName = ?, PhoneNumber = ?, NationalID_Iqama = ?, 
-           EmployeeNumber = ?, Email = ?
+           Username = ?, Email = ?
        WHERE EmployeeID = ?`;
     
     console.log('query التحديث:', updateQuery);

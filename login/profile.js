@@ -95,15 +95,7 @@ function enableEdit(){
 
   fields.forEach(f=>{
     const el = document.getElementById(f.id);
-    let value;
-    
-    // الحصول على القيمة سواء كانت من div أو input
-    if (el.tagName === 'INPUT') {
-      value = el.value;
-    } else {
-      value = el.textContent;
-    }
-    
+    const value = el.textContent;
     const input = document.createElement('input');
     input.type = f.type;
     input.value = value;
@@ -140,8 +132,6 @@ async function saveEdit(){
     email:     document.getElementById('empEmail').value
   };
 
-  console.log('البيانات المراد حفظها:', updated);
-
   try{
     const res = await fetch('http://localhost:3001/api/auth/profile', {
       method:'PUT',
@@ -152,12 +142,7 @@ async function saveEdit(){
       body: JSON.stringify(updated)
     });
 
-    console.log('استجابة الحفظ:', res.status, res.statusText);
-
     if(res.ok){
-      const result = await res.json();
-      console.log('نتيجة الحفظ:', result);
-      
       alert(currentLang==='ar' ? 'تم حفظ البيانات بنجاح' : 'Data saved successfully');
 
       // تحديث الواجهة بالبيانات الجديدة
