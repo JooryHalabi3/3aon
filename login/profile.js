@@ -25,18 +25,68 @@ function applyLanguage(lang){
 // جلب البيانات من الـ API
 async function loadProfile(){
   try{
-    const res = await fetch('/api/profile', {
-      headers:{ "Authorization": "Bearer " + localStorage.getItem("token") }
-    });
-    const data = await res.json();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error('لا يوجد توكن');
+      window.location.href = '/login/login.html';
+      return;
+    }
 
-    document.getElementById('empName').textContent   = data.name      ?? '---';
-    document.getElementById('empPhone').textContent  = data.phone     ?? '---';
-    document.getElementById('empId').textContent     = data.idNumber  ?? '---';
-    document.getElementById('empNumber').textContent = data.empNumber ?? '---';
-    document.getElementById('empEmail').textContent  = data.email     ?? '---';
+    const res = await fetch('/api/auth/profile', {
+      headers:{ 
+        "Authorization": "Bearer " + token 
+      }
+    });
+    
+    if (!res.ok) {
+      if (res.status === 401) {
+        // التوكن منتهي الصلاحية
+        localStorage.clear();
+        window.location.href = '/login/login.html';
+        return;
+      }
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const result = await res.json();
+    
+    if (result.success && result.data) {
+      const data = result.data;
+      
+      // تحديث البيانات في الصفحة
+      document.getElementById('empName').textContent = data.name || '---';
+      document.getElementById('empPhone').textContent = data.phone || '---';
+      document.getElementById('empId').textContent = data.idNumber || '---';
+      document.getElementById('empNumber').textContent = data.empNumber || '---';
+      document.getElementById('empEmail').textContent = data.email || '---';
+      
+      // تحديث البيانات الجديدة
+      document.getElementById('empSpecialty').textContent = data.Specialty || '---';
+      document.getElementById('empRole').textContent = data.roleName || '---';
+      document.getElementById('empDepartment').textContent = data.departmentName || '---';
+      
+      // تنسيق تاريخ الانضمام
+      if (data.JoinDate) {
+        const joinDate = new Date(data.JoinDate);
+        const formattedDate = joinDate.toLocaleDateString('ar-SA', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        document.getElementById('empJoinDate').textContent = formattedDate;
+      } else {
+        document.getElementById('empJoinDate').textContent = '---';
+      }
+    } else {
+      console.error('خطأ في البيانات المستلمة:', result.message);
+    }
   }catch(err){
     console.error('خطأ في تحميل البيانات', err);
+    // في حالة حدوث خطأ، يمكن إعادة توجيه المستخدم لصفحة تسجيل الدخول
+    if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+      localStorage.clear();
+      window.location.href = '/login/login.html';
+    }
   }
 }
 

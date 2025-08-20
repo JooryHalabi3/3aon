@@ -124,7 +124,7 @@ const login = async (req, res) => {
     // البحث عن المستخدم باستخدام البريد الإلكتروني أو رقم الموظف فقط
     const [employees] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.PasswordHash, e.Email, 
-              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID, d.DepartmentName
+              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
        WHERE e.Email = ? OR e.Username = ?`,
@@ -250,6 +250,77 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
+// الحصول على بيانات البروفايل الكاملة للموظف
+const getProfile = async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'التوكن مطلوب' 
+      });
+    }
+
+    // التحقق من التوكن مع معالجة الأخطاء
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (jwtError) {
+      console.error('خطأ في التحقق من التوكن:', jwtError.message);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'التوكن غير صالح أو منتهي الصلاحية' 
+      });
+    }
+
+    const employeeID = decoded.employeeID;
+
+    // الحصول على بيانات البروفايل الكاملة مع معلومات القسم والدور
+    const [employees] = await pool.execute(
+      `SELECT 
+        e.EmployeeID,
+        e.FullName as name,
+        e.Username,
+        e.Email as email,
+        e.PhoneNumber as phone,
+        e.NationalID_Iqama as idNumber,
+        e.EmployeeNumber as empNumber,
+        e.Specialty,
+        e.JoinDate,
+        r.RoleName as roleName,
+        r.RoleID as roleID,
+        d.DepartmentName as departmentName,
+        d.DepartmentID as departmentID
+       FROM Employees e 
+       JOIN Roles r ON e.RoleID = r.RoleID 
+       LEFT JOIN departments d ON e.DepartmentID = d.DepartmentID
+       WHERE e.EmployeeID = ?`,
+      [employeeID]
+    );
+
+    if (employees.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'المستخدم غير موجود' 
+      });
+    }
+
+    res.json({
+      success: true,
+      data: employees[0]
+    });
+
+  } catch (error) {
+    console.error('خطأ في الحصول على بيانات البروفايل:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'حدث خطأ في الخادم' 
+    });
+  }
+};
+
 // الحصول على جميع الأدوار
 const getRoles = async (req, res) => {
   try {
@@ -273,5 +344,6 @@ module.exports = {
   register,
   login,
   getCurrentUser,
+  getProfile,
   getRoles
 }; 
