@@ -490,10 +490,10 @@ const getAllComplaints = async (req, res) => {
 // جلب الشكاوي الشخصية للمستخدم العادي
 const getUserComplaints = async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ 
+    if (!req.user || req.user.roleID !== 2) {
+      return res.status(403).json({ 
         success: false, 
-        message: 'يجب تسجيل الدخول أولاً' 
+        message: 'هذا الـ endpoint للمستخدمين العاديين فقط' 
       });
     }
 
@@ -544,7 +544,7 @@ const getUserComplaints = async (req, res) => {
 
     const whereClause = 'WHERE ' + whereConditions.join(' AND ');
 
-    // جلب الشكاوى التي قدمها المستخدم مع اسم الموظف
+    // جلب الشكاوى التي قدمها المستخدم
     const [complaints] = await pool.execute(
       `SELECT 
         c.ComplaintID,
@@ -558,14 +558,13 @@ const getUserComplaints = async (req, res) => {
         d.DepartmentName,
         ct.TypeName as ComplaintTypeName,
         cst.SubTypeName,
-        e.FullName as EmployeeName,
-        e.EmployeeID as SubmittedByEmployeeID
+        e.FullName as EmployeeName
        FROM Complaints c
        JOIN Patients p ON c.PatientID = p.PatientID
        JOIN Departments d ON c.DepartmentID = d.DepartmentID
        JOIN ComplaintTypes ct ON c.ComplaintTypeID = ct.ComplaintTypeID
        LEFT JOIN ComplaintSubTypes cst ON c.SubTypeID = cst.SubTypeID
-       LEFT JOIN Employees e ON c.SubmittedByEmployeeID = e.EmployeeID
+       LEFT JOIN Employees e ON c.EmployeeID = e.EmployeeID
        ${whereClause}
        ORDER BY c.ComplaintDate DESC
        LIMIT 50`,
@@ -576,7 +575,7 @@ const getUserComplaints = async (req, res) => {
       success: true,
       data: complaints,
       userRole: req.user.roleID,
-      isAdmin: req.user.roleID === 1
+      isAdmin: false
     });
 
   } catch (error) {

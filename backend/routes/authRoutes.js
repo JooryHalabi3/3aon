@@ -11,6 +11,12 @@ router.post('/login', authController.login);
 // الحصول على معلومات المستخدم الحالي (بدون middleware)
 router.get('/me', authController.getCurrentUser);
 
+// الحصول على بيانات البروفايل الكاملة للموظف
+router.get('/profile', authController.getProfile);
+
+// تحديث بيانات البروفايل
+router.put('/profile', authController.updateProfile);
+
 // الحصول على جميع الأدوار
 router.get('/roles', authController.getRoles);
 

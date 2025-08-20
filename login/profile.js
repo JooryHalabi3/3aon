@@ -25,18 +25,58 @@ function applyLanguage(lang){
 // جلب البيانات من الـ API
 async function loadProfile(){
   try{
-    const res = await fetch('/api/profile', {
-      headers:{ "Authorization": "Bearer " + localStorage.getItem("token") }
-    });
-    const data = await res.json();
+    const token = localStorage.getItem("token");
+    console.log('التوكن المحفوظ:', token ? 'موجود' : 'غير موجود');
+    
+    if (!token) {
+      console.error('لا يوجد توكن');
+      window.location.href = '/login/login.html';
+      return;
+    }
 
-    document.getElementById('empName').textContent   = data.name      ?? '---';
-    document.getElementById('empPhone').textContent  = data.phone     ?? '---';
-    document.getElementById('empId').textContent     = data.idNumber  ?? '---';
-    document.getElementById('empNumber').textContent = data.empNumber ?? '---';
-    document.getElementById('empEmail').textContent  = data.email     ?? '---';
+    console.log('جاري إرسال طلب للـ API...');
+    const res = await fetch('http://localhost:3001/api/auth/profile', {
+      headers:{ 
+        "Authorization": "Bearer " + token 
+      }
+    });
+    
+    console.log('استجابة الـ API:', res.status, res.statusText);
+    
+    if (!res.ok) {
+      if (res.status === 401) {
+        // التوكن منتهي الصلاحية
+        console.error('التوكن منتهي الصلاحية');
+        localStorage.clear();
+        window.location.href = '/login/login.html';
+        return;
+      }
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    const result = await res.json();
+    console.log('نتيجة الـ API:', result);
+    
+    if (result.success && result.data) {
+      const data = result.data;
+      console.log('البيانات المستلمة:', data);
+      
+      // تحديث البيانات في الصفحة
+      document.getElementById('empName').textContent = data.name || '---';
+      document.getElementById('empPhone').textContent = data.phone || '---';
+      document.getElementById('empId').textContent = data.idNumber || '---';
+      document.getElementById('empNumber').textContent = data.empNumber || '---';
+      document.getElementById('empEmail').textContent = data.email || '---';
+    } else {
+      console.error('خطأ في البيانات المستلمة:', result.message);
+    }
   }catch(err){
     console.error('خطأ في تحميل البيانات', err);
+    // في حالة حدوث خطأ، يمكن إعادة توجيه المستخدم لصفحة تسجيل الدخول
+    if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+      localStorage.clear();
+      window.location.href = '/login/login.html';
+    }
   }
 }
 
@@ -55,7 +95,15 @@ function enableEdit(){
 
   fields.forEach(f=>{
     const el = document.getElementById(f.id);
-    const value = el.textContent;
+    let value;
+    
+    // الحصول على القيمة سواء كانت من div أو input
+    if (el.tagName === 'INPUT') {
+      value = el.value;
+    } else {
+      value = el.textContent;
+    }
+    
     const input = document.createElement('input');
     input.type = f.type;
     input.value = value;
@@ -92,8 +140,10 @@ async function saveEdit(){
     email:     document.getElementById('empEmail').value
   };
 
+  console.log('البيانات المراد حفظها:', updated);
+
   try{
-    const res = await fetch('/api/profile', {
+    const res = await fetch('http://localhost:3001/api/auth/profile', {
       method:'PUT',
       headers:{
         'Content-Type':'application/json',
@@ -102,23 +152,30 @@ async function saveEdit(){
       body: JSON.stringify(updated)
     });
 
+    console.log('استجابة الحفظ:', res.status, res.statusText);
+
     if(res.ok){
+      const result = await res.json();
+      console.log('نتيجة الحفظ:', result);
+      
       alert(currentLang==='ar' ? 'تم حفظ البيانات بنجاح' : 'Data saved successfully');
 
-      Object.keys(updated).forEach(key=>{
-        const input = document.getElementById('emp'+key.charAt(0).toUpperCase()+key.slice(1));
-        const div = document.createElement('div');
-        div.id = input.id;
-        div.className = 'info-value';
-        div.textContent = updated[key];
-        input.replaceWith(div);
-      });
+      // تحديث الواجهة بالبيانات الجديدة
+      document.getElementById('empName').textContent = updated.name;
+      document.getElementById('empPhone').textContent = updated.phone;
+      document.getElementById('empId').textContent = updated.idNumber;
+      document.getElementById('empNumber').textContent = updated.empNumber;
+      document.getElementById('empEmail').textContent = updated.email;
 
       document.getElementById('saveBtn').style.display = 'none';
       document.getElementById('editBtn').style.display = 'inline-block';
       editing = false;
+
+      // إعادة تحميل البيانات من قاعدة البيانات للتأكد من التحديث
+      await loadProfile();
     }else{
-      alert(currentLang==='ar' ? 'خطأ أثناء حفظ البيانات' : 'Error saving data');
+      const errorData = await res.json();
+      alert(currentLang==='ar' ? (errorData.message || 'خطأ أثناء حفظ البيانات') : (errorData.message || 'Error saving data'));
     }
   }catch(err){
     alert(currentLang==='ar' ? 'خطأ في الاتصال بالسيرفر' : 'Server connection error');
