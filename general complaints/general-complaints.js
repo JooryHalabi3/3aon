@@ -1,10 +1,64 @@
 // إعدادات API
 const API_BASE_URL = 'http://localhost:3001/api';
 
+// التحقق من تسجيل الدخول
+function checkAuthentication() {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  
+  if (!token || !user) {
+    alert('يجب تسجيل الدخول أولاً');
+    window.location.href = '/login/login.html';
+    return false;
+  }
+  
+  return true;
+}
+
 // متغيرات عامة
 let complaintsData = [];
 let departments = [];
 let complaintTypes = [];
+
+// تحديث عنوان الصفحة للمدير
+function updatePageTitleForAdmin() {
+  const pageTitle = document.querySelector('h1');
+  if (pageTitle) {
+    pageTitle.textContent = 'الشكاوي العامة';
+  }
+}
+
+// تحديث عنوان الصفحة للمستخدم العادي
+function updatePageTitleForUser() {
+  const pageTitle = document.querySelector('h1');
+  if (pageTitle) {
+    pageTitle.textContent = 'الشكاوي العامة';
+  }
+}
+
+// عرض رسالة للمستخدم عند عدم وجود شكاوي شخصية
+function updatePageForNoUserComplaints() {
+  const complaintsSection = document.querySelector('.complaints');
+  if (complaintsSection) {
+    complaintsSection.innerHTML = `
+      <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 10px; margin: 20px 0;">
+        <div style="font-size: 48px; margin-bottom: 20px;">📝</div>
+        <h3 style="color: #6c757d; margin-bottom: 15px;">لم تقم بتقديم أي شكاوي بعد</h3>
+        <p style="color: #6c757d; margin-bottom: 20px;">
+          يمكنك تقديم شكوى جديدة من خلال النقر على "تقديم شكوى جديدة" في الصفحة الرئيسية
+        </p>
+        <a href="/New complaint/Newcomplaint.html" style="
+          background: #007bff; 
+          color: white; 
+          padding: 10px 20px; 
+          text-decoration: none; 
+          border-radius: 5px;
+          display: inline-block;
+        ">تقديم شكوى جديدة</a>
+      </div>
+    `;
+  }
+}
 
 // جلب جميع الشكاوى
 async function loadComplaints() {
@@ -40,18 +94,52 @@ async function loadComplaints() {
       params.append('complaintType', complaintTypeFilter);
     }
 
-    console.log('معاملات البحث:', params.toString()); // إضافة رسالة تصحيح
+    console.log('معاملات البحث:', params.toString());
 
-    const response = await fetch(`${API_BASE_URL}/general-complaints/stats?${params}`);
+    // الحصول على التوكن من localStorage
+    const token = localStorage.getItem('token');
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // تحديد المسار حسب نوع المستخدم
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    let endpoint = '/complaints/all'; // افتراضياً للمدير
+    
+    if (user.roleID === 2) {
+      // المستخدم العادي: استخدام endpoint الشخصي
+      endpoint = '/complaints/my-complaints';
+    }
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}?${params}`, {
+      method: 'GET',
+      headers: headers
+    });
     const data = await response.json();
     
     console.log('استجابة الخادم:', data); // إضافة رسالة تصحيح
     
     if (data.success) {
-      // البيانات تأتي في data.data.complaints
-      if (data.data && data.data.complaints && Array.isArray(data.data.complaints)) {
-        complaintsData = data.data.complaints;
-        console.log('عدد الشكاوى المحملة:', complaintsData.length); // إضافة رسالة تصحيح
+      // البيانات تأتي في data.data مباشرة
+      if (data.data && Array.isArray(data.data)) {
+        complaintsData = data.data;
+        console.log('عدد الشكاوى المحملة:', complaintsData.length);
+        
+        // تحديث العنوان
+        if (data.isAdmin) {
+          updatePageTitleForAdmin();
+        } else {
+          updatePageTitleForUser();
+          
+          // إذا لم يجد شكاوي، عرض رسالة مناسبة
+          if (complaintsData.length === 0) {
+            updatePageForNoUserComplaints();
+          }
+        }
         
         // التحقق من صحة البيانات
         complaintsData = complaintsData.filter(complaint => {
@@ -170,9 +258,22 @@ function updateComplaintsDisplay() {
 
       const complaintsHTML = complaintsData.map(complaint => {
       try {
+        // تنسيق رقم الشكوى مع padding
+        const complaintNumber = String(complaint.ComplaintID).padStart(6, '0');
+        
+        // تنسيق التاريخ والوقت
         const complaintDate = new Date(complaint.ComplaintDate);
-        const formattedDate = complaintDate.toLocaleDateString('ar-SA') + ' - ' + 
-                             complaintDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        const formattedDate = complaintDate.toLocaleDateString('ar-SA', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+        const formattedTime = complaintDate.toLocaleTimeString('ar-SA', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true 
+        });
+        const fullDateTime = `${formattedDate} - الساعة ${formattedTime}`;
         
         const statusClass = getStatusClass(complaint.CurrentStatus);
         const statusText = getStatusText(complaint.CurrentStatus);
@@ -187,9 +288,9 @@ function updateComplaintsDisplay() {
         return `
           <div class="complaint">
             <div class="complaint-header">
-              <span data-ar="شكوى #${complaint.ComplaintID}" data-en="Complaint #${complaint.ComplaintID}">شكوى #${complaint.ComplaintID}</span>
+              <span data-ar="شكوى #${complaintNumber}" data-en="Complaint #${complaintNumber}">شكوى #${complaintNumber}</span>
               <span class="badge ${statusClass}" data-ar="${statusText}" data-en="${statusText}">${statusText}</span>
-              <span class="date">${formattedDate}</span>
+              <span class="date">${fullDateTime}</span>
             </div>
             <div class="complaint-body">
               <div class="details">
@@ -201,7 +302,7 @@ function updateComplaintsDisplay() {
               </div>
               <div class="info">
                 <h3 data-ar="معلومات المريض" data-en="Patient Info">معلومات المريض</h3>
-                <p data-ar="اسم المريض: ${complaint.patientName || 'غير محدد'}" data-en="Patient Name: ${complaint.patientName || 'Not specified'}">اسم المريض: ${complaint.patientName || 'غير محدد'}</p>
+                <p data-ar="اسم المريض: ${complaint.PatientName || 'غير محدد'}" data-en="Patient Name: ${complaint.PatientName || 'Not specified'}">اسم المريض: ${complaint.PatientName || 'غير محدد'}</p>
                 <p data-ar="رقم الهوية: ${complaint.NationalID_Iqama || 'غير محدد'}" data-en="ID Number: ${complaint.NationalID_Iqama || 'Not specified'}">رقم الهوية: ${complaint.NationalID_Iqama || 'غير محدد'}</p>
                 <p data-ar="رقم الجوال: ${complaint.ContactNumber || 'غير محدد'}" data-en="Phone: ${complaint.ContactNumber || 'Not specified'}">رقم الجوال: ${complaint.ContactNumber || 'غير محدد'}</p>
               </div>
@@ -211,6 +312,7 @@ function updateComplaintsDisplay() {
               <a href="/general complaints/reply.html" class="btn green" data-ar="الرد على الشكوى" data-en="Reply to Complaint">الرد على الشكوى</a>
               <a href="/general complaints/status.html" class="btn gray" data-ar="تغيير الحالة" data-en="Change Status">تغيير الحالة</a>
               <a href="/general complaints/track.html" class="btn track" data-ar="تتبع حالة الشكوى" data-en="Track Complaint">تتبع حالة الشكوى</a>
+              <a href="#" onclick="showTransferModal(${complaint.ComplaintID})" class="btn orange" data-ar="تحويل شكوى" data-en="Transfer Complaint">تحويل شكوى</a>
             </div>
           </div>
         `;
@@ -274,6 +376,56 @@ document.getElementById("exportBtn").addEventListener("click", function () {
   window.location.href = "/dashboard/export.html";
 });
 
+// مراقبة تحديثات حالة الشكاوى
+function listenForStatusUpdates() {
+  // مراقبة تغيير localStorage
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'complaintStatusUpdated') {
+      const updateData = JSON.parse(e.newValue);
+      if (updateData && updateData.complaintId) {
+        console.log('تم اكتشاف تحديث حالة الشكوى:', updateData);
+        updateComplaintStatusInUI(updateData.complaintId, updateData.newStatus);
+      }
+    }
+  });
+
+  // مراقبة التحديثات في نفس النافذة
+  setInterval(() => {
+    const updateData = localStorage.getItem('complaintStatusUpdated');
+    if (updateData) {
+      const parsed = JSON.parse(updateData);
+      const timeDiff = Date.now() - parsed.timestamp;
+      
+      // إذا كان التحديث حديث (أقل من 5 ثواني) وليس من نفس الصفحة
+      if (timeDiff < 5000 && !window.complaintStatusUpdateProcessed) {
+        console.log('تم اكتشاف تحديث حالة محلي:', parsed);
+        updateComplaintStatusInUI(parsed.complaintId, parsed.newStatus);
+        window.complaintStatusUpdateProcessed = true;
+        
+        // إزالة العلامة بعد 10 ثواني
+        setTimeout(() => {
+          window.complaintStatusUpdateProcessed = false;
+        }, 10000);
+      }
+    }
+  }, 1000);
+}
+
+// تحديث حالة الشكوى في الواجهة
+function updateComplaintStatusInUI(complaintId, newStatus) {
+  // البحث عن الشكوى في البيانات المحملة
+  const complaintIndex = complaintsData.findIndex(c => c.ComplaintID === complaintId);
+  if (complaintIndex !== -1) {
+    // تحديث البيانات
+    complaintsData[complaintIndex].CurrentStatus = newStatus;
+    
+    // إعادة عرض الشكاوى لتظهر التحديثات
+    updateComplaintsDisplay();
+    
+    console.log(`تم تحديث حالة الشكوى ${complaintId} إلى ${newStatus}`);
+  }
+}
+
 let currentLang = localStorage.getItem('lang') || 'ar';
 
 function applyLanguage(lang) {
@@ -306,7 +458,12 @@ function applyLanguage(lang) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('تم تحميل صفحة الشكاوى العامة'); // إضافة رسالة تصحيح
+  console.log('تم تحميل صفحة الشكاوى العامة');
+  
+  // التحقق من تسجيل الدخول أولاً
+  if (!checkAuthentication()) {
+    return;
+  }
   
   applyLanguage(currentLang);
 
@@ -325,6 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('بدء تحميل الشكاوى...'); // إضافة رسالة تصحيح
   loadComplaints();
 
+  // بدء مراقبة تحديثات الحالة
+  listenForStatusUpdates();
+
   // إضافة مستمعي الأحداث للفلاتر
   const dateFilter = document.getElementById('dateFilter');
   if (dateFilter) {
@@ -342,6 +502,121 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   console.log('تم إعداد جميع الأحداث بنجاح'); // إضافة رسالة تصحيح
+});
+
+// دوال تحويل الشكوى
+
+let currentComplaintIdForTransfer = null;
+
+// عرض نافذة تحويل الشكوى
+function showTransferModal(complaintId) {
+    currentComplaintIdForTransfer = complaintId;
+    
+    // ملء قائمة الأقسام
+    populateTransferDepartments();
+    
+    // عرض النافذة
+    const modal = document.getElementById('transferModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+// إغلاق نافذة تحويل الشكوى
+function closeTransferModal() {
+    const modal = document.getElementById('transferModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    currentComplaintIdForTransfer = null;
+}
+
+// ملء قائمة الأقسام في نافذة التحويل
+function populateTransferDepartments() {
+    const select = document.getElementById('transferDepartmentSelect');
+    if (!select) return;
+    
+    // مسح الخيارات السابقة
+    select.innerHTML = '<option value="" data-ar="اختر القسم" data-en="Select Department">اختر القسم</option>';
+    
+    // إضافة الأقسام من البيانات المحملة
+    if (departments && Array.isArray(departments)) {
+        departments.forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept.DepartmentID;
+            option.textContent = dept.DepartmentName;
+            select.appendChild(option);
+        });
+    }
+}
+
+// تحويل الشكوى إلى قسم آخر
+async function transferComplaint() {
+    const select = document.getElementById('transferDepartmentSelect');
+    const selectedDepartmentId = select.value;
+    
+    if (!selectedDepartmentId) {
+        alert('يرجى اختيار قسم');
+        return;
+    }
+    
+    if (!currentComplaintIdForTransfer) {
+        alert('خطأ: لم يتم تحديد الشكوى');
+        return;
+    }
+    
+    try {
+        // إظهار رسالة التحميل
+        const transferBtn = document.querySelector('.modal-actions .btn.blue');
+        const originalText = transferBtn.textContent;
+        transferBtn.textContent = 'جاري التحويل...';
+        transferBtn.disabled = true;
+        
+        // إرسال طلب التحويل إلى الباك إند
+        const response = await fetch(`${API_BASE_URL}/complaints/transfer/${currentComplaintIdForTransfer}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+                newDepartmentId: selectedDepartmentId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('تم تحويل الشكوى بنجاح');
+            closeTransferModal();
+            
+            // إعادة تحميل الشكاوى لتحديث البيانات
+            loadComplaints();
+        } else {
+            alert('خطأ في تحويل الشكوى: ' + (data.message || 'حدث خطأ غير متوقع'));
+        }
+        
+    } catch (error) {
+        console.error('خطأ في تحويل الشكوى:', error);
+        alert('خطأ في الاتصال بالخادم');
+    } finally {
+        // إعادة زر التحويل إلى حالته الأصلية
+        const transferBtn = document.querySelector('.modal-actions .btn.blue');
+        transferBtn.textContent = 'تحويل';
+        transferBtn.disabled = false;
+    }
+}
+
+// إغلاق النافذة عند النقر خارجها
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('transferModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeTransferModal();
+            }
+        });
+    }
 });
 
 

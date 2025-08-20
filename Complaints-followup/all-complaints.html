@@ -28,7 +28,7 @@
     <i class="fas fa-user"></i>
     <div class="info-text">
       <span class="label" data-ar="اسم المريض" data-en="Patient Name">اسم المريض</span>
-      <span class="value">أحمد محمد</span>
+      <span class="value" id="patientName">جاري التحميل...</span>
     </div>
   </div>
 
@@ -36,7 +36,7 @@
     <i class="fas fa-file-alt"></i>
     <div class="info-text">
       <span class="label" data-ar="رقم الملف" data-en="File Number">رقم الملف</span>
-      <span class="value">124543</span>
+      <span class="value" id="patientId">جاري التحميل...</span>
     </div>
   </div>
 
@@ -44,7 +44,7 @@
     <i class="fas fa-exclamation-triangle"></i>
     <div class="info-text">
       <span class="label" data-ar="عدد الشكاوى" data-en="Number of Complaints">عدد الشكاوى</span>
-      <span class="value">5</span>
+      <span class="value" id="complaintsCount">0</span>
     </div>
   </div>
 
@@ -96,56 +96,13 @@
         <th data-ar="رقم الشكوى" data-en="Complaint ID">رقم الشكوى</th>
         <th data-ar="نوع الشكوى" data-en="Complaint Type">نوع الشكوى</th>
         <th data-ar="القسم" data-en="Department">القسم</th>
-        <th data-ar="التاريخ" data-en="Date">التاريخ</th>
+        <th data-ar="التاريخ والوقت" data-en="Date & Time">التاريخ والوقت</th>
         <th data-ar="الحالة" data-en="Status">الحالة</th>
         <th data-ar="التفاصيل" data-en="Details">التفاصيل</th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>#12456</td>
-        <td data-ar="تأخير الدخول" data-en="Entry Delay">تأخير الدخول</td>
-        <td data-ar="الطوارئ" data-en="Emergency">الطوارئ</td>
-        <td>02/07/2024</td>
-        <td><span class="status-tag status-under-review" data-ar="قيد المراجعة" data-en="Under Review">قيد المراجعة</span></td>
-        <td><a href="/general complaints/details.html" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a></td>
-      </tr>
-      <tr>
-        <td>#12453</td>
-        <td data-ar="نظافة الغرفة" data-en="Room Cleanliness">نظافة الغرفة</td>
-        <td data-ar="التنويم" data-en="Inpatient">التنويم</td>
-        <td>01/07/2024</td>
-        <td><span class="status-tag status-closed" data-ar="مغلقة" data-en="Closed">مغلقة</span></td>
-        <td>
-          <a href="/general complaints/details.html" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
-        </td>
-      </tr>
-      <tr>
-        <td>#12447</td>
-        <td data-ar="تأخير النتائج" data-en="Result Delay">تأخير النتائج</td>
-        <td data-ar="المختبر" data-en="Laboratory">المختبر</td>
-        <td>30/06/2024</td>
-        <td><span class="status-tag status-under-review" data-ar="قيد المراجعة" data-en="Under Review">قيد المراجعة</span></td>
-        <td><a href="/general complaints/details.html" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a></td>
-      </tr>
-      <tr>
-        <td>#12431</td>
-        <td data-ar="نقص علاج" data-en="Medication Shortage">نقص علاج</td>
-        <td data-ar="العيادات" data-en="Clinics">العيادات</td>
-        <td>28/06/2024</td>
-        <td><span class="status-tag status-closed" data-ar="مغلقة" data-en="Closed">مغلقة</span></td>
-        <td>
-          <a href="#" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
-        </td>
-      </tr>
-      <tr>
-        <td>#12418</td>
-        <td data-ar="تعامل الموظف" data-en="Staff Behavior">تعامل الموظف</td>
-        <td data-ar="الطوارئ" data-en="Emergency">الطوارئ</td>
-        <td>26/06/2024</td>
-        <td><span class="status-tag status-new" data-ar="جديدة" data-en="New">جديدة</span></td>
-        <td><a href="/general complaints/details.html" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a></td>
-      </tr>
+      <!-- سيتم ملء البيانات من قاعدة البيانات تلقائياً -->
     </tbody>
   </table>
 </section>

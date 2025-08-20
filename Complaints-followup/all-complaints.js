@@ -1,40 +1,94 @@
 // إعدادات API
 const API_BASE_URL = 'http://localhost:3001/api';
 
+// التحقق من تسجيل الدخول
+function checkAuthentication() {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  
+  if (!token || !user) {
+    alert('يجب تسجيل الدخول أولاً');
+    window.location.href = '/login/login.html';
+    return false;
+  }
+  
+  return true;
+}
+
 // متغيرات عامة
 let patientData = null;
 let complaintsData = [];
 
-// جلب شكاوى المريض
+// جلب شكاوى المريض أو الموظف حسب الصلاحيات
 async function loadPatientComplaints() {
-  const nationalId = localStorage.getItem("patientNationalId");
-  
-  if (!nationalId) {
-    alert("لا يوجد رقم هوية للمريض");
-    return;
-  }
-
   try {
-    const response = await fetch(`${API_BASE_URL}/complaints/patient/${nationalId}`);
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    let url, headers = { 'Content-Type': 'application/json' };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // تحديد المسار حسب نوع المستخدم
+    if (user.roleID === 1 || user.username === 'admin') {
+      // المدير: جلب جميع الشكاوي
+      url = `${API_BASE_URL}/complaints/all`;
+    } else {
+      // المستخدم العادي: جلب شكاوى المريض
+      const nationalId = localStorage.getItem("patientNationalId") || localStorage.getItem("patientId");
+      
+      if (!nationalId) {
+        alert("لا يوجد رقم هوية للمريض");
+        window.location.href = "/Complaints-followup/followup.html";
+        return;
+      }
+      
+      url = `${API_BASE_URL}/complaints/patient/${nationalId}`;
+    }
+
+    const response = await fetch(url, { headers });
     const data = await response.json();
     
     if (data.success) {
-      patientData = data.data.patient;
-      complaintsData = data.data.complaints;
-      
-      // تحديث معلومات المريض
-      updatePatientInfo();
+      // تحديد نوع البيانات حسب الاستجابة
+      if (data.data && data.data.patient) {
+        // استجابة شكاوى مريض محدد
+        patientData = data.data.patient;
+        complaintsData = data.data.complaints;
+        updatePatientInfo();
+      } else if (Array.isArray(data.data)) {
+        // استجابة جميع الشكاوي (للمدير)
+        patientData = { name: 'جميع المرضى', nationalId: 'المدير' };
+        complaintsData = data.data;
+        updatePatientInfoForAdmin();
+      }
       
       // تحديث قائمة الشكاوى
       updateComplaintsTable();
       
     } else {
-      alert("لا توجد شكاوى لهذا المريض");
+      alert("لا توجد شكاوى لعرضها");
+      window.location.href = "/Complaints-followup/followup.html";
     }
   } catch (error) {
     console.error('خطأ في جلب شكاوى المريض:', error);
-    alert("حدث خطأ في الاتصال بالخادم");
+    alert("حدث خطأ في الاتصال بالخادم. يرجى المحاولة مرة أخرى.");
+    // إعادة توجيه لصفحة المتابعة في حالة الخطأ
+    window.location.href = "/Complaints-followup/followup.html";
   }
+}
+
+// تحديث معلومات المريض للمدير
+function updatePatientInfoForAdmin() {
+  const patientNameEl = document.getElementById('patient-name');
+  const patientIdEl = document.getElementById('patient-id');
+  const complaintsCountEl = document.getElementById('complaints-count');
+  
+  if (patientNameEl) patientNameEl.textContent = 'جميع الشكاوي';
+  if (patientIdEl) patientIdEl.textContent = 'جميع المرضى';
+  if (complaintsCountEl) complaintsCountEl.textContent = complaintsData.length;
 }
 
 // تحديث معلومات المريض
@@ -42,19 +96,19 @@ function updatePatientInfo() {
   if (!patientData) return;
 
   // تحديث اسم المريض
-  const patientNameElement = document.querySelector('.info-group .value');
+  const patientNameElement = document.getElementById('patientName');
   if (patientNameElement) {
     patientNameElement.textContent = patientData.name;
   }
 
   // تحديث رقم الملف (رقم الهوية)
-  const fileNumberElement = document.querySelectorAll('.info-group .value')[1];
+  const fileNumberElement = document.getElementById('patientId');
   if (fileNumberElement) {
     fileNumberElement.textContent = patientData.nationalId;
   }
 
   // تحديث عدد الشكاوى
-  const complaintsCountElement = document.querySelectorAll('.info-group .value')[2];
+  const complaintsCountElement = document.getElementById('complaintsCount');
   if (complaintsCountElement) {
     complaintsCountElement.textContent = complaintsData.length;
   }
@@ -67,22 +121,46 @@ function updateComplaintsTable() {
 
   tbody.innerHTML = '';
 
+  if (complaintsData.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+          <span data-ar="لا توجد شكاوى مسجلة" data-en="No complaints found">لا توجد شكاوى مسجلة</span>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   complaintsData.forEach(complaint => {
     const row = document.createElement('tr');
     
-    // تنسيق التاريخ
+    // تنسيق رقم الشكوى مع padding
+    const complaintNumber = String(complaint.ComplaintID).padStart(6, '0');
+    
+    // تنسيق التاريخ والوقت
     const complaintDate = new Date(complaint.ComplaintDate);
-    const formattedDate = complaintDate.toLocaleDateString('ar-SA');
+    const formattedDate = complaintDate.toLocaleDateString('ar-SA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const formattedTime = complaintDate.toLocaleTimeString('ar-SA', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    const fullDateTime = `${formattedDate}<br><small style="color: #666;">${formattedTime}</small>`;
     
     // تنسيق حالة الشكوى
     const statusClass = getStatusClass(complaint.CurrentStatus);
     const statusText = getStatusText(complaint.CurrentStatus);
     
     row.innerHTML = `
-      <td>#${complaint.ComplaintID}</td>
+      <td><strong>#${complaintNumber}</strong></td>
       <td>${complaint.ComplaintTypeName}</td>
       <td>${complaint.DepartmentName}</td>
-      <td>${formattedDate}</td>
+      <td>${fullDateTime}</td>
       <td><span class="status-tag ${statusClass}" data-ar="${statusText}" data-en="${statusText}">${statusText}</span></td>
       <td>
         <a href="#" onclick="viewComplaintDetails(${complaint.ComplaintID})" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
@@ -178,20 +256,45 @@ function updateComplaintsTableWithData(complaints) {
 
   tbody.innerHTML = '';
 
+  if (complaints.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+          <span data-ar="لا توجد نتائج مطابقة للبحث" data-en="No matching results found">لا توجد نتائج مطابقة للبحث</span>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   complaints.forEach(complaint => {
     const row = document.createElement('tr');
     
+    // تنسيق رقم الشكوى مع padding
+    const complaintNumber = String(complaint.ComplaintID).padStart(6, '0');
+    
+    // تنسيق التاريخ والوقت
     const complaintDate = new Date(complaint.ComplaintDate);
-    const formattedDate = complaintDate.toLocaleDateString('ar-SA');
+    const formattedDate = complaintDate.toLocaleDateString('ar-SA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const formattedTime = complaintDate.toLocaleTimeString('ar-SA', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    const fullDateTime = `${formattedDate}<br><small style="color: #666;">${formattedTime}</small>`;
     
     const statusClass = getStatusClass(complaint.CurrentStatus);
     const statusText = getStatusText(complaint.CurrentStatus);
     
     row.innerHTML = `
-      <td>#${complaint.ComplaintID}</td>
+      <td><strong>#${complaintNumber}</strong></td>
       <td>${complaint.ComplaintTypeName}</td>
       <td>${complaint.DepartmentName}</td>
-      <td>${formattedDate}</td>
+      <td>${fullDateTime}</td>
       <td><span class="status-tag ${statusClass}" data-ar="${statusText}" data-en="${statusText}">${statusText}</span></td>
       <td>
         <a href="#" onclick="viewComplaintDetails(${complaint.ComplaintID})" class="details-link" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
@@ -210,13 +313,26 @@ function exportResults() {
   }
 
   // إنشاء ملف CSV
-  let csvContent = "رقم الشكوى,نوع الشكوى,القسم,التاريخ,الحالة\n";
+  let csvContent = "رقم الشكوى,نوع الشكوى,القسم,التاريخ,الوقت,الحالة\n";
   
   complaintsData.forEach(complaint => {
-    const complaintDate = new Date(complaint.ComplaintDate);
-    const formattedDate = complaintDate.toLocaleDateString('ar-SA');
+    // تنسيق رقم الشكوى
+    const complaintNumber = String(complaint.ComplaintID).padStart(6, '0');
     
-    csvContent += `${complaint.ComplaintID},${complaint.ComplaintTypeName},${complaint.DepartmentName},${formattedDate},${complaint.CurrentStatus}\n`;
+    // تنسيق التاريخ والوقت
+    const complaintDate = new Date(complaint.ComplaintDate);
+    const formattedDate = complaintDate.toLocaleDateString('ar-SA', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const formattedTime = complaintDate.toLocaleTimeString('ar-SA', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    
+    csvContent += `#${complaintNumber},${complaint.ComplaintTypeName},${complaint.DepartmentName},${formattedDate},${formattedTime},${complaint.CurrentStatus}\n`;
   });
 
   // تحميل الملف
@@ -237,6 +353,56 @@ function goBack() {
 }
 
 // تطبيق اللغة
+// مراقبة تحديثات حالة الشكاوى
+function listenForStatusUpdates() {
+  // مراقبة تغيير localStorage
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'complaintStatusUpdated') {
+      const updateData = JSON.parse(e.newValue);
+      if (updateData && updateData.complaintId) {
+        console.log('تم اكتشاف تحديث حالة الشكوى:', updateData);
+        updateComplaintStatusInUI(updateData.complaintId, updateData.newStatus);
+      }
+    }
+  });
+
+  // مراقبة التحديثات في نفس النافذة
+  setInterval(() => {
+    const updateData = localStorage.getItem('complaintStatusUpdated');
+    if (updateData) {
+      const parsed = JSON.parse(updateData);
+      const timeDiff = Date.now() - parsed.timestamp;
+      
+      // إذا كان التحديث حديث (أقل من 5 ثواني) وليس من نفس الصفحة
+      if (timeDiff < 5000 && !window.complaintStatusUpdateProcessed) {
+        console.log('تم اكتشاف تحديث حالة محلي:', parsed);
+        updateComplaintStatusInUI(parsed.complaintId, parsed.newStatus);
+        window.complaintStatusUpdateProcessed = true;
+        
+        // إزالة العلامة بعد 10 ثواني
+        setTimeout(() => {
+          window.complaintStatusUpdateProcessed = false;
+        }, 10000);
+      }
+    }
+  }, 1000);
+}
+
+// تحديث حالة الشكوى في الواجهة
+function updateComplaintStatusInUI(complaintId, newStatus) {
+  // البحث عن الشكوى في البيانات المحملة
+  const complaintIndex = complaintsData.findIndex(c => c.ComplaintID === complaintId);
+  if (complaintIndex !== -1) {
+    // تحديث البيانات
+    complaintsData[complaintIndex].CurrentStatus = newStatus;
+    
+    // إعادة عرض الشكاوى لتظهر التحديثات
+    updateComplaintsTable();
+    
+    console.log(`تم تحديث حالة الشكوى ${complaintId} إلى ${newStatus} في صفحة المريض`);
+  }
+}
+
 let currentLang = localStorage.getItem('lang') || 'ar';
 
 function applyLanguage(lang) {
@@ -270,6 +436,11 @@ function applyLanguage(lang) {
 
 // عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
+  // التحقق من تسجيل الدخول أولاً
+  if (!checkAuthentication()) {
+    return;
+  }
+  
   applyLanguage(currentLang);
 
   const toggleBtn = document.getElementById('langToggle');
@@ -285,6 +456,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (applyFiltersBtn) {
     applyFiltersBtn.addEventListener('click', applyFilters);
   }
+
+  // بدء مراقبة تحديثات الحالة
+  listenForStatusUpdates();
 
   // تحميل شكاوى المريض
   loadPatientComplaints();

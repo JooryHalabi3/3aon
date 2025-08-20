@@ -5,7 +5,6 @@ body {
   direction: rtl;
 }
 
-
 body.lang-ar {
   font-family: 'Tajawal', sans-serif !important;
 }
@@ -14,11 +13,8 @@ body.lang-en {
   font-family: 'Merriweather', serif !important;
 }
 
-
-
-
 .lang-toggle-btn {
-  background-color: #3686cbbc; /* أزرق */
+  background-color: #3686cbbc;
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -32,7 +28,7 @@ body.lang-en {
 }
 
 .lang-toggle-btn:hover {
-  background-color: #1565c0; /* أزرق غامق عند الهوفر */
+  background-color: #1565c0;
 }
 
 .lang-icon {
@@ -40,9 +36,6 @@ body.lang-en {
   height: 20px;
 }
 
-
-
-/* رأس الصفحة */
 .header {
   background-color: white;
   padding: 15px 30px;
@@ -68,12 +61,11 @@ body.lang-en {
 .container {
   background: #fff;
   max-width: 370px;
-  margin: 40px auto 0 auto; /* تم تقليل المسافة العلوية */
+  margin: 40px auto 0 auto;
   padding: 32px 28px 24px 28px;
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
   text-align: center;
-  /* الحركة */
   opacity: 0;
   transform: translateY(30px);
   animation: fadeIn 0.6s ease-out forwards;

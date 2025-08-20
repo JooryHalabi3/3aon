@@ -18,70 +18,22 @@ function getFont() {
 
 // جلب بيانات بلاغات سوء التعامل من الباك إند
 async function loadMisconductData() {
+    console.log('🔄 بدء جلب بيانات بلاغات سوء التعامل...');
+    
     try {
-        console.log('🔄 بدء جلب بيانات بلاغات سوء التعامل من الباك إند...');
-        
-        // فحص وجود canvas قبل البدء
-        const canvas = document.getElementById('misconductChart');
-        console.log('🔍 فحص canvas في بداية loadMisconductData:', canvas);
-        
-        // إظهار مؤشر التحميل
-        const chartContainer = document.querySelector('.relative.w-full');
-        if (chartContainer) {
-            chartContainer.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div><p class="mt-4 text-gray-600">جاري تحميل البيانات...</p><p class="text-sm text-gray-500 mt-2">يرجى الانتظار...</p></div></div>';
-        }
-        
-        // تحديد الفترة الزمنية من التواريخ المحددة أو آخر 30 يوم افتراضياً
-        let toDate = new Date().toISOString().split('T')[0];
-        let fromDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
-        // استخدام التواريخ المحددة من المستخدم إذا كانت متوفرة
-        if (dateFromPicker && dateFromPicker.selectedDates[0]) {
-            fromDate = dateFromPicker.selectedDates[0].toISOString().split('T')[0];
-        }
-        if (dateToPicker && dateToPicker.selectedDates[0]) {
-            toDate = dateToPicker.selectedDates[0].toISOString().split('T')[0];
-        }
-        
-        console.log('📅 الفترة الزمنية:', { fromDate, toDate });
-        
-        const params = new URLSearchParams({
-            fromDate,
-            toDate
-        });
-
-        const url = `${API_BASE_URL}/misconduct/stats?${params}`;
-        console.log('🌐 إرسال طلب إلى:', url);
-
-        // إضافة timeout للطلب
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 ثواني timeout
-
-        const response = await fetch(url, {
-            signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        console.log('📡 استجابة الخادم:', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok,
-            headers: Object.fromEntries(response.headers.entries())
-        });
+        // جلب البيانات مباشرة من API
+        const response = await fetch(`${API_BASE_URL}/misconduct/stats`);
+        console.log('📡 Response status:', response.status);
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
         const result = await response.json();
-
-        console.log('📊 استجابة الباك إند:', result);
-
+        console.log('📊 API Response:', result);
+        
         if (result.success) {
-            console.log('📊 البيانات المستلمة:', result.data);
-            
-            // معالجة البيانات من الباك إند
+            console.log('✅ نجح جلب البيانات، معالجة البيانات...');
             processMisconductData(result.data);
             
             // إعادة إنشاء الرسم البياني
@@ -89,85 +41,72 @@ async function loadMisconductData() {
                 misconductChart.destroy();
             }
             
-            // إنشاء canvas ديناميكياً
+            // إنشاء الرسم البياني
             createChartDynamically();
             
-            function createChartDynamically() {
-                // البحث عن container
-                const chartContainer = document.querySelector('.relative.w-full');
-                console.log('🔍 البحث عن chart container:', chartContainer);
-                
-                if (chartContainer) {
-                    // إنشاء canvas جديد
-                    const newCanvas = document.createElement('canvas');
-                    newCanvas.id = 'misconductChart';
-                    newCanvas.width = 800;
-                    newCanvas.height = 400;
-                    newCanvas.style.width = '100%';
-                    newCanvas.style.height = '100%';
-                    
-                    // مسح المحتوى وإضافة canvas
-                    chartContainer.innerHTML = '';
-                    chartContainer.appendChild(newCanvas);
-                    
-                    console.log('✅ تم إنشاء canvas جديد:', newCanvas);
-                    
-                    try {
-                        misconductChart = createMisconductBarChart(newCanvas, misconductData);
-                        console.log('✅ تم إنشاء الرسم البياني بنجاح');
-                    } catch (error) {
-                        console.error('❌ خطأ في إنشاء الرسم البياني:', error);
-                    }
-                } else {
-                    console.error('❌ لم يتم العثور على chart container');
-                }
-            }
-            
-            console.log('✅ تم تحميل بيانات بلاغات سوء التعامل بنجاح');
         } else {
-            console.error('❌ خطأ في جلب البيانات:', result.message);
-            showError('فشل في تحميل البيانات من الخادم: ' + result.message);
+            throw new Error('فشل في معالجة البيانات من الخادم');
         }
+        
     } catch (error) {
-        console.error('❌ خطأ في الاتصال بالخادم:', error);
+        console.error('❌ خطأ في جلب البيانات:', error);
+        showNoDataMessage();
+    }
+}
+
+// إنشاء canvas ديناميكياً وإنشاء الرسم البياني
+function createChartDynamically() {
+    const chartContainer = document.querySelector('.relative.w-full');
+    console.log('🔍 البحث عن chart container:', chartContainer);
+    
+    if (chartContainer) {
+        // إنشاء canvas جديد
+        const newCanvas = document.createElement('canvas');
+        newCanvas.id = 'misconductChart';
+        newCanvas.width = 800;
+        newCanvas.height = 400;
+        newCanvas.style.width = '100%';
+        newCanvas.style.height = '100%';
         
-        let errorMessage = 'خطأ في الاتصال بالخادم';
+        // مسح المحتوى وإضافة canvas
+        chartContainer.innerHTML = '';
+        chartContainer.appendChild(newCanvas);
         
-        if (error.name === 'AbortError') {
-            errorMessage = 'انتهت مهلة الاتصال بالخادم (timeout)';
-        } else if (error.message.includes('Failed to fetch')) {
-            errorMessage = 'لا يمكن الاتصال بالخادم - تأكد من تشغيل الباك إند';
-        } else {
-            errorMessage = error.message;
+        console.log('✅ تم إنشاء canvas جديد:', newCanvas);
+        
+        try {
+            misconductChart = createMisconductBarChart(newCanvas, misconductData);
+            console.log('✅ تم إنشاء الرسم البياني بنجاح');
+        } catch (error) {
+            console.error('❌ خطأ في إنشاء الرسم البياني:', error);
+            showNoDataMessage();
         }
-        
-        // إظهار رسالة خطأ مفصلة
-        const chartContainer = document.querySelector('.relative.w-full');
-        if (chartContainer) {
-            chartContainer.innerHTML = `
-                <div class="flex items-center justify-center h-full">
-                    <div class="text-center">
-                        <div class="text-red-500 text-xl mb-4">⚠️</div>
-                        <p class="text-red-600 text-lg">فشل في تحميل البيانات</p>
-                        <p class="text-gray-500 text-sm mt-2">${errorMessage}</p>
-                        <div class="mt-4 space-y-2">
-                            <p class="text-xs text-gray-400">تأكد من:</p>
-                            <ul class="text-xs text-gray-400 text-right">
-                                <li>• تشغيل الباك إند على المنفذ 3001</li>
-                                <li>• وجود بيانات في قاعدة البيانات</li>
-                                <li>• صحة إعدادات قاعدة البيانات</li>
-                                <li>• وجود نوع الشكوى "الكوادر الصحية وسلوكهم"</li>
-                            </ul>
-                        </div>
-                        <button onclick="loadMisconductData()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                            إعادة المحاولة
-                        </button>
+    } else {
+        console.error('❌ لم يتم العثور على chart container');
+    }
+}
+
+// عرض رسالة عدم وجود بيانات
+function showNoDataMessage() {
+    const chartContainer = document.querySelector('.relative.w-full');
+    if (chartContainer) {
+        chartContainer.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                    <div class="text-gray-500 text-6xl mb-4">📊</div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">لا توجد بلاغات سوء تعامل</h3>
+                    <p class="text-gray-500 mb-4">لم يتم العثور على أي بلاغات سوء تعامل في قاعدة البيانات</p>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-blue-800 text-sm">
+                            💡 <strong>نصيحة:</strong> تأكد من وجود شكاوى بنوع "الكوادر الصحية وسلوكهم" في قاعدة البيانات
+                        </p>
                     </div>
+                    <button onclick="loadMisconductData()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                        إعادة المحاولة
+                    </button>
                 </div>
-            `;
-        }
-        
-        showError(errorMessage);
+            </div>
+        `;
     }
 }
 
@@ -176,26 +115,11 @@ function processMisconductData(data) {
     console.log('🔧 معالجة البيانات المستلمة:', data);
     
     const departments = data.byDepartment || [];
-    
     console.log('📋 البيانات الخام حسب القسم:', departments);
     
     // إذا لم توجد بيانات، عرض رسالة
     if (departments.length === 0) {
-        const chartContainer = document.querySelector('.relative.w-full');
-        if (chartContainer) {
-            chartContainer.innerHTML = `
-                <div class="flex items-center justify-center h-full">
-                    <div class="text-center">
-                        <div class="text-gray-500 text-xl mb-4">📊</div>
-                        <p class="text-gray-600 text-lg">لا توجد بيانات بلاغات سوء التعامل في الفترة المحددة</p>
-                        <p class="text-gray-500 text-sm mt-2">جرب تغيير الفترة الزمنية أو إضافة بلاغات جديدة</p>
-                        <button onclick="loadMisconductData()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                            إعادة المحاولة
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
+        showNoDataMessage();
         return;
     }
     
@@ -266,7 +190,6 @@ function getSpecialtyBorderColor(specialty) {
 // إظهار رسالة خطأ
 function showError(message) {
     console.error('❌ خطأ:', message);
-    alert(message);
 }
 
 // تصدير التقرير
@@ -341,37 +264,12 @@ function createMisconductBarChart(ctx, chartData) {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: true,
-                    position: 'bottom',
-                    labels: {
-                        font: {
-                            family: getFont(),
-                            size: 14
-                        },
-                        usePointStyle: true,
-                        padding: 20
-                    }
+                    display: false
                 },
                 tooltip: {
                     rtl: currentLang === 'ar',
                     bodyFont: { family: getFont() },
-                    titleFont: { family: getFont() },
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${context.parsed.y}`;
-                        }
-                    }
-                },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    color: '#333',
-                    font: {
-                        weight: 'bold',
-                        size: 14,
-                        family: getFont()
-                    },
-                    formatter: value => (value > 0 ? value : '')
+                    titleFont: { family: getFont() }
                 }
             },
             scales: {
@@ -405,8 +303,7 @@ function createMisconductBarChart(ctx, chartData) {
                     },
                 }
             }
-        },
-        plugins: [ChartDataLabels]
+        }
     });
 }
 
@@ -423,7 +320,6 @@ function updateAllContent() {
         misconductChart.options.plugins.tooltip.rtl = currentLang === 'ar';
         misconductChart.options.plugins.tooltip.bodyFont.family = font;
         misconductChart.options.plugins.tooltip.titleFont.family = font;
-        misconductChart.options.plugins.datalabels.font.family = font;
         misconductChart.options.scales.x.ticks.font.family = font;
         misconductChart.options.scales.y.ticks.font.family = font;
         misconductChart.update();
@@ -490,9 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportReportBtn = document.getElementById('exportReportBtn');
     const applyFilterBtn = document.getElementById('applyFilterBtn');
 
-    // Register ChartDataLabels plugin
-    Chart.register(ChartDataLabels);
-
     // Initialize Flatpickr
     dateFromPicker = flatpickr("#dateFrom", {
         dateFormat: "Y-m-d",
@@ -507,10 +400,10 @@ document.addEventListener('DOMContentLoaded', () => {
         maxDate: 'today'
     });
 
-    // تحميل البيانات من الباك إند بعد انتظار تحميل DOM
-    setTimeout(() => {
-        loadMisconductData();
-    }, 500);
+    // إضافة مستمعي الأحداث للفلاتر (إذا لزم الأمر لاحقاً)
+
+    // تحميل البيانات الأولية
+    loadMisconductData();
 
     // Now, call applyLanguage to set initial language and update all content
     applyLanguage(currentLang);

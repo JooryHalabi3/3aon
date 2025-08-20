@@ -118,22 +118,43 @@
         <span data-ar="المرفقات" data-en="Attachments">المرفقات</span>
       </h3>
 
-      <div class="upload-box" onclick="triggerUpload()">
-        <input type="file" id="attachments" accept="image/*" multiple style="display: none;" onchange="previewImage(event)" />
-        
-        <label for="attachments" class="custom-upload-box" id="preview-area">
-          <img src="/icon/attachment .png" alt="أيقونة إرفاق" class="clip-icon" />
-          <p>
-            <span data-ar="اضغط لاختيار الملفات أو قم بسحب وإفلات الملفات هنا"
-                  data-en="Click to choose files or drag and drop them here">
-              اضغط لاختيار الملفات أو قم بسحب وإفلات الملفات هنا
-            </span><br>
-            <span class="note" data-ar="(PDF أو صورة بحد أقصى 15 ميجابايت)"
-                  data-en="(PDF or image up to 15MB)">
-              (PDF أو صورة بحد أقصى 15 ميجابايت)
-            </span>
-          </p>
-        </label>
+      <div class="attachments-container">
+        <!-- منطقة رفع الملفات -->
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="attachments" accept="image/*,.pdf,.doc,.docx" multiple style="display: none;" onchange="handleFileUpload(event)" />
+          
+          <div class="upload-content">
+            <img src="/icon/attachment .png" alt="أيقونة إرفاق" class="upload-icon" />
+            <div class="upload-text">
+              <p data-ar="اضغط هنا لاختيار الملفات أو اسحبها" data-en="Click here to select files or drag them">
+                اضغط هنا لاختيار الملفات أو اسحبها
+              </p>
+              <span class="file-types" data-ar="صور، PDF، Word (حد أقصى 15 ميجابايت)" data-en="Images, PDF, Word (max 15MB)">
+                صور، PDF، Word (حد أقصى 15 ميجابايت)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- قائمة الملفات المرفقة -->
+        <div class="attachments-list" id="attachmentsList" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h4 data-ar="الملفات المرفقة" data-en="Attached Files">الملفات المرفقة</h4>
+            <button type="button" onclick="document.getElementById('attachments').click()" class="add-more-btn">
+              <img src="/icon/plus.png" alt="إضافة" style="width: 16px; height: 16px; margin-left: 8px;">
+              <span data-ar="إضافة ملفات" data-en="Add Files">إضافة ملفات</span>
+            </button>
+          </div>
+          <div class="files-grid" id="filesGrid"></div>
+        </div>
+
+        <!-- شريط التقدم -->
+        <div class="upload-progress" id="uploadProgress" style="display: none;">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <span class="progress-text" id="progressText">0%</span>
+        </div>
       </div>
     </section>
 

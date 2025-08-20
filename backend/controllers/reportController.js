@@ -244,16 +244,16 @@ const getComplaintsForExport = async (req, res) => {
     if (dataTypes && (dataTypes.includes('attachments') || dataTypes.includes('all'))) {
       const complaintIds = complaints.map(c => c.ComplaintID);
       if (complaintIds.length > 0) {
-        const [attachmentsData] = await pool.execute(`
-          SELECT 
-            ca.ComplaintID,
-            ca.FileName,
-            ca.FileType,
-            ca.FileSize,
-            ca.FilePath
-          FROM ComplaintAttachments ca
-          WHERE ca.ComplaintID IN (${complaintIds.map(() => '?').join(',')})
-        `, complaintIds);
+       const [attachmentsData] = await pool.execute(`
+  SELECT 
+    a.ComplaintID,
+    a.FileName,
+    a.FileType,
+    a.FileSize,
+    a.FilePath
+  FROM Attachments a
+  WHERE a.ComplaintID IN (${complaintIds.map(() => '?').join(',')})
+`, complaintIds);
         attachments = attachmentsData;
       }
     }

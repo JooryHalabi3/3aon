@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مؤشر الشكاوى</title>
+    <title>مؤشر الطلبات العامة</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="general-requests.css">
@@ -47,7 +47,7 @@
             <li><a href="pressganey.html" class="menu-link" data-ar="مؤشر بريسيبي" data-en="Press Ganey Index">مؤشر بريسيبي</a></li>
             <li><a href="inperson-complaints.html" class="menu-link" data-ar="مؤشر الشكاوى الحضورية" data-en="In-person Complaints">مؤشر الشكاوى الحضورية</a></li>
             <li><a href="secret-visitor.html" class="menu-link" data-ar="ملاحظات الزائر السري" data-en="Secret Visitor Notes">ملاحظات الزائر السري</a></li>
-            <li><a href="general-requests.html" class="menu-link active" data-ar="مؤشر الشكاوى" data-en="Complaints Index">مؤشر الشكاوى</a></li>
+            <li><a href="general-requests.html" class="menu-link active" data-ar="مؤشر الطلبات العامة" data-en="General Requests Index">مؤشر الطلبات العامة</a></li>
         </ul>
     </aside>
 
@@ -55,30 +55,34 @@
     <div class="flex-1 flex flex-col p-8 overflow-auto" style="margin-right: 250px; margin-top: 75px;">
         <!-- Chart Section -->
         <div class="bg-white rounded-lg shadow-md p-6 flex-1">
-            <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center" data-ar="الشكاوى المغلقة والمفتوحة حسب الأقسام" data-en="Closed and Open Complaints by Departments">الشكاوى المغلقة والمفتوحة حسب الأقسام</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-6 text-center" data-ar="الطلبات العامة المنفذة وغير المنفذة حسب النوع" data-en="Fulfilled and Unfulfilled General Requests by Type">الطلبات العامة المنفذة وغير المنفذة حسب النوع</h2>
 
             <!-- Chart Legend -->
             <div class="flex justify-center items-center mb-8">
                 <div class="flex items-center ml-4">
                     <span class="w-4 h-4 rounded-full bg-red-500 ml-2"></span>
-                    <span class="text-gray-700 text-sm" data-ar="مفتوحة (جميع الحالات ما عدا مغلقة)" data-en="Open (All except Closed)">مفتوحة (جميع الحالات ما عدا مغلقة)</span>
+                    <span class="text-gray-700 text-sm" data-ar="غير منفذ" data-en="Unfulfilled">غير منفذ</span>
                 </div>
                 <div class="flex items-center">
                     <span class="w-4 h-4 rounded-full bg-green-500 ml-2"></span>
-                    <span class="text-gray-700 text-sm" data-ar="مغلقة" data-en="Closed">مغلقة</span>
+                    <span class="text-gray-700 text-sm" data-ar="منفذ" data-en="Fulfilled">منفذ</span>
                 </div>
             </div>
 
             <!-- Chart.js Canvas -->
-            <div class="relative w-full h-80">
-                <canvas id="generalRequestsChart"></canvas>
+            <div class="relative w-full" style="height: 350px;">
+                <canvas id="generalRequestsChart" style="width: 100%; height: 350px; max-width: 100%; max-height: 350px;"></canvas>
             </div>
 
             <!-- Buttons for Export Report and AI Insights -->
             <div class="flex justify-center mt-8 space-x-4 space-x-reverse"> <!-- space-x-reverse for RTL spacing -->
+                <button id="checkDataBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full shadow-lg flex items-center">
+                    <i class="fas fa-search ml-2"></i>
+                    <span data-ar="فحص البيانات" data-en="Check Data">فحص البيانات</span>
+                </button>
                 <button id="addRequestBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg flex items-center">
                     <i class="fas fa-plus ml-2"></i>
-                    <span data-ar="إضافة شكوى جديدة" data-en="Add New Complaint">إضافة شكوى جديدة</span>
+                    <span data-ar="إضافة طلب جديد" data-en="Add New Request">إضافة طلب جديد</span>
                 </button>
                 <button id="exportReportBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg flex items-center">
                     <i class="fas fa-download ml-2"></i>

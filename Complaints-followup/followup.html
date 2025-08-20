@@ -9,12 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
-<body>    <div class="back-button">
-      <a href="#" onclick="goBack()">
-        <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
-        <span data-ar="عودة" data-en="Back">عودة</span>
-      </a>
-    </div>
+<body>
+  <div class="back-button">
+    <a href="#" onclick="goBack()">
+      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
+      <span data-ar="عودة" data-en="Back">عودة</span>
+    </a>
+  </div>
+
   <!-- رأس الصفحة -->
   <header class="header">
     <div class="header-content">
@@ -26,8 +28,6 @@
       </button>
     </div>
   </header>
-
-
 
   <div class="page-header">
     <h2 class="page-title" data-ar="متابعة الشكاوى الطبية" data-en="Medical Complaint Follow-up">متابعة الشكاوى الطبية</h2>
@@ -45,22 +45,23 @@
       </div>
 
       <form onsubmit="handleSubmit(event)">
+        <!-- اسم المريض -->
         <div class="input-group">
           <img src="/icon/person.png" class="input-icon" />
-          <input type="text"
-       placeholder="ادخل اسم المريض الكامل"
-       data-ar-placeholder="ادخل اسم المريض الكامل"
-       data-en-placeholder="Enter Full Patient Name"
-       required />
-
+          <input id="patientName" name="patientName" type="text"
+                 placeholder="ادخل اسم المريض الكامل"
+                 data-ar-placeholder="ادخل اسم المريض الكامل"
+                 data-en-placeholder="Enter Full Patient Name"
+                 required />
         </div>
 
+        <!-- رقم الملف (بدلاً من الهوية/الإقامة) -->
         <div class="input-group">
           <img src="/icon/serial.png" class="input-icon" />
-          <input type="text"
-                 placeholder="رقم الهوية / الإقامة"
-                 data-ar-placeholder="رقم الهوية / الإقامة"
-                 data-en-placeholder="ID / Residency Number"
+          <input id="fileNumber" name="fileNumber" type="text"
+                 placeholder="رقم الملف"
+                 data-ar-placeholder="رقم الملف"
+                 data-en-placeholder="File Number"
                  required />
         </div>
 

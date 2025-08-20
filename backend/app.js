@@ -13,6 +13,9 @@ const misconductRoutes = require('./routes/misconductRoutes');
 const overviewRoutes = require('./routes/overviewRoutes');
 const generalComplaintsRoutes = require('./routes/generalComplaintsRoutes');
 const inpersonComplaintsRoutes = require('./routes/inpersonComplaintsRoutes');
+const logsRoutes = require('./routes/logsRoutes');
+const permissionsRoutes = require('./routes/permissionsRoutes');
+const db = require('./config/database');
 
 const app = express();
 
@@ -54,6 +57,9 @@ app.use('/api/misconduct', misconductRoutes);
 app.use('/api/overview', overviewRoutes);
 app.use('/api/general-complaints', generalComplaintsRoutes);
 app.use('/api/inperson-complaints', inpersonComplaintsRoutes);
+app.use('/api/logs', logsRoutes);
+app.use('/api', permissionsRoutes);
+
 
 // 404 handler
 app.use((req, res) => {
@@ -77,7 +83,69 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
+// دالة لإنشاء جدول الصلاحيات
+async function setupPermissionsTable() {
+    try {
+        console.log('🔧 التحقق من وجود جدول RolePermissions...');
+        
+        // إنشاء جدول الصلاحيات
+        const createTableQuery = `
+            CREATE TABLE IF NOT EXISTS RolePermissions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                role_name VARCHAR(50) NOT NULL,
+                permission_name VARCHAR(100) NOT NULL,
+                has_permission TINYINT(1) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY unique_role_permission (role_name, permission_name)
+            )
+        `;
+        
+        await db.execute(createTableQuery);
+        console.log('✅ جدول RolePermissions جاهز');
+        
+        // إدخال الصلاحيات الافتراضية
+        const defaultPermissions = [
+            // صلاحيات الموظف
+            ['employee', 'submit_complaint', 0],
+            ['employee', 'follow_own_complaint', 1],
+            ['employee', 'view_public_complaints', 1],
+            ['employee', 'reply_complaints', 1],
+            ['employee', 'change_complaint_status', 1],
+            ['employee', 'export_reports', 1],
+            ['employee', 'access_dashboard', 1],
+            
+            // صلاحيات المدير
+            ['manager', 'full_system_access', 1],
+            ['manager', 'user_management', 1],
+            ['manager', 'roles_management', 1],
+            ['manager', 'performance_reports', 1],
+            ['manager', 'export_data', 1],
+            ['manager', 'audit_logs', 1],
+            ['manager', 'system_config', 1],
+            ['manager', 'backup_restore', 1]
+        ];
+        
+        for (const [role, permission, hasPermission] of defaultPermissions) {
+            const insertQuery = `
+                INSERT INTO RolePermissions (role_name, permission_name, has_permission) 
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE has_permission = VALUES(has_permission)
+            `;
+            await db.execute(insertQuery, [role, permission, hasPermission]);
+        }
+        
+        console.log('✅ تم إدخال الصلاحيات الافتراضية بنجاح');
+        
+    } catch (error) {
+        console.error('❌ خطأ في إعداد جدول الصلاحيات:', error);
+    }
+}
+
+app.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}`);
     console.log(`Health check: http://localhost:${PORT}/health`);
+    
+    // إعداد جدول الصلاحيات عند بدء الخادم
+    await setupPermissionsTable();
 }); 

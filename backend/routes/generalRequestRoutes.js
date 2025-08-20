@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const generalRequestController = require('../controllers/generalRequestController');
 
+// فحص البيانات الموجودة
+router.get('/check-data', generalRequestController.checkExistingData);
+
 // جلب إحصائيات الطلبات العامة
 router.get('/stats', generalRequestController.getGeneralRequestStats);
 

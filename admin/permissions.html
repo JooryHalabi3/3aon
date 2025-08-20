@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="rtl">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,10 +41,11 @@
                 </tr>
             </thead>
             <tbody>
+                <!-- Patient Role Removed -->
                 <tr>
                     <td data-ar="موظف" data-en="Employee">Employee</td>
-                    <td data-ar="صلاحيات موظف " data-en="employee permissions">Standard employee permissions</td>
-                    <td>84</td>
+                    <td data-ar="صلاحيات موظف" data-en="employee permissions">Standard employee permissions</td>
+                    <td>24</td>
                     <td>
                         <button class="edit-btn" onclick="showEditPanel('employee')" data-ar="تعديل" data-en="Edit">Edit</button>
                     </td>
@@ -52,7 +53,7 @@
                 <tr>
                     <td data-ar="مدير" data-en="Manager">Manager</td>
                     <td data-ar="صلاحيات إدارية" data-en="Administrative permissions">Administrative permissions</td>
-                    <td>12</td>
+                    <td>3</td>
                     <td>
                         <button class="edit-btn" onclick="showEditPanel('manager')" data-ar="تعديل" data-en="Edit">Edit</button>
                     </td>
@@ -60,163 +61,157 @@
             </tbody>
         </table>
 
-       <div id="employee-panel" class="edit-panel">
-    <div class="panel-header">
-        <h3 data-ar="تعديل صلاحيات الموظف" data-en="Edit Employee Permissions">Edit Employee Permissions</h3>
-        <div class="role-badge" data-ar="وصول أساسي" data-en="Basic Access">Basic Access</div>
-    </div>
+        <!-- Employee Permissions Panel - Updated with 3 sections only -->
+        <div id="employee-panel" class="edit-panel">
+            <div class="panel-header">
+                <h3 data-ar="تعديل صلاحيات الموظف" data-en="Edit Employee Permissions">Edit Employee Permissions</h3>
+                <div class="role-badge" data-ar="وصول أساسي" data-en="Basic Access">Basic Access</div>
+            </div>
 
-    <div class="permission-categories">
-        <div class="permission-group">
-            <div class="group-header">
-                <h4><i class="icon fas fa-file-medical"></i> <span data-ar="السجلات الطبية" data-en="Medical Records">Medical Records</span></h4>
-            </div>
-            <div class="permission-item">
-                <input type="checkbox" id="employee-view-records" data-group="medical">
-                <label for="employee-view-records" data-ar="عرض سجلات المرضى" data-en="View Patient Records">View Patient Records</label>
-                <span class="permission-description" data-ar="عرض السجلات الطبية للمرضى المحددين" data-en="View medical records of assigned patients">View medical records of assigned patients</span>
-            </div>
-            <div class="permission-item">
-                <input type="checkbox" id="employee-update-records" data-group="medical">
-                <label for="employee-update-records" data-ar="تحديث سجلات المرضى" data-en="Update Patient Records">Update Patient Records</label>
-                <span class="permission-description" data-ar="تعديل المعلومات الأساسية في السجلات الطبية" data-en="Modify basic information in medical records">Modify basic information in medical records</span>
-            </div>
-        </div>
+            <div class="permission-categories">
+                <div class="permission-group">
+                    <div class="group-header">
+                        <h4><i class="icon fas fa-edit"></i> <span data-ar="إدارة الشكاوى" data-en="Complaint Management">Complaint Management</span></h4>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="submit_complaint" data-group="complaint">
+                        <label for="submit_complaint" data-ar="تقديم شكوى" data-en="Submit Complaint">Submit Complaint</label>
+                        <span class="permission-description" data-ar="يمكنه تقديم شكوى عبر النظام" data-en="Can submit a complaint through the system">Can submit a complaint through the system</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="follow_own_complaint" data-group="complaint" checked>
+                        <label for="follow_own_complaint" data-ar="متابعة شكواه الخاصة" data-en="Follow up on their own complaint">Follow up on their own complaint</label>
+                        <span class="permission-description" data-ar="يمكنه مشاهدة حالة الشكاوى التي أرسلها فقط" data-en="Can only view the status of complaints they sent">Can only view the status of complaints they sent</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="view_public_complaints" data-group="complaint" checked>
+                        <label for="view_public_complaints" data-ar="مشاهدة جميع الشكاوى العامة" data-en="View All Public Complaints">View All Public Complaints</label>
+                        <span class="permission-description" data-ar="يقدر يشوف كل الشكاوى (إدارة فقط)" data-en="Can view all public complaints (management only)">Can view all public complaints (management only)</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="reply_complaints" data-group="complaint" checked>
+                        <label for="reply_complaints" data-ar="الرد على الشكاوى" data-en="Reply to Complaints">Reply to Complaints</label>
+                        <span class="permission-description" data-ar="يقدر يكتب رد رسمي على الشكاوى" data-en="Can write an official reply to complaints">Can write an official reply to complaints</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="change_complaint_status" data-group="complaint" checked>
+                        <label for="change_complaint_status" data-ar="تغيير حالة الشكوى" data-en="Change Complaint Status">Change Complaint Status</label>
+                        <span class="permission-description" data-ar="يقدر يغير حالة الشكوى (مثلاً من جديدة -> تم الرد)" data-en="Can change the complaint status (e.g., from new -> replied)">Can change the complaint status (e.g., from new -> replied)</span>
+                    </div>
+                </div>
 
-        <div class="permission-group">
-            <div class="group-header">
-                <h4><i class="icon fas fa-calendar-alt"></i> <span data-ar="الجدولة" data-en="Scheduling">Scheduling</span></h4>
+                <div class="permission-group">
+                    <div class="group-header">
+                        <h4><i class="icon fas fa-file-export"></i> <span data-ar="التقارير والوصول" data-en="Reports & Access">Reports & Access</span></h4>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="export_reports" data-group="reports-access" checked>
+                        <label for="export_reports" data-ar="تصدير الملفات" data-en="Export Files">Export Files</label>
+                        <span class="permission-description" data-ar="يمكنه تحميل وتصدير الملفات من صفحات الداش بورد" data-en="Can download and export files from dashboard pages">Can download and export files from dashboard pages</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="access_dashboard" data-group="reports-access" checked>
+                        <label for="access_dashboard" data-ar="الوصول للداش بورد" data-en="Access Dashboard">Access Dashboard</label>
+                        <span class="permission-description" data-ar="يمكنه الوصول لصفحات الداش بورد " data-en="Can access dashboard pages">Can access dashboard pages: general-requests, inperson-complaints, misconduct, overview, pressganey, report-937, secret-visitor</span>
+                    </div>
+                </div>
             </div>
-            <div class="permission-item">
-                <input type="checkbox" id="employee-manage-appointments" data-group="scheduling">
-                <label for="employee-manage-appointments" data-ar="إدارة المواعيد" data-en="Manage Appointments">Manage Appointments</label>
-                <span class="permission-description" data-ar="إنشاء وتعديل وحذف مواعيد المرضى" data-en="Create, modify, and delete patient appointments">Create, modify, and delete patient appointments</span>
+            <div class="panel-actions">
+                <button class="cancel-btn" onclick="hideEditPanel('employee')" data-ar="إلغاء" data-en="Cancel">Cancel</button>
+                <button class="save-btn" onclick="savePermissions('employee')" data-ar="حفظ التغييرات" data-en="Save Changes">Save Changes</button>
             </div>
-            <div class="permission-item">
-                <input type="checkbox" id="employee-view-calendar" data-group="scheduling">
-                <label for="employee-view-calendar" data-ar="عرض تقويم الفريق" data-en="View Team Calendar">View Team Calendar</label>
-                <span class="permission-description" data-ar="عرض جداول زملاء العمل" data-en="View colleagues' schedules">View colleagues' schedules</span>
-            </div>
+            <div class="success-message" id="employee-success-message" style="display:none;" data-ar="تم حفظ التغييرات بنجاح!" data-en="Changes saved successfully!">Changes saved successfully!</div>
         </div>
-
-        <div class="permission-group">
-            <div class="group-header">
-                <h4><i class="icon fas fa-tasks"></i> <span data-ar="العمليات الأساسية" data-en="Basic Operations">Basic Operations</span></h4>
-            </div>
-            <div class="permission-item">
-                <input type="checkbox" id="employee-add-patients" data-group="operations">
-                <label for="employee-add-patients" data-ar="إضافة مرضى جدد" data-en="Add New Patients">Add New Patients</label>
-                <span class="permission-description" data-ar="إدخال بيانات المرضى الجدد في النظام" data-en="Enter new patient data into the system">Enter new patient data into the system</span>
-            </div>
-            <div class="permission-item">
-                <input type="checkbox" id="employee-print-reports" data-group="operations">
-                <label for="employee-print-reports" data-ar="طباعة التقارير" data-en="Print Reports">Print Reports</label>
-                <span class="permission-description" data-ar="إنشاء نسخ ورقية من التقارير الطبية" data-en="Generate physical copies of medical reports">Generate physical copies of medical reports</span>
-            </div>
-        </div>
-    </div>
-</div>
          
-<div class="panel-actions">
-    <button class="cancel-btn" onclick="hideEditPanel('employee')" data-ar="إلغاء" data-en="Cancel">Cancel</button>
-    <button class="save-btn" onclick="savePermissions('employee')" data-ar="حفظ التغييرات" data-en="Save Changes">Save Changes</button>
-</div>
-<div class="success-message" id="employee-success-message" style="display:none;" data-ar="تم حفظ التغييرات بنجاح!" data-en="Changes saved successfully!">Changes saved successfully!</div>
-</div>
+        <!-- Manager Permissions Panel - Kept as is, as it's comprehensive -->
+        <div id="manager-panel" class="edit-panel">
+            <div class="panel-header">
+                <h3 data-ar="تعديل صلاحيات المدير" data-en="Edit Manager Permissions">Edit Manager Permissions</h3>
+                <div class="role-badge" data-ar="وصول إداري" data-en="Admin Access">Admin Access</div>
+            </div>
 
-<div id="manager-panel" class="edit-panel">
-    <div class="panel-header">
-        <h3 data-ar="تعديل صلاحيات المدير" data-en="Edit Manager Permissions">Edit Manager Permissions</h3>
-        <div class="role-badge" data-ar="وصول إداري" data-en="Admin Access">Admin Access</div>
-    </div>
+            <div class="permission-categories">
+                <div class="permission-group">
+                    <div class="group-header">
+                        <h4><i class="icon fas fa-cogs"></i> <span data-ar="إدارة النظام" data-en="System Administration">System Administration</span></h4>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="full_system_access" data-group="system">
+                        <label for="full_system_access" data-ar="صلاحية النظام الكاملة" data-en="Full System Access">Full System Access</label>
+                        <span class="permission-description" data-ar="وصول كامل إلى جميع مكونات النظام" data-en="Complete access to all system components">Complete access to all system components</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="user_management" data-group="system">
+                        <label for="user_management" data-ar="إدارة المستخدمين" data-en="User Management">User Management</label>
+                        <span class="permission-description" data-ar="إنشاء وتعديل وتعطيل حسابات المستخدمين" data-en="Create, modify, and deactivate user accounts">Create, modify, and deactivate user accounts</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="roles_management" data-group="system">
+                        <label for="roles_management" data-ar="إدارة الأدوار" data-en="Role Management">Role Management</label>
+                        <span class="permission-description" data-ar="تهيئة المجموعات والأدوار الخاصة بالصلاحيات" data-en="Configure permission groups and roles">Configure permission groups and roles</span>
+                    </div>
+                </div>
+                        
+                <div class="permission-group">
+                    <div class="group-header">
+                        <h4>
+                            <i class="icon fas fa-chart-bar"></i> 
+                            <span data-ar="التقارير والتحليلات" data-en="Reports and Analytics">Reports and Analytics</span>
+                        </h4>
+                    </div>
+                    <!-- Financial Reports permission removed -->
+                    <div class="permission-item">
+                        <input type="checkbox" id="performance_reports" data-group="reports">
+                        <label for="performance_reports" data-ar="تقارير الأداء" data-en="Performance Reports">Performance Reports</label>
+                        <span class="permission-description" data-ar="مراقبة أداء الموظفين والمؤشرات" data-en="Monitor employee performance and metrics">Monitor employee performance and metrics</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="export_data" data-group="reports">
+                        <label for="export_data" data-ar="تصدير البيانات" data-en="Export Data">Export Data</label>
+                        <span class="permission-description" data-ar="تصدير البيانات المُهيأة بصيغ متعددة" data-en="Export configured data in various formats">Export configured data in various formats</span>
+                    </div>
+                </div>
 
-    <div class="permission-categories">
-        <div class="permission-group">
-            <div class="group-header">
-                <h4><i class="icon fas fa-cogs"></i> <span data-ar="إدارة النظام" data-en="System Administration">System Administration</span></h4>
+                <div class="permission-group">
+                    <div class="group-header">
+                        <h4>
+                            <i class="icon fas fa-shield-alt"></i> 
+                            <span data-ar="الأمان والإعدادات" data-en="Security and Settings">Security and Settings</span>
+                        </h4>
+                        <label class="toggle-all">
+                            <input type="checkbox" class="toggle-all-checkbox" data-group="security">
+                            <span data-ar="تحديد الكل" data-en="Toggle All">Toggle All</span>
+                        </label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="audit_logs" data-group="security">
+                        <label for="audit_logs" data-ar="سجلات التدقيق" data-en="Audit Logs">Audit Logs</label>
+                        <span class="permission-description" data-ar="عرض جميع التغييرات التي حدثت في النظام" data-en="View all system changes history">View all system changes history</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="system_config" data-group="security">
+                        <label for="system_config" data-ar="تهيئة النظام" data-en="System Configuration">System Configuration</label>
+                        <span class="permission-description" data-ar="تعديل الإعدادات الأساسية للنظام" data-en="Modify basic system settings">Modify basic system settings</span>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="backup_restore" data-group="security">
+                        <label for="backup_restore" data-ar="النسخ الاحتياطي والاستعادة" data-en="Backup and Restore">Backup and Restore</label>
+                        <span class="permission-description" data-ar="إنشاء واستعادة نسخ احتياطية للنظام" data-en="Create and restore system backups">Create and restore system backups</span>
+                    </div>
+                </div>
             </div>
-            <div class="permission-item">
-                <input type="checkbox" id="manager-full-access" data-group="system">
-                <label for="manager-full-access" data-ar="صلاحية النظام الكاملة" data-en="Full System Access">Full System Access</label>
-                <span class="permission-description" data-ar="وصول كامل إلى جميع مكونات النظام" data-en="Complete access to all system components">Complete access to all system components</span>
+
+            <div class="panel-actions">
+                <button class="cancel-btn" onclick="hideEditPanel('manager')" data-ar="إلغاء" data-en="Cancel">Cancel</button>
+                <button class="save-btn" onclick="savePermissions('manager')" data-ar="حفظ التغييرات" data-en="Save Changes">Save Changes</button>
             </div>
-            <div class="permission-item">
-                <input type="checkbox" id="manager-user-management" data-group="system">
-                <label for="manager-user-management" data-ar="إدارة المستخدمين" data-en="User Management">User Management</label>
-                <span class="permission-description" data-ar="إنشاء وتعديل وتعطيل حسابات المستخدمين" data-en="Create, modify, and deactivate user accounts">Create, modify, and deactivate user accounts</span>
-            </div>
-            <div class="permission-item">
-                <input type="checkbox" id="manager-roles-management" data-group="system">
-                <label for="manager-roles-management" data-ar="إدارة الأدوار" data-en="Role Management">Role Management</label>
-                <span class="permission-description" data-ar="تهيئة المجموعات والأدوار الخاصة بالصلاحيات" data-en="Configure permission groups and roles">Configure permission groups and roles</span>
+            <div class="success-message" id="manager-success-message"
+                data-ar="تم حفظ التغييرات بنجاح!"
+                data-en="Changes saved successfully!"
+                style="display:none;">
             </div>
         </div>
-                
-<div class="permission-group">
-    <div class="group-header">
-        <h4>
-            <i class="icon fas fa-chart-bar"></i> 
-            <span data-ar="التقارير والتحليلات" data-en="Reports and Analytics">Reports and Analytics</span>
-        </h4>
     </div>
-    <div class="permission-item">
-        <input type="checkbox" id="manager-financial-reports" data-group="reports">
-        <label for="manager-financial-reports" data-ar="التقارير المالية" data-en="Financial Reports">Financial Reports</label>
-        <span class="permission-description" data-ar="عرض وتحليل البيانات المالية للنظام" data-en="View and analyze system financial data">View and analyze system financial data</span>
-    </div>
-    <div class="permission-item">
-        <input type="checkbox" id="manager-performance-reports" data-group="reports">
-        <label for="manager-performance-reports" data-ar="تقارير الأداء" data-en="Performance Reports">Performance Reports</label>
-        <span class="permission-description" data-ar="مراقبة أداء الموظفين والمؤشرات" data-en="Monitor employee performance and metrics">Monitor employee performance and metrics</span>
-    </div>
-    <div class="permission-item">
-        <input type="checkbox" id="manager-export-data" data-group="reports">
-        <label for="manager-export-data" data-ar="تصدير البيانات" data-en="Export Data">Export Data</label>
-        <span class="permission-description" data-ar="تصدير البيانات المُهيأة بصيغ متعددة" data-en="Export configured data in various formats">Export configured data in various formats</span>
-    </div>
-</div>
-
-                
- <div class="permission-group">
-    <div class="group-header">
-        <h4>
-            <i class="icon fas fa-shield-alt"></i> 
-            <span data-ar="الأمان والإعدادات" data-en="Security and Settings">Security and Settings</span>
-        </h4>
-        <label class="toggle-all">
-            <input type="checkbox" class="toggle-all-checkbox" data-group="security">
-            <span data-ar="تحديد الكل" data-en="Toggle All">Toggle All</span>
-        </label>
-    </div>
-    <div class="permission-item">
-        <input type="checkbox" id="manager-audit-logs" data-group="security">
-        <label for="manager-audit-logs" data-ar="سجلات التدقيق" data-en="Audit Logs">Audit Logs</label>
-        <span class="permission-description" data-ar="عرض جميع التغييرات التي حدثت في النظام" data-en="View all system changes history">View all system changes history</span>
-    </div>
-    <div class="permission-item">
-        <input type="checkbox" id="manager-system-config" data-group="security">
-        <label for="manager-system-config" data-ar="تهيئة النظام" data-en="System Configuration">System Configuration</label>
-        <span class="permission-description" data-ar="تعديل الإعدادات الأساسية للنظام" data-en="Modify basic system settings">Modify basic system settings</span>
-    </div>
-    <div class="permission-item">
-        <input type="checkbox" id="manager-backup-restore" data-group="security">
-        <label for="manager-backup-restore" data-ar="النسخ الاحتياطي والاستعادة" data-en="Backup and Restore">Backup and Restore</label>
-        <span class="permission-description" data-ar="إنشاء واستعادة نسخ احتياطية للنظام" data-en="Create and restore system backups">Create and restore system backups</span>
-    </div>
-</div>
-</div>
-
-<div class="panel-actions">
-    <button class="cancel-btn" onclick="hideEditPanel('manager')" data-ar="إلغاء" data-en="Cancel">Cancel</button>
-    <button class="save-btn" onclick="savePermissions('manager')" data-ar="حفظ التغييرات" data-en="Save Changes">Save Changes</button>
-</div>
-<div class="success-message" id="employee-success-message"
-     data-ar="تم حفظ التغييرات بنجاح!"
-     data-en="Changes saved successfully!"
-     style="display:none;">
-</div>
-
-
     <script src="permissions.js" defer></script>
 </body>
 </html>
