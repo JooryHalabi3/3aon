@@ -1,5 +1,6 @@
 // إعدادات API
 const API_BASE_URL = 'http://localhost:3001/api/auth';
+const COMPLAINTS_API_URL = 'http://localhost:3001/api/complaints';
 
 // رسائل
 function showError(message) { alert(message); }
@@ -80,9 +81,14 @@ async function register() {
   const email = document.getElementById("regEmail").value.trim();
   const password = document.getElementById("regPass").value;
   const confirmPassword = document.getElementById("regConfirmPass").value;
+  const departmentID = document.getElementById("regDepartment").value;
 
-  if (!fullName || !phoneNumber || !nationalID || !employeeID || !email || !password || !confirmPassword) {
+  if (!fullName || !phoneNumber || !nationalID || !employeeID || !email || !password || !confirmPassword || !departmentID) {
     showError("يرجى تعبئة جميع الحقول.");
+    return;
+  }
+  if (departmentID === "") {
+    showError("يرجى اختيار القسم.");
     return;
   }
   if (!validatePhone(phoneNumber)) {
@@ -114,7 +120,8 @@ async function register() {
         password,
         email,
         roleID: 2,
-        specialty: ''
+        specialty: '',
+        departmentID: departmentID
       })
     });
     const data = await response.json();
@@ -130,5 +137,136 @@ async function register() {
   } catch (err) {
     console.error(err);
     showError("فشل الاتصال بالخادم");
+  }
+}
+
+// تحميل الأقسام عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+  loadDepartments();
+  setupLanguageToggle();
+});
+
+// إعداد تبديل اللغة
+function setupLanguageToggle() {
+  const langToggleBtn = document.getElementById('langToggle');
+  if (langToggleBtn) {
+    langToggleBtn.addEventListener('click', () => {
+      const currentLang = document.body.classList.contains('lang-en') ? 'en' : 'ar';
+      const newLang = currentLang === 'ar' ? 'en' : 'ar';
+      applyLanguage(newLang);
+    });
+  }
+}
+
+// تطبيق اللغة
+function applyLanguage(lang) {
+  const body = document.body;
+  const langText = document.getElementById('langText');
+  
+  if (lang === 'en') {
+    body.classList.remove('lang-ar');
+    body.classList.add('lang-en');
+    if (langText) langText.textContent = 'العربية | English';
+  } else {
+    body.classList.remove('lang-en');
+    body.classList.add('lang-ar');
+    if (langText) langText.textContent = 'العربية | English';
+  }
+  
+  // تحديث النصوص
+  updateTexts(lang);
+}
+
+// تحديث النصوص حسب اللغة
+function updateTexts(lang) {
+  // تحديث النصوص الثابتة
+  const elements = document.querySelectorAll('[data-ar][data-en]');
+  elements.forEach(element => {
+    if (lang === 'en') {
+      element.textContent = element.getAttribute('data-en');
+    } else {
+      element.textContent = element.getAttribute('data-ar');
+    }
+  });
+  
+  // تحديث placeholders
+  const inputs = document.querySelectorAll('[data-ar-placeholder][data-en-placeholder]');
+  inputs.forEach(input => {
+    if (lang === 'en') {
+      input.placeholder = input.getAttribute('data-en-placeholder');
+    } else {
+      input.placeholder = input.getAttribute('data-ar-placeholder');
+    }
+  });
+  
+  // تحديث قائمة الأقسام
+  updateDepartmentOptions(lang);
+}
+
+// تحديث خيارات الأقسام حسب اللغة
+function updateDepartmentOptions(lang) {
+  const departmentSelect = document.getElementById('regDepartment');
+  if (!departmentSelect) return;
+  
+  const options = departmentSelect.querySelectorAll('option');
+  options.forEach(option => {
+    if (option.value === '') {
+      // الخيار الافتراضي
+      if (lang === 'en') {
+        option.textContent = 'Select Department';
+      } else {
+        option.textContent = 'اختر القسم';
+      }
+    } else {
+      // خيارات الأقسام
+      if (lang === 'en') {
+        option.textContent = option.getAttribute('data-en') || option.textContent;
+      } else {
+        option.textContent = option.getAttribute('data-ar') || option.textContent;
+      }
+    }
+  });
+}
+
+// جلب الأقسام من قاعدة البيانات
+async function loadDepartments() {
+  try {
+    const departmentSelect = document.getElementById('regDepartment');
+    if (!departmentSelect) {
+      console.error('عنصر اختيار القسم غير موجود');
+      return;
+    }
+    
+    // إظهار رسالة التحميل
+    departmentSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+    
+    const response = await fetch(`${COMPLAINTS_API_URL}/departments`);
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+      // مسح الخيارات الموجودة
+      departmentSelect.innerHTML = '<option value="">اختر القسم</option>';
+      
+      // إضافة الأقسام للقائمة المنسدلة
+      data.data.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.DepartmentID;
+        option.textContent = dept.DepartmentName;
+        option.setAttribute('data-ar', dept.DepartmentName);
+        option.setAttribute('data-en', dept.Description || dept.DepartmentName);
+        departmentSelect.appendChild(option);
+      });
+      
+      console.log(`تم تحميل ${data.data.length} قسم بنجاح`);
+    } else {
+      departmentSelect.innerHTML = '<option value="">خطأ في تحميل الأقسام</option>';
+      console.error('فشل في جلب الأقسام:', data.message);
+    }
+  } catch (error) {
+    console.error('خطأ في جلب الأقسام:', error);
+    const departmentSelect = document.getElementById('regDepartment');
+    if (departmentSelect) {
+      departmentSelect.innerHTML = '<option value="">خطأ في الاتصال</option>';
+    }
   }
 }

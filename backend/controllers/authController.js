@@ -13,7 +13,9 @@ const register = async (req, res) => {
       email, 
       phoneNumber, 
       roleID, 
-      specialty 
+      specialty,
+      departmentID,
+      nationalID 
     } = req.body;
 
     // التحقق من البيانات المطلوبة
@@ -43,17 +45,18 @@ const register = async (req, res) => {
 
     // إدخال الموظف الجديد
     const [result] = await pool.execute(
-      `INSERT INTO Employees (FullName, Username, PasswordHash, Email, PhoneNumber, RoleID, Specialty) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [fullName, username, passwordHash, email, phoneNumber, roleID, specialty]
+      `INSERT INTO Employees (FullName, Username, PasswordHash, Email, PhoneNumber, RoleID, Specialty, department_id, NationalID_Iqama) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [fullName, username, passwordHash, email, phoneNumber, roleID, specialty, departmentID, nationalID]
     );
 
     // الحصول على بيانات الموظف المحدثة
     const [newEmployee] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.Email, e.PhoneNumber, 
-              e.Specialty, e.JoinDate, r.RoleName, r.RoleID
+              e.Specialty, e.JoinDate, r.RoleName, r.RoleID, d.DepartmentName
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
+       LEFT JOIN departments d ON e.department_id = d.DepartmentID
        WHERE e.EmployeeID = ?`,
       [result.insertId]
     );
@@ -121,9 +124,11 @@ const login = async (req, res) => {
     // البحث عن المستخدم
     const [employees] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.PasswordHash, e.Email, 
-              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID
+              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID, 
+              e.department_id, d.DepartmentName
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
+       LEFT JOIN departments d ON e.department_id = d.DepartmentID
        WHERE e.Username = ?`,
       [username]
     );

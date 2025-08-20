@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Departments</title>
+  <style>
+    body {
+      font-family: 'Tajawal', sans-serif;
+      direction: rtl;
+      padding: 20px;
+    }
+    select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      width: 300px;
+    }
+    .test-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h2>اختبار قائمة الأقسام</h2>
+    <p>هذا اختبار لتحميل الأقسام من قاعدة البيانات:</p>
+    
+    <select id="testDepartment">
+      <option value="">جاري التحميل...</option>
+    </select>
+    
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:3001/api/complaints';
+    
+    async function loadDepartments() {
+      const statusDiv = document.getElementById('status');
+      const departmentSelect = document.getElementById('testDepartment');
+      
+      try {
+        statusDiv.textContent = 'جاري تحميل الأقسام...';
+        
+        const response = await fetch(`${API_BASE_URL}/departments`);
+        const data = await response.json();
+        
+        if (data.success) {
+          // مسح الخيارات الموجودة
+          departmentSelect.innerHTML = '<option value="">اختر القسم</option>';
+          
+          // إضافة الأقسام
+          data.data.forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept.DepartmentID;
+            option.textContent = dept.DepartmentName;
+            departmentSelect.appendChild(option);
+          });
+          
+          statusDiv.textContent = `تم تحميل ${data.data.length} قسم بنجاح`;
+          statusDiv.style.color = 'green';
+        } else {
+          statusDiv.textContent = 'فشل في تحميل الأقسام: ' + data.message;
+          statusDiv.style.color = 'red';
+        }
+      } catch (error) {
+        console.error('خطأ في جلب الأقسام:', error);
+        statusDiv.textContent = 'خطأ في الاتصال بالخادم';
+        statusDiv.style.color = 'red';
+      }
+    }
+    
+    // تحميل الأقسام عند تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', loadDepartments);
+  </script>
+</body>
+</html>
