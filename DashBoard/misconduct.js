@@ -192,6 +192,217 @@ function showError(message) {
     console.error('❌ خطأ:', message);
 }
 
+// ===================== Excel Import (similar to report-937) =====================
+// تطبيع نص عربي/إنجليزي خفيف
+const AR_DIACRITICS = /[\u064B-\u0652]/g;
+function normalizeText(s) {
+    return String(s || '')
+        .replace(AR_DIACRITICS, '')            // إزالة التشكيل
+        .replace(/\u0640/g, '')               // إزالة التطويل
+        .replace(/[أإآٱ]/g, 'ا')               // توحيد الألف بهمزة
+        .replace(/ى/g, 'ي')                    // ألف مقصورة → ياء
+        .replace(/ئ/g, 'ي')                    // همزة على ياء → ياء
+        .replace(/ؤ/g, 'و')                    // همزة على واو → واو
+        .replace(/ة/g, 'ه')                    // تاء مربوطة → هاء (لتوافق كتابات "الاداره")
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, ' ');
+}
+
+// خريطة مرادفات الأقسام -> اسم عربي قانوني كما يظهر في الرسم
+const deptSynonyms = [
+    { keys: ['emergency', 'er', 'قسم الطوارئ', 'الطوارئ'], canonical: 'قسم الطوارئ' },
+    { keys: ['general surgery', 'surgery', 'قسم الجراحة العامة', 'الجراحة العامة', 'الجراحة'], canonical: 'قسم الجراحة العامة' },
+    { keys: ['pharmacy', 'قسم الصيدلية', 'الصيدلية'], canonical: 'قسم الصيدلية' },
+    { keys: ['icu', 'intensive care', 'قسم العناية المركزة', 'العناية المركزة'], canonical: 'قسم العناية المركزة' },
+    { keys: ["women's surgery", 'قسم الجراحة نساء', 'جراحة نساء'], canonical: 'قسم الجراحة نساء' },
+    { keys: ['internal medicine', 'قسم الباطنية', 'الباطنية'], canonical: 'قسم الباطنية' },
+    { keys: ['pediatrics', 'قسم الأطفال', 'الأطفال', 'اطفال'], canonical: 'قسم الأطفال' },
+    { keys: ['orthopedics', 'قسم العظام', 'العظام', 'عظام'], canonical: 'قسم العظام' },
+    { keys: ['cardiology', 'قسم القلب', 'القلب', 'قلب'], canonical: 'قسم القلب' },
+    { keys: ['neurology', 'قسم المخ والأعصاب', 'المخ والأعصاب', 'اعصاب', 'الأعصاب'], canonical: 'قسم المخ والأعصاب' },
+    { keys: ['radiology', 'قسم الأشعة', 'الأشعة', 'الاشعة'], canonical: 'قسم الأشعة' },
+    { keys: ['laboratory', 'lab', 'قسم المختبر', 'المختبر'], canonical: 'قسم المختبر' },
+    { keys: ['nursing', 'قسم التمريض', 'التمريض', 'تمريض'], canonical: 'قسم التمريض' },
+    { keys: ['administration', 'قسم الإدارة', 'الإدارة', 'الادارة'], canonical: 'قسم الإدارة' }
+];
+
+function mapToArabicDepartmentName(raw) {
+    const base = typeof raw === 'string' ? String(raw).split(/[\/\-–—\(,،]|\s+-\s+/)[0] : raw;
+    const n = normalizeText(base);
+    if (!n) return '';
+    for (const entry of deptSynonyms) {
+        for (const key of entry.keys) {
+            if (n.includes(normalizeText(key))) return entry.canonical;
+        }
+    }
+    // محاولة توحيد صيغة "قسم X"
+    if (n.startsWith('قسم ')) {
+        const tryName = n.replace(/^قسم\s+/, '');
+        for (const entry of deptSynonyms) {
+            for (const key of entry.keys) {
+                const nk = normalizeText(key).replace(/^قسم\s+/, '');
+                if (tryName.includes(nk)) return entry.canonical;
+            }
+        }
+    }
+    return base; // لو ما قدرنا نطابق، احتفظ بالنص الأساسي كما هو
+}
+
+function findDeptKeyFromRows(rows) {
+    if (!rows || !rows.length) return null;
+    const candidates = ['القسم', 'الإدارة', 'الادارة', 'القسم/الإدارة', 'department', 'section', 'unit', 'dept'];
+    const keys = Object.keys(rows[0] || {});
+    for (const k of keys) {
+        const nk = normalizeText(k);
+        if (candidates.some(c => nk.includes(normalizeText(c)))) return k;
+    }
+    return null;
+}
+
+function extractDeptFromReportForCell(text) {
+    if (!text) return '';
+    const lower = String(text).toLowerCase();
+    const idx = lower.indexOf('report for:');
+    if (idx === -1) return '';
+    const after = text.substring(idx + 'report for:'.length).trim();
+    return after.split('/')[0].trim();
+}
+
+function readExcelFileForRows(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                if (typeof XLSX === 'undefined') {
+                    console.error('XLSX library not loaded.');
+                    return resolve({ deptHint: '', rows: [] });
+                }
+                const data = new Uint8Array(e.target.result);
+                const wb = XLSX.read(data, { type: 'array' });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                // حاول استنتاج القسم من خلايا تحتوي report for:
+                let deptHint = '';
+                for (const row of aoa) {
+                    for (const cell of row) {
+                        if (typeof cell === 'string' && cell.toLowerCase().includes('report for:')) {
+                            deptHint = extractDeptFromReportForCell(cell);
+                            break;
+                        }
+                    }
+                    if (deptHint) break;
+                }
+                if (!deptHint) {
+                    deptHint = file.name.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').trim();
+                }
+
+                resolve({ deptHint, rows });
+            } catch (err) {
+                console.error('Failed to read file:', file.name, err);
+                resolve({ deptHint: '', rows: [] });
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// محاولة اكتشاف اسم عمود التصنيف داخل الصفوف
+function findCategoryKeyFromRows(rows) {
+    if (!rows || !rows.length) return null;
+    const candidates = ['تصنيف البلاغ', 'التصنيف', 'تصنيف', 'نوع الشكوى', 'نوع البلاغ', 'category', 'complaint category', 'complaint type', 'type', 'classification'];
+    const keys = Object.keys(rows[0] || {});
+    for (const k of keys) {
+        const nk = normalizeText(k);
+        if (candidates.some(c => nk.includes(normalizeText(c)))) return k;
+    }
+    return null;
+}
+
+// تصنيف البلاغ المطلوب فقط
+const MISCONDUCT_KEYWORDS = [
+    'سلوك فظ ورفع الصوت على المستفيد أثناء التعامل معه'
+];
+
+function isMisconductValue(value) {
+    const n = normalizeText(value);
+    if (!n) return false;
+    return MISCONDUCT_KEYWORDS.some(k => n.includes(normalizeText(k)));
+}
+
+function isMisconductRow(row) {
+    if (!row) return false;
+    const catKey = findCategoryKeyFromRows([row]);
+    if (catKey) {
+        return isMisconductValue(row[catKey]);
+    }
+    // لو لم نجد عمود تصنيف واضح، نحاول فحص كل القيم النصية في الصف
+    for (const v of Object.values(row)) {
+        if (typeof v === 'string' && isMisconductValue(v)) return true;
+    }
+    return false;
+}
+
+async function importMisconductExcelFiles(files) {
+    const aggregate = new Map(); // ArabicDept -> count
+
+    for (const f of files) {
+        const rec = await readExcelFileForRows(f);
+        const deptKey = findDeptKeyFromRows(rec.rows);
+        if (deptKey) {
+            for (const r of rec.rows) {
+                if (!isMisconductRow(r)) continue; // احتسب فقط البلاغات ذات علاقة بسوء التعامل
+                const deptRaw = r[deptKey];
+                const deptAr = mapToArabicDepartmentName(deptRaw);
+                if (!deptAr) continue;
+                aggregate.set(deptAr, (aggregate.get(deptAr) || 0) + 1);
+            }
+        } else {
+            // fallback: استخدم التلميح من محتوى الملف/اسمه وعد فقط الصفوف المتعلقة بسوء التعامل
+            const deptAr = mapToArabicDepartmentName(rec.deptHint);
+            const cnt = Array.isArray(rec.rows) ? rec.rows.filter(isMisconductRow).length : 0;
+            if (deptAr && cnt > 0) aggregate.set(deptAr, (aggregate.get(deptAr) || 0) + cnt);
+        }
+    }
+
+    // ابنِ القائمة فقط من الأقسام التي لها قيم (>0) مع الحفاظ على الترتيب القديم إن وُجد
+    const existing = Array.isArray(misconductData.labels?.ar) ? misconductData.labels.ar.slice() : [];
+    const positiveEntries = Array.from(aggregate.entries()).filter(([_, v]) => Number(v) > 0);
+    const positiveKeys = positiveEntries.map(([k]) => k);
+
+    const orderedFromExisting = existing.filter(name => aggregate.has(name) && Number(aggregate.get(name)) > 0);
+    const rest = positiveKeys.filter(k => !existing.includes(k));
+    const labelsAr = orderedFromExisting.concat(rest);
+    const labelsEn = labelsAr.map(getEnglishDepartmentName);
+
+    const values = labelsAr.map(name => Number(aggregate.get(name) || 0));
+
+    misconductData.labels.ar = labelsAr;
+    misconductData.labels.en = labelsEn;
+    if (!Array.isArray(misconductData.datasets) || !misconductData.datasets.length) {
+        misconductData.datasets = [{
+            label: { ar: 'عدد البلاغات', en: 'Number of Reports' },
+            data: values,
+            backgroundColor: '#3B82F6',
+            borderColor: '#2563EB',
+            borderWidth: 1,
+            borderRadius: 5
+        }];
+    } else {
+        misconductData.datasets[0].data = values;
+    }
+
+    // أعد رسم المخطط
+    if (misconductChart) {
+        misconductChart.destroy();
+        misconductChart = null;
+    }
+    createChartDynamically();
+    console.log('✅ تم استيراد ملفات الإكسل وتحديث الرسم.');
+}
+
 // تصدير التقرير
 async function exportMisconductReport() {
     try {
@@ -438,6 +649,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (exportReportBtn) {
         exportReportBtn.addEventListener('click', () => {
             exportMisconductReport();
+        });
+    }
+
+    // Import Excel (UI wiring)
+    const importExcelBtn = document.getElementById('importExcelBtn');
+    const excelInput = document.getElementById('excelInput');
+    if (importExcelBtn && excelInput) {
+        importExcelBtn.addEventListener('click', () => excelInput.click());
+        excelInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            await importMisconductExcelFiles(files);
+            e.target.value = '';
         });
     }
 
