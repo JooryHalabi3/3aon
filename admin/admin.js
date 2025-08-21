@@ -5,7 +5,57 @@ const API_BASE_URL = 'http://localhost:3001/api';
 document.addEventListener('DOMContentLoaded', function() {
   setupLanguageToggle();
   loadNotifications();
+  checkUserRoleAndHideDepartmentManagement();
 });
+
+// التحقق من دور المستخدم وإخفاء إدارة القسم للسوبر أدمن
+async function checkUserRoleAndHideDepartmentManagement() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    // محاولة الحصول على بيانات المستخدم من API
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    let userRoleID = null;
+
+    if (response.ok) {
+      const data = await response.json();
+      userRoleID = data.data.RoleID;
+    } else {
+      // إذا فشل API، استخدم البيانات المحفوظة في localStorage
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      userRoleID = userData.RoleID;
+    }
+    
+    // إخفاء إدارة القسم للسوبر أدمن (RoleID = 1)
+    if (userRoleID === 1) {
+      const departmentManagementCard = document.querySelector('.department-management-card');
+      if (departmentManagementCard) {
+        departmentManagementCard.classList.add('hidden');
+      }
+    }
+  } catch (error) {
+    console.error('خطأ في التحقق من دور المستخدم:', error);
+    
+    // محاولة أخيرة باستخدام localStorage
+    try {
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      if (userData.RoleID === 1) {
+        const departmentManagementCard = document.querySelector('.department-management-card');
+        if (departmentManagementCard) {
+          departmentManagementCard.classList.add('hidden');
+        }
+      }
+    } catch (localStorageError) {
+      console.error('خطأ في قراءة بيانات المستخدم من localStorage:', localStorageError);
+    }
+  }
+}
 
 // إعداد تبديل اللغة
 function setupLanguageToggle() {

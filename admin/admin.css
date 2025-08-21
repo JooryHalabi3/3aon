@@ -99,6 +99,11 @@ body.lang-en {
   padding: 40px;
 }
 
+/* إخفاء بطاقة إدارة القسم للسوبر أدمن */
+.department-management-card.hidden {
+  display: none;
+}
+
 /* تصميم البطاقة */
 .card.full-width {
   grid-column: 1 / -1;       /* يغطي كل الأعمدة */
