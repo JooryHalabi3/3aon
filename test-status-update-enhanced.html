@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار تحديث حالة الشكوى - محسن</title>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        .real-time-updates {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .complaint-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .status-new { background: #007bff; }
+        .status-review { background: #ffc107; color: #000; }
+        .status-processing { background: #fd7e14; }
+        .status-resolved { background: #28a745; }
+        .status-closed { background: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار تحديث حالة الشكوى - النسخة المحسنة</h1>
+        
+        <div class="real-time-updates">
+            <h3>🔄 التحديثات في الوقت الفعلي</h3>
+            <p>هذا الاختبار يتحقق من أن التحديثات تنتقل بين الصفحات بشكل صحيح</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>1. محاكاة تحديث حالة الشكوى</h3>
+            <p>هذا الاختبار يحاكي تحديث حالة الشكوى من صفحة status.html</p>
+            
+            <div class="complaint-card">
+                <h4>الشكوى #123456</h4>
+                <p><strong>الحالة الحالية:</strong> <span id="currentStatus" class="status-badge status-new">جديدة</span></p>
+                <p><strong>التفاصيل:</strong> شكوى تجريبية لاختبار نظام التحديث</p>
+                <p><strong>المريض:</strong> مريض تجريبي</p>
+            </div>
+            
+            <button onclick="simulateStatusUpdate('قيد المراجعة')">محاكاة تحديث الحالة إلى "قيد المراجعة"</button>
+            <button onclick="simulateStatusUpdate('قيد المعالجة')">محاكاة تحديث الحالة إلى "قيد المعالجة"</button>
+            <button onclick="simulateStatusUpdate('تم الحل')">محاكاة تحديث الحالة إلى "تم الحل"</button>
+            <button onclick="simulateStatusUpdate('مغلقة')">محاكاة تحديث الحالة إلى "مغلقة"</button>
+            <button onclick="clearStorage()" style="background: #dc3545;">مسح البيانات المؤقتة</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. مراقبة التحديثات</h3>
+            <p>هذا القسم يراقب التحديثات في localStorage</p>
+            
+            <div class="status-display">
+                <strong>آخر تحديث:</strong> <span id="lastUpdate">لا يوجد</span>
+            </div>
+            
+            <div class="status-display">
+                <strong>بيانات الشكاوى في localStorage:</strong>
+                <pre id="storageData">لا توجد بيانات</pre>
+            </div>
+            
+            <div class="status-display">
+                <strong>حالة المراقبة:</strong> <span id="monitoringStatus" class="success">نشط</span>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. اختبار الواجهة</h3>
+            <p>اختبار ما إذا كانت الواجهة تتحدث بشكل صحيح</p>
+            
+            <button onclick="testUIUpdate()">اختبار تحديث الواجهة</button>
+            <button onclick="openGeneralComplaints()">فتح صفحة الشكاوى العامة</button>
+            <button onclick="openStatusPage()">فتح صفحة تحديث الحالة</button>
+            <button onclick="testCrossWindowUpdate()">اختبار التحديث بين النوافذ</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. سجل الأحداث التفصيلي</h3>
+            <div id="eventLog" style="background: #f8f9fa; padding: 10px; border-radius: 5px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+                <p>سجل الأحداث سيظهر هنا...</p>
+            </div>
+            <button onclick="clearLog()" style="background: #6c757d;">مسح السجل</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. إحصائيات الاختبار</h3>
+            <div class="status-display">
+                <strong>عدد التحديثات المرسلة:</strong> <span id="updatesSent">0</span><br>
+                <strong>عدد التحديثات المستلمة:</strong> <span id="updatesReceived">0</span><br>
+                <strong>آخر تحديث:</strong> <span id="lastUpdateTime">لا يوجد</span><br>
+                <strong>مدة الاختبار:</strong> <span id="testDuration">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // متغيرات الإحصائيات
+        let updatesSent = 0;
+        let updatesReceived = 0;
+        let testStartTime = Date.now();
+        
+        // إضافة رسالة إلى السجل
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('eventLog');
+            const timestamp = new Date().toLocaleTimeString('ar-SA');
+            const color = type === 'success' ? 'green' : type === 'error' ? 'red' : type === 'warning' ? 'orange' : 'black';
+            log.innerHTML += `<p style="color: ${color}; margin: 2px 0;"><strong>[${timestamp}]</strong> ${message}</p>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // محاكاة تحديث حالة الشكوى
+        function simulateStatusUpdate(newStatus) {
+            try {
+                updatesSent++;
+                document.getElementById('updatesSent').textContent = updatesSent;
+                
+                // إنشاء بيانات شكوى وهمية
+                const mockComplaint = {
+                    ComplaintID: 123456,
+                    CurrentStatus: newStatus,
+                    ComplaintDetails: 'شكوى تجريبية لاختبار نظام التحديث',
+                    PatientName: 'مريض تجريبي'
+                };
+
+                // حفظ البيانات في localStorage
+                localStorage.setItem('complaintsData', JSON.stringify([mockComplaint]));
+                
+                // إرسال إشعار التحديث
+                const updateNotification = {
+                    complaintId: 123456,
+                    newStatus: newStatus,
+                    timestamp: Date.now(),
+                    source: 'test-page'
+                };
+                
+                localStorage.setItem('complaintStatusUpdated', JSON.stringify(updateNotification));
+
+                // تحديث العرض
+                updateStatusDisplay(newStatus);
+                updateStorageDisplay();
+                
+                addLog(`تم محاكاة تحديث الحالة إلى "${newStatus}" بنجاح`, 'success');
+                addLog(`تم إرسال إشعار التحديث: ${JSON.stringify(updateNotification)}`, 'info');
+            } catch (error) {
+                addLog('خطأ في محاكاة التحديث: ' + error.message, 'error');
+            }
+        }
+
+        // تحديث عرض الحالة
+        function updateStatusDisplay(newStatus) {
+            const statusElement = document.getElementById('currentStatus');
+            statusElement.textContent = newStatus;
+            statusElement.className = 'status-badge';
+            
+            // تحديد كلاس CSS للحالة
+            switch(newStatus) {
+                case 'جديدة':
+                    statusElement.classList.add('status-new');
+                    break;
+                case 'قيد المراجعة':
+                    statusElement.classList.add('status-review');
+                    break;
+                case 'قيد المعالجة':
+                    statusElement.classList.add('status-processing');
+                    break;
+                case 'تم الحل':
+                    statusElement.classList.add('status-resolved');
+                    break;
+                case 'مغلقة':
+                    statusElement.classList.add('status-closed');
+                    break;
+            }
+        }
+
+        // مسح البيانات المؤقتة
+        function clearStorage() {
+            localStorage.removeItem('complaintsData');
+            localStorage.removeItem('complaintStatusUpdated');
+            updateStorageDisplay();
+            addLog('تم مسح البيانات المؤقتة', 'warning');
+        }
+
+        // تحديث عرض البيانات في localStorage
+        function updateStorageDisplay() {
+            const complaintsData = localStorage.getItem('complaintsData');
+            const updateData = localStorage.getItem('complaintStatusUpdated');
+            
+            document.getElementById('storageData').textContent = 
+                complaintsData ? JSON.stringify(JSON.parse(complaintsData), null, 2) : 'لا توجد بيانات';
+            
+            if (updateData) {
+                const parsed = JSON.parse(updateData);
+                document.getElementById('lastUpdate').textContent = 
+                    `الشكوى ${parsed.complaintId} → ${parsed.newStatus} (${new Date(parsed.timestamp).toLocaleTimeString('ar-SA')})`;
+                document.getElementById('lastUpdateTime').textContent = new Date(parsed.timestamp).toLocaleString('ar-SA');
+            } else {
+                document.getElementById('lastUpdate').textContent = 'لا يوجد';
+                document.getElementById('lastUpdateTime').textContent = 'لا يوجد';
+            }
+        }
+
+        // اختبار تحديث الواجهة
+        function testUIUpdate() {
+            addLog('اختبار تحديث الواجهة...', 'info');
+            
+            // محاكاة استقبال تحديث
+            const updateData = localStorage.getItem('complaintStatusUpdated');
+            if (updateData) {
+                const parsed = JSON.parse(updateData);
+                addLog(`تم استقبال تحديث: الشكوى ${parsed.complaintId} → ${parsed.newStatus}`, 'success');
+                updatesReceived++;
+                document.getElementById('updatesReceived').textContent = updatesReceived;
+            } else {
+                addLog('لا توجد تحديثات للاستقبال', 'warning');
+            }
+        }
+
+        // فتح صفحة الشكاوى العامة
+        function openGeneralComplaints() {
+            window.open('/general complaints/general-complaints.html', '_blank');
+            addLog('تم فتح صفحة الشكاوى العامة في نافذة جديدة', 'info');
+        }
+
+        // فتح صفحة تحديث الحالة
+        function openStatusPage() {
+            // إنشاء بيانات شكوى وهمية في localStorage
+            const mockComplaint = {
+                ComplaintID: 123456,
+                CurrentStatus: 'جديدة',
+                ComplaintDetails: 'شكوى تجريبية',
+                PatientName: 'مريض تجريبي'
+            };
+            localStorage.setItem('selectedComplaint', JSON.stringify(mockComplaint));
+            
+            window.open('/general complaints/status.html', '_blank');
+            addLog('تم فتح صفحة تحديث الحالة في نافذة جديدة', 'info');
+        }
+
+        // اختبار التحديث بين النوافذ
+        function testCrossWindowUpdate() {
+            addLog('بدء اختبار التحديث بين النوافذ...', 'info');
+            
+            // فتح نافذة جديدة للاختبار
+            const testWindow = window.open('', '_blank', 'width=600,height=400');
+            testWindow.document.write(`
+                <html>
+                <head><title>اختبار النافذة</title></head>
+                <body>
+                    <h3>نافذة اختبار التحديث</h3>
+                    <p>هذه النافذة ستستقبل التحديثات من النافذة الرئيسية</p>
+                    <div id="status">في انتظار التحديثات...</div>
+                    <script>
+                        window.addEventListener('storage', (e) => {
+                            if (e.key === 'complaintStatusUpdated') {
+                                document.getElementById('status').innerHTML = 
+                                    '<strong>تم استقبال تحديث:</strong> ' + e.newValue;
+                            }
+                        });
+                    </script>
+                </body>
+                </html>
+            `);
+            
+            addLog('تم فتح نافذة اختبار التحديث', 'info');
+        }
+
+        // مسح السجل
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<p>تم مسح السجل</p>';
+        }
+
+        // تحديث مدة الاختبار
+        function updateTestDuration() {
+            const duration = Math.floor((Date.now() - testStartTime) / 1000);
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            document.getElementById('testDuration').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // مراقبة تغييرات localStorage
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'complaintStatusUpdated' || e.key === 'complaintsData') {
+                addLog(`تم اكتشاف تغيير في localStorage: ${e.key}`, 'info');
+                updateStorageDisplay();
+                
+                if (e.key === 'complaintStatusUpdated') {
+                    updatesReceived++;
+                    document.getElementById('updatesReceived').textContent = updatesReceived;
+                }
+            }
+        });
+
+        // تحديث العرض عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStorageDisplay();
+            addLog('تم تحميل صفحة الاختبار المحسنة', 'success');
+            
+            // تحديث مدة الاختبار كل ثانية
+            setInterval(updateTestDuration, 1000);
+            
+            // مراقبة التحديثات كل ثانية
+            setInterval(() => {
+                const updateData = localStorage.getItem('complaintStatusUpdated');
+                if (updateData) {
+                    const parsed = JSON.parse(updateData);
+                    const timeDiff = Date.now() - parsed.timestamp;
+                    if (timeDiff < 5000) { // 5 ثواني
+                        addLog(`تحديث حديث: الشكوى ${parsed.complaintId} → ${parsed.newStatus}`, 'success');
+                    }
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
