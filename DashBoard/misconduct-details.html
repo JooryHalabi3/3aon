@@ -66,8 +66,14 @@
     const rowsRaw = localStorage.getItem(ROWS_KEY);
     const rows = rowsRaw ? JSON.parse(rowsRaw) : [];
 
-    const CAT_CANDS = ['تصنيف البلاغ', 'التصنيف', 'تصنيف', 'نوع الشكوى', 'نوع البلاغ', 'category', 'complaint category', 'complaint type', 'type'];
-    const DEPT_CANDS = ['القسم', 'الإدارة', 'الادارة', 'القسم/الإدارة', 'department', 'section', 'unit', 'dept'];
+    const CAT_CANDS = [
+      'تصنيف البلاغ', 'التصنيف', 'تصنيف', 'نوع الشكوى', 'نوع البلاغ', 'classification',
+      'وصف البلاغ', 'الوصف', 'وصف', 'سبب البلاغ', 'السبب', 'الملاحظة', 'الملاحظه',
+      'category', 'complaint category', 'complaint type', 'type']
+    const DEPT_CANDS = [
+      'القسم', 'الإدارة', 'الادارة', 'القسم/الإدارة',
+      'اسم المعني', 'القسم المعني', 'الجهة', 'الجهة المعنية', 'اسم القسم', 'الادارة المعنية',
+      'department', 'section', 'unit', 'dept'];
 
     function findKey(obj, candidates) {
       const keys = Object.keys(obj || {});

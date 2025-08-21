@@ -261,7 +261,11 @@ function getAliasesForDepartmentName(canonicalAr) {
 
 function findDeptKeyFromRows(rows) {
     if (!rows || !rows.length) return null;
-    const candidates = ['القسم', 'الإدارة', 'الادارة', 'القسم/الإدارة', 'department', 'section', 'unit', 'dept'];
+    const candidates = [
+        'القسم', 'الإدارة', 'الادارة', 'القسم/الإدارة',
+        'اسم المعني', 'القسم المعني', 'الجهة', 'الجهة المعنية', 'اسم القسم', 'الادارة المعنية',
+        'department', 'section', 'unit', 'dept'
+    ];
     const keys = Object.keys(rows[0] || {});
     for (const k of keys) {
         const nk = normalizeText(k);
@@ -322,7 +326,11 @@ function readExcelFileForRows(file) {
 // محاولة اكتشاف اسم عمود التصنيف داخل الصفوف
 function findCategoryKeyFromRows(rows) {
     if (!rows || !rows.length) return null;
-    const candidates = ['تصنيف البلاغ', 'التصنيف', 'تصنيف', 'نوع الشكوى', 'نوع البلاغ', 'category', 'complaint category', 'complaint type', 'type', 'classification'];
+    const candidates = [
+        'تصنيف البلاغ', 'التصنيف', 'تصنيف', 'نوع الشكوى', 'نوع البلاغ', 'classification',
+        'وصف البلاغ', 'الوصف', 'وصف', 'سبب البلاغ', 'السبب', 'الملاحظة', 'الملاحظه',
+        'category', 'complaint category', 'complaint type', 'type'
+    ];
     const keys = Object.keys(rows[0] || {});
     for (const k of keys) {
         const nk = normalizeText(k);
