@@ -70,7 +70,7 @@ async function handleSubmit(e) {
         if (matchPercentage < 0.7) {
           alert("الاسم المدخل لا يتطابق مع البيانات المسجلة. يرجى التأكد من صحة الاسم ورقم الهوية.");
           return;
-                }
+        }
       }
       
       console.log('تم التحقق من الاسم بنجاح - الانتقال لصفحة الشكاوى');
@@ -81,18 +81,15 @@ async function handleSubmit(e) {
       localStorage.setItem('patientId', id);
       localStorage.setItem('patientNationalId', id);
         
-        // التحقق من وجود شكاوى
-        console.log('عدد الشكاوى للمريض:', verifyData.data.totalComplaints);
+      // التحقق من وجود شكاوى
+      console.log('عدد الشكاوى للمريض:', verifyData.data.totalComplaints);
         
-        if (verifyData.data.totalComplaints > 0) {
-          console.log('تم العثور على شكاوى - الانتقال لصفحة الشكاوى');
-          // الانتقال إلى صفحة الشكاوى
-          window.location.href = "/Complaints-followup/all-complaints.html";
-        } else {
-          alert("لا توجد شكاوى مسجلة لهذا المريض حتى الآن.");
-        }
+      if (verifyData.data.totalComplaints > 0) {
+        console.log('تم العثور على شكاوى - الانتقال لصفحة الشكاوى');
+        // الانتقال إلى صفحة الشكاوى
+        window.location.href = "/Complaints-followup/all-complaints.html";
       } else {
-        alert("الاسم المدخل لا يتطابق مع البيانات المسجلة. يرجى التأكد من صحة الاسم ورقم الهوية.");
+        alert("لا توجد شكاوى مسجلة لهذا المريض حتى الآن.");
       }
     } else {
       alert("لا يوجد مريض مسجل بهذا الرقم أو البيانات غير صحيحة");
@@ -109,7 +106,6 @@ async function handleSubmit(e) {
   
   console.log('=== انتهت معالجة النموذج ===');
 }
-
 
 let currentLang = localStorage.getItem('lang') || 'ar';
 
