@@ -136,11 +136,19 @@ async function updateComplaintStatus() {
       updateComplaintsListInStorage(currentComplaint.ComplaintID, newStatus);
       
       // إرسال إشعار للصفحات الأخرى عن التحديث
-      localStorage.setItem('complaintStatusUpdated', JSON.stringify({
+      const updateNotification = {
         complaintId: currentComplaint.ComplaintID,
         newStatus: newStatus,
-        timestamp: Date.now()
-      }));
+        timestamp: Date.now(),
+        source: 'status-page'
+      };
+      
+      localStorage.setItem('complaintStatusUpdated', JSON.stringify(updateNotification));
+      console.log('تم إرسال إشعار التحديث:', updateNotification);
+      
+      // إضافة علامة لتحديث البيانات في الخادم
+      localStorage.setItem('dataNeedsRefresh', 'true');
+      localStorage.setItem('lastStatusUpdate', Date.now().toString());
       
       // مسح النموذج
       document.getElementById('newStatus').value = '';
@@ -149,10 +157,19 @@ async function updateComplaintStatus() {
       // إعادة ملء الحالات المتاحة
       updateStatusOptions();
       
-      // العودة للصفحة السابقة بعد 2 ثانية
+      // إظهار رسالة نجاح
+      showSuccessMessage('تم تحديث حالة الشكوى بنجاح');
+      
+      // إزالة الإشعار بعد 10 ثواني لتجنب التكرار
+      setTimeout(() => {
+        localStorage.removeItem('complaintStatusUpdated');
+        console.log('تم إزالة إشعار التحديث من localStorage');
+      }, 10000);
+      
+      // العودة للصفحة السابقة بعد 3 ثانية
       setTimeout(() => {
         goBack();
-      }, 2000);
+      }, 3000);
       
     } else {
       alert('خطأ في تحديث الحالة: ' + (data.message || 'خطأ غير معروف'));
@@ -223,6 +240,56 @@ function getStatusClass(status) {
 // الذهاب للخلف
 function goBack() {
   window.history.back();
+}
+
+// إظهار رسالة نجاح
+function showSuccessMessage(message) {
+  // إنشاء عنصر رسالة النجاح
+  const successDiv = document.createElement('div');
+  successDiv.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #28a745;
+    color: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 10000;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px;
+    text-align: center;
+    animation: fadeIn 0.3s ease-out;
+  `;
+  
+  successDiv.innerHTML = `
+    <div style="font-size: 24px; margin-bottom: 10px;">✅</div>
+    <div>${message}</div>
+  `;
+  
+  // إضافة CSS للحركة
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  // إضافة الرسالة للصفحة
+  document.body.appendChild(successDiv);
+  
+  // إزالة الرسالة بعد 2 ثانية
+  setTimeout(() => {
+    successDiv.style.animation = 'fadeOut 0.3s ease-in';
+    setTimeout(() => {
+      if (successDiv.parentNode) {
+        successDiv.parentNode.removeChild(successDiv);
+      }
+    }, 300);
+  }, 2000);
 }
 
 // إضافة دعم اللغة

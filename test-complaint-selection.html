@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Selection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .complaint-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 12px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .btn-gray { background: #6c757d; }
+        .btn-gray:hover { background: #545b62; }
+        .btn-green { background: #28a745; }
+        .btn-green:hover { background: #1e7e34; }
+        .btn-blue { background: #007bff; }
+        .btn-blue:hover { background: #0056b3; }
+        .btn-orange { background: #fd7e14; }
+        .btn-orange:hover { background: #e8690b; }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .status-new { background: #007bff; }
+        .status-review { background: #ffc107; color: #000; }
+        .status-processing { background: #fd7e14; }
+        .status-resolved { background: #28a745; }
+        .status-closed { background: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Complaint Selection Test</h1>
+        
+        <div class="test-section">
+            <h3>Test Complaint Selection</h3>
+            <p>This test verifies that clicking action buttons correctly selects the specific complaint.</p>
+            
+            <div class="status-display">
+                <strong>Selected Complaint in localStorage:</strong>
+                <pre id="selectedComplaint">No complaint selected</pre>
+            </div>
+            
+            <div class="status-display">
+                <strong>Last Action:</strong>
+                <span id="lastAction">None</span>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Sample Complaints</h3>
+            <p>Click the action buttons to test complaint selection:</p>
+            
+            <div id="complaintsList">
+                <!-- Complaints will be generated here -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Event Log</h3>
+            <div id="eventLog" style="background: #f8f9fa; padding: 10px; border-radius: 5px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+                <p>Event log will appear here...</p>
+            </div>
+            <button onclick="clearLog()" style="background: #6c757d;">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        // Sample complaints data
+        const sampleComplaints = [
+            {
+                ComplaintID: 1001,
+                CurrentStatus: 'جديدة',
+                ComplaintDetails: 'شكوى تجريبية رقم 1 - مشكلة في الخدمة',
+                PatientName: 'أحمد محمد',
+                DepartmentName: 'قسم الطوارئ',
+                ComplaintTypeName: 'شكوى خدمة',
+                ComplaintDate: '2024-01-15T10:30:00'
+            },
+            {
+                ComplaintID: 1002,
+                CurrentStatus: 'قيد المراجعة',
+                ComplaintDetails: 'شكوى تجريبية رقم 2 - مشكلة في المواعيد',
+                PatientName: 'فاطمة علي',
+                DepartmentName: 'قسم العيادات الخارجية',
+                ComplaintTypeName: 'شكوى مواعيد',
+                ComplaintDate: '2024-01-16T14:20:00'
+            },
+            {
+                ComplaintID: 1003,
+                CurrentStatus: 'قيد المعالجة',
+                ComplaintDetails: 'شكوى تجريبية رقم 3 - مشكلة في الفواتير',
+                PatientName: 'محمد أحمد',
+                DepartmentName: 'قسم المحاسبة',
+                ComplaintTypeName: 'شكوى مالية',
+                ComplaintDate: '2024-01-17T09:15:00'
+            }
+        ];
+
+        // Add message to log
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('eventLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'success' ? 'green' : type === 'error' ? 'red' : 'black';
+            log.innerHTML += `<p style="color: ${color}; margin: 2px 0;"><strong>[${timestamp}]</strong> ${message}</p>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Clear log
+        function clearLog() {
+            document.getElementById('eventLog').innerHTML = '<p>Log cleared</p>';
+        }
+
+        // Update selected complaint display
+        function updateSelectedComplaintDisplay() {
+            const selectedComplaint = localStorage.getItem('selectedComplaint');
+            const display = document.getElementById('selectedComplaint');
+            
+            if (selectedComplaint) {
+                try {
+                    const complaint = JSON.parse(selectedComplaint);
+                    display.textContent = JSON.stringify(complaint, null, 2);
+                } catch (error) {
+                    display.textContent = 'Error parsing complaint data';
+                }
+            } else {
+                display.textContent = 'No complaint selected';
+            }
+        }
+
+        // Simulate complaint selection functions
+        function viewComplaintDetails(complaintId) {
+            const complaint = sampleComplaints.find(c => c.ComplaintID === complaintId);
+            if (complaint) {
+                localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
+                document.getElementById('lastAction').textContent = `View Details - Complaint #${complaintId}`;
+                updateSelectedComplaintDisplay();
+                addLog(`Selected complaint ${complaintId} for viewing details`, 'success');
+            } else {
+                addLog(`Complaint ${complaintId} not found`, 'error');
+            }
+        }
+
+        function changeComplaintStatus(complaintId) {
+            const complaint = sampleComplaints.find(c => c.ComplaintID === complaintId);
+            if (complaint) {
+                localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
+                document.getElementById('lastAction').textContent = `Change Status - Complaint #${complaintId}`;
+                updateSelectedComplaintDisplay();
+                addLog(`Selected complaint ${complaintId} for status change`, 'success');
+            } else {
+                addLog(`Complaint ${complaintId} not found`, 'error');
+            }
+        }
+
+        function replyToComplaint(complaintId) {
+            const complaint = sampleComplaints.find(c => c.ComplaintID === complaintId);
+            if (complaint) {
+                localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
+                document.getElementById('lastAction').textContent = `Reply - Complaint #${complaintId}`;
+                updateSelectedComplaintDisplay();
+                addLog(`Selected complaint ${complaintId} for reply`, 'success');
+            } else {
+                addLog(`Complaint ${complaintId} not found`, 'error');
+            }
+        }
+
+        function trackComplaint(complaintId) {
+            const complaint = sampleComplaints.find(c => c.ComplaintID === complaintId);
+            if (complaint) {
+                localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
+                document.getElementById('lastAction').textContent = `Track - Complaint #${complaintId}`;
+                updateSelectedComplaintDisplay();
+                addLog(`Selected complaint ${complaintId} for tracking`, 'success');
+            } else {
+                addLog(`Complaint ${complaintId} not found`, 'error');
+            }
+        }
+
+        function showTransferModal(complaintId) {
+            const complaint = sampleComplaints.find(c => c.ComplaintID === complaintId);
+            if (complaint) {
+                localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
+                document.getElementById('lastAction').textContent = `Transfer - Complaint #${complaintId}`;
+                updateSelectedComplaintDisplay();
+                addLog(`Selected complaint ${complaintId} for transfer`, 'success');
+            } else {
+                addLog(`Complaint ${complaintId} not found`, 'error');
+            }
+        }
+
+        // Generate complaint cards
+        function generateComplaintCards() {
+            const complaintsList = document.getElementById('complaintsList');
+            
+            const complaintsHTML = sampleComplaints.map(complaint => {
+                const complaintNumber = String(complaint.ComplaintID).padStart(6, '0');
+                const complaintDate = new Date(complaint.ComplaintDate);
+                const formattedDate = complaintDate.toLocaleDateString('ar-SA', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                const formattedTime = complaintDate.toLocaleTimeString('ar-SA', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+                const fullDateTime = `${formattedDate} - الساعة ${formattedTime}`;
+                
+                const statusClass = getStatusClass(complaint.CurrentStatus);
+                const shortDetails = complaint.ComplaintDetails.length > 50 
+                    ? complaint.ComplaintDetails.substring(0, 50) + '...'
+                    : complaint.ComplaintDetails;
+
+                return `
+                    <div class="complaint-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4>Complaint #${complaintNumber}</h4>
+                            <span class="status-badge ${statusClass}">${complaint.CurrentStatus}</span>
+                        </div>
+                        <p><strong>Patient:</strong> ${complaint.PatientName}</p>
+                        <p><strong>Department:</strong> ${complaint.DepartmentName}</p>
+                        <p><strong>Type:</strong> ${complaint.ComplaintTypeName}</p>
+                        <p><strong>Details:</strong> ${shortDetails}</p>
+                        <p><strong>Date:</strong> ${fullDateTime}</p>
+                        <div style="margin-top: 10px;">
+                            <button onclick="viewComplaintDetails(${complaint.ComplaintID})" class="btn-blue">View Details</button>
+                            <button onclick="replyToComplaint(${complaint.ComplaintID})" class="btn-green">Reply</button>
+                            <button onclick="changeComplaintStatus(${complaint.ComplaintID})" class="btn-gray">Change Status</button>
+                            <button onclick="trackComplaint(${complaint.ComplaintID})" class="btn-blue">Track</button>
+                            <button onclick="showTransferModal(${complaint.ComplaintID})" class="btn-orange">Transfer</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            complaintsList.innerHTML = complaintsHTML;
+        }
+
+        // Get status class
+        function getStatusClass(status) {
+            switch (status) {
+                case 'جديدة':
+                    return 'status-new';
+                case 'قيد المراجعة':
+                    return 'status-review';
+                case 'قيد المعالجة':
+                    return 'status-processing';
+                case 'تم الحل':
+                    return 'status-resolved';
+                case 'مغلقة':
+                    return 'status-closed';
+                default:
+                    return 'status-new';
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            generateComplaintCards();
+            updateSelectedComplaintDisplay();
+            addLog('Test page loaded successfully', 'success');
+            addLog('Click action buttons to test complaint selection', 'info');
+        });
+    </script>
+</body>
+</html>
