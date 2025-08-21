@@ -317,14 +317,30 @@ async function updateComplaintStatus(newStatus, notes = '') {
 
     if (data.success) {
       console.log('تم تحديث حالة الشكوى بنجاح'); // إضافة رسالة تصحيح
-      // تحديث حالة الشكوى في الواجهة
+      
+      // تحديث البيانات المحلية
       currentComplaint.CurrentStatus = newStatus;
+      localStorage.setItem("selectedComplaint", JSON.stringify(currentComplaint));
+      
+      // إرسال إشعار بتحديث الحالة
+      const updateNotification = {
+        complaintId: currentComplaint.ComplaintID,
+        newStatus: newStatus,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('complaintStatusUpdated', JSON.stringify(updateNotification));
+      
+      // تحديث حالة الشكوى في الواجهة
       if (document.getElementById('complaintStatus')) {
         document.getElementById('complaintStatus').textContent = newStatus;
         document.getElementById('complaintStatus').className = `badge ${getStatusClass(newStatus)}`;
       }
+      
+      showSuccessMessage('تم تحديث حالة الشكوى بنجاح');
+      
     } else {
       console.error('خطأ في تحديث الحالة:', data.message);
+      showErrorMessage('خطأ في تحديث الحالة: ' + data.message);
     }
 
   } catch (error) {

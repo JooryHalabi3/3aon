@@ -59,34 +59,42 @@
 <br><br>
 <section class="filters">
   <div class="filter-group">
-    <input type="date" class="form-control" placeholder="اختر التاريخ" data-ar="اختر التاريخ" data-en="Select Date" />
+    <input type="date" class="form-control" id="dateFilter" placeholder="اختر التاريخ" data-ar="اختر التاريخ" data-en="Select Date" />
 
-    <select class="form-control">
-      <option data-ar="القسم" data-en="Department">القسم</option>
+    <select class="form-control" id="departmentFilter">
+      <option value="" data-ar="جميع الأقسام" data-en="All Departments">جميع الأقسام</option>
       <option value="emergency" data-ar="الطوارئ" data-en="Emergency">الطوارئ</option>
       <option value="inpatient" data-ar="التنويم" data-en="Inpatient">التنويم</option>
       <option value="laboratory" data-ar="المختبر" data-en="Laboratory">المختبر</option>
       <option value="clinics" data-ar="العيادات" data-en="Clinics">العيادات</option>
+      <option value="radiology" data-ar="الأشعة" data-en="Radiology">الأشعة</option>
+      <option value="pharmacy" data-ar="الصيدلية" data-en="Pharmacy">الصيدلية</option>
+      <option value="administration" data-ar="الإدارة" data-en="Administration">الإدارة</option>
     </select>
 
-    <select class="form-control">
-      <option data-ar="نوع الشكوى" data-en="Complaint Type">نوع الشكوى</option>
+    <select class="form-control" id="complaintTypeFilter">
+      <option value="" data-ar="جميع أنواع الشكاوى" data-en="All Complaint Types">جميع أنواع الشكاوى</option>
       <option value="entry-delay" data-ar="تأخير الدخول" data-en="Entry Delay">تأخير الدخول</option>
       <option value="room-cleanliness" data-ar="نظافة الغرفة" data-en="Room Cleanliness">نظافة الغرفة</option>
       <option value="result-delay" data-ar="تأخير النتائج" data-en="Result Delay">تأخير النتائج</option>
       <option value="medication-shortage" data-ar="نقص علاج" data-en="Medication Shortage">نقص علاج</option>
       <option value="staff-conduct" data-ar="تعامل الموظف" data-en="Staff Behavior">تعامل الموظف</option>
+      <option value="waiting-time" data-ar="وقت الانتظار" data-en="Waiting Time">وقت الانتظار</option>
+      <option value="service-quality" data-ar="جودة الخدمة" data-en="Service Quality">جودة الخدمة</option>
     </select>
 
-  <div class="search-input-group">
-  <input type="text" class="form-control" 
-         placeholder="بحث برقم الشكوى"
-         data-ar-placeholder="بحث برقم الشكوى"
-         data-en-placeholder="Search by Complaint ID"
-         id="searchComplaint">
-  <button class="search-btn"><i class="fas fa-search"></i></button>
-</div>
-  <button class="btn btn-primary" id="applyFiltersBtn" data-ar="تطبيق التصفية" data-en="Apply Filters">تطبيق التصفية</button>
+    <div class="search-input-group">
+      <input type="text" class="form-control" 
+             placeholder="بحث برقم الشكوى"
+             data-ar-placeholder="بحث برقم الشكوى"
+             data-en-placeholder="Search by Complaint ID"
+             id="searchComplaint">
+      <button class="search-btn" onclick="searchComplaints()"><i class="fas fa-search"></i></button>
+    </div>
+    
+    <button class="btn btn-primary" id="applyFiltersBtn" onclick="applyFilters()" data-ar="تطبيق التصفية" data-en="Apply Filters">تطبيق التصفية</button>
+    <button class="btn btn-secondary" onclick="clearFilters()" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
+  </div>
 </section>
 
 <section class="complaint-list">
