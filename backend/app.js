@@ -71,8 +71,6 @@ app.use('/api', permissionsRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/admin', adminRoutes);
 
-// إضافة route للإشعارات
-app.use('/api/notifications', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

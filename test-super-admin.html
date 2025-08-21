@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار Super Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>اختبار Super Admin</h1>
+    
+    <div class="test-section">
+        <h2>1. اختبار الاتصال بالخادم</h2>
+        <button class="btn" onclick="testHealth()">اختبار الاتصال</button>
+        <div id="health-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. اختبار الأقسام</h2>
+        <button class="btn" onclick="testDepartments()">جلب الأقسام</button>
+        <div id="departments-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. اختبار Super Admin API</h2>
+        <button class="btn" onclick="testSuperAdminAPI()">اختبار Super Admin</button>
+        <div id="superadmin-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. اختبار تسجيل الدخول</h2>
+        <input type="text" id="username" placeholder="اسم المستخدم" style="padding: 8px; margin: 5px;">
+        <input type="password" id="password" placeholder="كلمة المرور" style="padding: 8px; margin: 5px;">
+        <button class="btn" onclick="testLogin()">تسجيل الدخول</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3001/api';
+
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ الاتصال ناجح: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ فشل الاتصال: ${error.message}`;
+            }
+        }
+
+        async function testDepartments() {
+            const resultDiv = document.getElementById('departments-result');
+            try {
+                const response = await fetch(`${API_BASE_URL}/complaints/departments`);
+                const data = await response.json();
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ الأقسام: ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ فشل جلب الأقسام: ${error.message}`;
+            }
+        }
+
+        async function testSuperAdminAPI() {
+            const resultDiv = document.getElementById('superadmin-result');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ لا يوجد توكن. يرجى تسجيل الدخول أولاً.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/super-admin/system-stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.status === 403) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 403 Forbidden: Super Admin only';
+                } else if (response.status === 401) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ 401 Unauthorized: Token invalid';
+                } else {
+                    const data = await response.json();
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Super Admin API: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ خطأ: ${error.message}`;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ يرجى إدخال اسم المستخدم وكلمة المرور';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data.employee));
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ تسجيل الدخول ناجح: ${JSON.stringify(data.data.employee, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ فشل تسجيل الدخول: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ خطأ: ${error.message}`;
+            }
+        }
+
+        // اختبار تلقائي عند تحميل الصفحة
+        window.addEventListener('load', function() {
+            testHealth();
+        });
+    </script>
+</body>
+</html>

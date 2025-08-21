@@ -3,7 +3,7 @@
  * يطبق على جميع الصفحات
  */
 
-// import { permissionManager, NOTIFICATION_TYPES } from './permissions.js';
+import { permissionManager, NOTIFICATION_TYPES } from './permissions.js';
 
 /**
  * مدير التنبيهات
@@ -62,14 +62,14 @@ class NotificationManager {
     }
     
     // تسجيل النشاط
-    // if (permissionManager.currentUser) {
-    //   permissionManager.logActivity(
-    //     'Notification',
-    //     `تم إنشاء تنبيه: ${title}`,
-    //     null,
-    //     'notification'
-    //   );
-    // }
+    if (permissionManager.currentUser) {
+      permissionManager.logActivity(
+        'Notification',
+        `تم إنشاء تنبيه: ${title}`,
+        null,
+        'notification'
+      );
+    }
     
     return notification;
   }
