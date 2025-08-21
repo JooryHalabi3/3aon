@@ -12,6 +12,7 @@
         });
     });
     
+<<<<<<< Updated upstream
         // تقليل عدد الإشعارات عند الضغط
     let notifBtn = document.getElementById("notif-btn");
     let notifCount = document.getElementById("notif-count");
@@ -30,6 +31,8 @@
             }
         });
     }
+=======
+>>>>>>> Stashed changes
 ;
 // إعدادات API
 const API_BASE_URL = 'http://localhost:3001/api';

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار نظام الإشعارات</title>
+    <link rel="stylesheet" href="js/common/notifications.css">
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-title {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 30px;
+        }
+        
+        .test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .test-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .test-btn.success { background: #10b981; }
+        .test-btn.error { background: #ef4444; }
+        .test-btn.warning { background: #f59e0b; }
+        .test-btn.info { background: #3b82f6; }
+        .test-btn.urgent { background: #dc2626; }
+        .test-btn.complaint { background: #8b5cf6; }
+        .test-btn.reminder { background: #06b6d4; }
+        
+        .test-info {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .test-info h3 {
+            margin-top: 0;
+            color: #374151;
+        }
+        
+        .test-info ul {
+            margin: 10px 0;
+            padding-right: 20px;
+        }
+        
+        .test-info li {
+            margin-bottom: 8px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">اختبار نظام الإشعارات</h1>
+        
+        <div class="test-buttons">
+            <button class="test-btn success" onclick="testSuccess()">إشعار نجاح</button>
+            <button class="test-btn error" onclick="testError()">إشعار خطأ</button>
+            <button class="test-btn warning" onclick="testWarning()">إشعار تحذير</button>
+            <button class="test-btn info" onclick="testInfo()">إشعار معلومات</button>
+            <button class="test-btn urgent" onclick="testUrgent()">إشعار عاجل</button>
+            <button class="test-btn complaint" onclick="testComplaint()">إشعار شكوى</button>
+            <button class="test-btn reminder" onclick="testReminder()">إشعار تذكير</button>
+            <button class="test-btn" onclick="testCustom()">إشعار مخصص</button>
+            <button class="test-btn" onclick="testWithActions()">إشعار مع إجراءات</button>
+            <button class="test-btn" onclick="clearAll()">مسح جميع الإشعارات</button>
+        </div>
+        
+        <div class="test-info">
+            <h3>تعليمات الاختبار:</h3>
+            <ul>
+                <li>اضغط على أي زر لإنشاء إشعار من النوع المحدد</li>
+                <li>الإشعارات ستظهر في الزاوية العلوية اليمنى</li>
+                <li>يمكنك إغلاق الإشعارات بالضغط على زر الإغلاق</li>
+                <li>الإشعارات تختفي تلقائياً بعد 5 ثوانٍ</li>
+                <li>الإشعارات العاجلة لا تختفي تلقائياً</li>
+                <li>يمكنك الضغط على أزرار الإجراءات في الإشعارات</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { notificationManager } from './js/common/notifications.js';
+        
+        // جعل notificationManager متاح عالمياً للاختبار
+        window.notificationManager = notificationManager;
+        
+        // دوال الاختبار
+        window.testSuccess = () => {
+            notificationManager.success(
+                'تم بنجاح!',
+                'تم حفظ البيانات بنجاح في قاعدة البيانات.',
+                { duration: 5000 }
+            );
+        };
+        
+        window.testError = () => {
+            notificationManager.error(
+                'خطأ في النظام',
+                'حدث خطأ أثناء حفظ البيانات. يرجى المحاولة مرة أخرى.',
+                { duration: 8000 }
+            );
+        };
+        
+        window.testWarning = () => {
+            notificationManager.warning(
+                'تحذير مهم',
+                'يوجد شكاوى تحتاج إلى متابعة عاجلة.',
+                { duration: 6000 }
+            );
+        };
+        
+        window.testInfo = () => {
+            notificationManager.info(
+                'معلومات جديدة',
+                'تم تحديث النظام بنجاح. يمكنك الآن استخدام الميزات الجديدة.',
+                { duration: 5000 }
+            );
+        };
+        
+        window.testUrgent = () => {
+            notificationManager.urgent(
+                'تنبيه عاجل!',
+                'يوجد شكوى عاجلة تحتاج إلى معالجة فورية.',
+                { duration: 0 } // لا يختفي تلقائياً
+            );
+        };
+        
+        window.testComplaint = () => {
+            notificationManager.complaint(
+                'شكوى جديدة',
+                'تم استلام شكوى جديدة من قسم الطوارئ.',
+                { duration: 7000 }
+            );
+        };
+        
+        window.testReminder = () => {
+            notificationManager.reminder(
+                'تذكير مهم',
+                'يجب متابعة الشكاوى المفتوحة قبل انتهاء المهلة.',
+                { duration: 6000 }
+            );
+        };
+        
+        window.testCustom = () => {
+            notificationManager.custom({
+                type: 'system',
+                title: 'تحديث النظام',
+                message: 'سيتم إعادة تشغيل النظام في غضون 5 دقائق.',
+                icon: '🔄',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                duration: 10000
+            });
+        };
+        
+        window.testWithActions = () => {
+            notificationManager.info(
+                'شكوى جديدة محولة',
+                'تم تحويل شكوى جديدة إليك من قسم آخر.',
+                {
+                    duration: 0,
+                    actions: [
+                        {
+                            name: 'view',
+                            label: 'عرض الشكوى',
+                            class: 'primary'
+                        },
+                        {
+                            name: 'assign',
+                            label: 'تعيين لموظف',
+                            class: 'success'
+                        },
+                        {
+                            name: 'dismiss',
+                            label: 'تجاهل',
+                            class: 'secondary'
+                        }
+                    ],
+                    onAction: (action, data, notificationElement) => {
+                        console.log('تم الضغط على:', action);
+                        
+                        switch (action) {
+                            case 'view':
+                                alert('سيتم فتح صفحة الشكوى...');
+                                break;
+                            case 'assign':
+                                alert('سيتم فتح نافذة تعيين الموظف...');
+                                break;
+                            case 'dismiss':
+                                notificationManager.hide(notificationElement);
+                                break;
+                        }
+                    }
+                }
+            );
+        };
+        
+        window.clearAll = () => {
+            notificationManager.hideAll();
+        };
+        
+        // إظهار إشعار ترحيب عند تحميل الصفحة
+        setTimeout(() => {
+            notificationManager.info(
+                'مرحباً بك في نظام الاختبار',
+                'يمكنك الآن اختبار أنواع مختلفة من الإشعارات.',
+                { duration: 4000 }
+            );
+        }, 1000);
+    </script>
+</body>
+</html>
