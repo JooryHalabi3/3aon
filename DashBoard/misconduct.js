@@ -249,6 +249,16 @@ function mapToArabicDepartmentName(raw) {
     return base; // لو ما قدرنا نطابق، احتفظ بالنص الأساسي كما هو
 }
 
+function getAliasesForDepartmentName(canonicalAr) {
+    const entry = deptSynonyms.find(e => e.canonical === canonicalAr);
+    if (!entry) return [canonicalAr];
+    const extra = entry.keys.map(k => String(k));
+    // أضف الصيغة بدون "قسم " إن وُجدت
+    const short = canonicalAr.replace(/^قسم\s+/, '');
+    const out = new Set([canonicalAr, short, ...extra]);
+    return Array.from(out);
+}
+
 function findDeptKeyFromRows(rows) {
     if (!rows || !rows.length) return null;
     const candidates = ['القسم', 'الإدارة', 'الادارة', 'القسم/الإدارة', 'department', 'section', 'unit', 'dept'];
@@ -347,6 +357,7 @@ function isMisconductRow(row) {
 
 async function importMisconductExcelFiles(files) {
     const aggregate = new Map(); // ArabicDept -> count
+    const filteredRowsAll = [];   // للاستخدام في صفحة التفاصيل
 
     for (const f of files) {
         const rec = await readExcelFileForRows(f);
@@ -358,12 +369,17 @@ async function importMisconductExcelFiles(files) {
                 const deptAr = mapToArabicDepartmentName(deptRaw);
                 if (!deptAr) continue;
                 aggregate.set(deptAr, (aggregate.get(deptAr) || 0) + 1);
+                filteredRowsAll.push(r);
             }
         } else {
             // fallback: استخدم التلميح من محتوى الملف/اسمه وعد فقط الصفوف المتعلقة بسوء التعامل
             const deptAr = mapToArabicDepartmentName(rec.deptHint);
-            const cnt = Array.isArray(rec.rows) ? rec.rows.filter(isMisconductRow).length : 0;
-            if (deptAr && cnt > 0) aggregate.set(deptAr, (aggregate.get(deptAr) || 0) + cnt);
+            const rowsFiltered = Array.isArray(rec.rows) ? rec.rows.filter(isMisconductRow) : [];
+            const cnt = rowsFiltered.length;
+            if (deptAr && cnt > 0) {
+                aggregate.set(deptAr, (aggregate.get(deptAr) || 0) + cnt);
+                filteredRowsAll.push(...rowsFiltered.map(r => ({ ...r, __deptHint: deptAr })));
+            }
         }
     }
 
@@ -400,6 +416,8 @@ async function importMisconductExcelFiles(files) {
         misconductChart = null;
     }
     createChartDynamically();
+    // خزّن الصفوف للاستخدام في صفحة التفاصيل
+    try { localStorage.setItem('misconduct:rows:v1', JSON.stringify(filteredRowsAll)); } catch {}
     console.log('✅ تم استيراد ملفات الإكسل وتحديث الرسم.');
 }
 
@@ -464,7 +482,7 @@ function createMisconductBarChart(ctx, chartData) {
         borderRadius: dataset.borderRadius,
     }));
 
-    return new Chart(ctx, {
+    const chart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: chartData.labels[currentLang],
@@ -516,6 +534,19 @@ function createMisconductBarChart(ctx, chartData) {
             }
         }
     });
+    // اجعل الأعمدة قابلة للنقر لفتح صفحة التفاصيل
+    chart.options.onClick = function(evt, elements){
+        if (!elements || !elements.length) return;
+        const index = elements[0].index;
+        const department = chart.data.labels[index];
+        const aliases = getAliasesForDepartmentName(department);
+        try {
+            localStorage.setItem('misconduct:selectedDepartment', department);
+            localStorage.setItem('misconduct:selectedDepartmentAliases', JSON.stringify(aliases));
+        } catch {}
+        window.location.href = 'misconduct-details.html?department=' + encodeURIComponent(department);
+    };
+    return chart;
 }
 
 function updateAllContent() {
