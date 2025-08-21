@@ -18,6 +18,7 @@ function saveToLocal() {
             horizontalChartRawData: horizontalChartRawData,
             donutChartRawData: donutChartRawData,
             lang: currentLang,
+            reportDate: reportDate, // إضافة تاريخ التقرير
             ts: Date.now()
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -64,12 +65,106 @@ function loadFromLocal() {
             currentLang = data.lang;
             localStorage.setItem('lang', currentLang);
         }
+        if (data.reportDate) {
+            reportDate = data.reportDate;
+        }
         console.log('ℹ️ Loaded from localStorage.');
         return true;
     } catch (err) {
         console.warn('⚠️ Could not load saved data:', err);
         return false;
     }
+}
+
+// متغير لتخزين تاريخ التقرير
+let reportDate = ''; // سيتم ملؤه من ملف الإكسل
+
+// دالة استخراج التاريخ من أول سطر في ملف الإكسل
+function extractDateFromFirstRow(rawData) {
+    if (!rawData || rawData.length === 0) {
+        return ''; // لا توجد قيمة افتراضية
+    }
+
+    const firstRow = rawData[0];
+    if (!firstRow || !Array.isArray(firstRow)) {
+        return '';
+    }
+
+    // البحث عن التاريخ في أول سطر
+    for (let i = 0; i < firstRow.length; i++) {
+        const cell = String(firstRow[i] || '').trim();
+        
+        // البحث عن أنماط التاريخ العربية
+        const arabicDatePatterns = [
+            /لسنة\s*(\d{4})\s*شهر\s*(\w+)/i,
+            /سنة\s*(\d{4})\s*شهر\s*(\w+)/i,
+            /(\d{4})\s*شهر\s*(\w+)/i,
+            /شهر\s*(\w+)\s*سنة\s*(\d{4})/i,
+            /شهر\s*(\w+)\s*(\d{4})/i
+        ];
+
+        // البحث عن أنماط التاريخ الإنجليزية
+        const englishDatePatterns = [
+            /for\s*(\w+)\s*(\d{4})/i,
+            /(\w+)\s*(\d{4})/i,
+            /year\s*(\d{4})\s*month\s*(\w+)/i,
+            /month\s*(\w+)\s*year\s*(\d{4})/i
+        ];
+
+        // فحص الأنماط العربية
+        for (const pattern of arabicDatePatterns) {
+            const match = cell.match(pattern);
+            if (match) {
+                const year = match[1] || match[2];
+                const month = match[2] || match[1];
+                console.log(`Found Arabic date pattern: year=${year}, month=${month}`);
+                return `لسنة ${year} شهر ${month}`;
+            }
+        }
+
+        // فحص الأنماط الإنجليزية
+        for (const pattern of englishDatePatterns) {
+            const match = cell.match(pattern);
+            if (match) {
+                const year = match[1] || match[2];
+                const month = match[2] || match[1];
+                
+                // تحويل أسماء الأشهر الإنجليزية إلى العربية
+                const monthMap = {
+                    'january': 'يناير', 'jan': 'يناير',
+                    'february': 'فبراير', 'feb': 'فبراير',
+                    'march': 'مارس', 'mar': 'مارس',
+                    'april': 'أبريل', 'apr': 'أبريل',
+                    'may': 'مايو',
+                    'june': 'يونيو', 'jun': 'يونيو',
+                    'july': 'يوليو', 'jul': 'يوليو',
+                    'august': 'أغسطس', 'aug': 'أغسطس',
+                    'september': 'سبتمبر', 'sep': 'سبتمبر',
+                    'october': 'أكتوبر', 'oct': 'أكتوبر',
+                    'november': 'نوفمبر', 'nov': 'نوفمبر',
+                    'december': 'ديسمبر', 'dec': 'ديسمبر'
+                };
+                
+                const arabicMonth = monthMap[month.toLowerCase()] || month;
+                console.log(`Found English date pattern: year=${year}, month=${month} -> ${arabicMonth}`);
+                return `لسنة ${year} شهر ${arabicMonth}`;
+            }
+        }
+
+        // البحث عن أي نص يحتوي على سنة وأشهر
+        if (cell.includes('2024') || cell.includes('2023') || cell.includes('2025')) {
+            const yearMatch = cell.match(/(\d{4})/);
+            const monthMatch = cell.match(/(يناير|فبراير|مارس|أبريل|مايو|يونيو|يوليو|أغسطس|سبتمبر|أكتوبر|نوفمبر|ديسمبر)/);
+            
+            if (yearMatch && monthMatch) {
+                console.log(`Found date in cell: year=${yearMatch[1]}, month=${monthMatch[1]}`);
+                return `لسنة ${yearMatch[1]} شهر ${monthMatch[1]}`;
+            }
+        }
+    }
+
+    console.log('No date pattern found in first row');
+    return ''; // لا توجد قيمة افتراضية
 }
 
 // Data based on the provided audit table
@@ -1273,6 +1368,14 @@ const KEYS = {
                     console.log(`Processing file: ${file.name}`);
 
                     const rawData = await readExcelFile(file);
+                    
+                    // استخراج التاريخ من أول سطر في أول ملف
+                    if (i === 0) {
+                        const extractedDate = extractDateFromFirstRow(rawData);
+                        reportDate = extractedDate;
+                        console.log(`Extracted report date: ${reportDate}`);
+                    }
+                    
                     const processedData = processExcelData(rawData);
                     allData = allData.concat(processedData);
                 }
