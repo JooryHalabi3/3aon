@@ -29,6 +29,18 @@
     </div>
   </header>
 
+  <!-- نظام الحماية - سيتم إخفاؤه إذا كان المستخدم Admin -->
+  <div id="accessDenied" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 500px;">
+      <div style="font-size: 80px; margin-bottom: 20px;">🚫</div>
+      <h1 style="color: #e74c3c; margin-bottom: 15px;">رفض الوصول</h1>
+      <p style="color: #666; margin-bottom: 25px;">عذراً، لا يمكنك الوصول لهذه الصفحة. هذه الصفحة مخصصة لـ Admin فقط.</p>
+      <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 20px 0; font-family: monospace; color: #e74c3c; font-weight: bold;">خطأ 403: Forbidden</div>
+      <p style="color: #666;">إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع مدير النظام.</p>
+      <a href="/login/login.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 20px;">العودة لصفحة تسجيل الدخول</a>
+    </div>
+  </div>
+
   <main class="main-content">
     <!-- معلومات القسم -->
     <div class="department-info">

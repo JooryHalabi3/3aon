@@ -144,11 +144,93 @@ function displayDeletedItems(items) {
       <td>
         <div class="action-buttons">
           <button onclick="restoreItem('${item.entityType}', ${item.entityId})" class="restore-btn" data-ar="استرجاع" data-en="Restore">استرجاع</button>
-          <button onclick="deletePermanently('${item.entityType}', ${item.entityId})" class="delete-btn" data-ar="حذف نهائي" data-en="Delete">حذف نهائي</button>
+          <button onclick="showConfirmDeleteModal('${item.entityType}', ${item.entityId})" class="delete-btn" data-ar="حذف نهائي" data-en="Delete">حذف نهائي</button>
         </div>
       </td>
     </tr>
   `).join('');
+}
+
+// عرض نافذة تأكيد الحذف النهائي
+function showConfirmDeleteModal(entityType, entityId) {
+  const item = deletedItems.find(item => item.entityType === entityType && item.entityId === entityId);
+  if (!item) return;
+
+  const modal = document.getElementById('confirmDeleteModal');
+  const detailsDiv = document.getElementById('itemToDeleteDetails');
+  
+  if (modal && detailsDiv) {
+    detailsDiv.innerHTML = `
+      <div class="item-info">
+        <p><strong>نوع الكيان:</strong> ${getEntityTypeName(entityType)}</p>
+        <p><strong>المعرف:</strong> #${entityId}</p>
+        <p><strong>الاسم:</strong> ${item.name || item.summary || 'غير محدد'}</p>
+        <p><strong>تاريخ الحذف:</strong> ${formatDate(item.deletedAt)}</p>
+        <p><strong>المحذوف بواسطة:</strong> ${item.deletedBy || 'غير محدد'}</p>
+      </div>
+    `;
+    
+    // حفظ معرف العنصر المراد حذفه
+    window.itemToDeleteType = entityType;
+    window.itemToDeleteId = entityId;
+    
+    modal.style.display = 'block';
+  }
+}
+
+// إغلاق نافذة تأكيد الحذف
+function closeConfirmDeleteModal() {
+  const modal = document.getElementById('confirmDeleteModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// تأكيد الحذف النهائي
+async function confirmFinalDelete() {
+  const entityType = window.itemToDeleteType;
+  const entityId = window.itemToDeleteId;
+  
+  if (!entityType || !entityId) {
+    alert('خطأ: لم يتم تحديد العنصر المراد حذفه');
+    return;
+  }
+
+  try {
+    showLoading(true);
+    
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/recycle-bin/${entityType}/${entityId}/permanent-delete`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      showSuccessMessage('تم حذف العنصر نهائياً بنجاح');
+      
+      // إزالة العنصر من القائمة
+      deletedItems = deletedItems.filter(item => !(item.entityType === entityType && item.entityId === entityId));
+      displayDeletedItems(deletedItems);
+      
+      // إغلاق النافذة
+      closeConfirmDeleteModal();
+      
+      // إعادة تحميل البيانات
+      loadDeletedItems();
+    } else {
+      showErrorMessage('خطأ في حذف العنصر: ' + (data.message || 'حدث خطأ غير متوقع'));
+    }
+    
+  } catch (error) {
+    console.error('خطأ في حذف العنصر نهائياً:', error);
+    showErrorMessage('حدث خطأ في الاتصال بالخادم');
+  } finally {
+    showLoading(false);
+  }
 }
 
 // الحصول على اسم نوع الكيان

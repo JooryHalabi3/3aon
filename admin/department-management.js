@@ -7,9 +7,47 @@ let departmentComplaints = [];
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
+    checkAdminPermissions();
     initializePage();
     setupLanguageToggle();
 });
+
+// التحقق من أن المستخدم Admin
+async function checkAdminPermissions() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login/login.html';
+            return;
+        }
+
+        const response = await fetch('/api/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to get user info');
+        }
+
+        const userData = await response.json();
+        
+        // التحقق من أن المستخدم Admin
+        if (userData.data.roleID !== 2 && userData.data.roleID !== 3) {
+            document.getElementById('accessDenied').style.display = 'flex';
+            return;
+        }
+
+        // إخفاء نظام الحماية
+        document.getElementById('accessDenied').style.display = 'none';
+        
+    } catch (error) {
+        console.error('Error checking admin permissions:', error);
+        document.getElementById('accessDenied').style.display = 'flex';
+    }
+}
 
 // Initialize page data
 async function initializePage() {

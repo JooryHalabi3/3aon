@@ -98,49 +98,107 @@ async function loadPatientComplaints() {
 
 // تحديث معلومات المريض للمدير
 function updatePatientInfoForAdmin() {
-  const patientNameEl = document.getElementById('patient-name');
-  const patientIdEl = document.getElementById('patient-id');
-  const complaintsCountEl = document.getElementById('complaints-count');
+  const patientNameElement = document.getElementById('patientName');
+  const patientIdElement = document.getElementById('patientId');
+  const complaintsCountElement = document.getElementById('complaintsCount');
   
-  if (patientNameEl) patientNameEl.textContent = 'جميع الشكاوي';
-  if (patientIdEl) patientIdEl.textContent = 'جميع المرضى';
-  if (complaintsCountEl) complaintsCountEl.textContent = complaintsData.length;
+  if (patientNameElement) patientNameElement.textContent = 'جميع المرضى';
+  if (patientIdElement) patientIdElement.textContent = 'المدير';
+  if (complaintsCountElement) complaintsCountElement.textContent = complaintsData.length;
 }
 
-// تحديث معلومات المريض
-function updatePatientInfo() {
-  console.log('بدء تحديث معلومات المريض...');
+// تطبيق الفلاتر
+function applyFilters() {
+  const dateFilter = document.getElementById('dateFilter').value;
+  const departmentFilter = document.getElementById('departmentFilter').value;
+  const complaintTypeFilter = document.getElementById('complaintTypeFilter').value;
   
-  if (!patientData) {
-    console.log('لا توجد بيانات مريض لتحديثها');
+  let filteredComplaints = complaintsData.filter(complaint => {
+    let matches = true;
+    
+    // فلتر التاريخ
+    if (dateFilter) {
+      const complaintDate = new Date(complaint.ComplaintDate);
+      const filterDate = new Date(dateFilter);
+      matches = matches && complaintDate.toDateString() === filterDate.toDateString();
+    }
+    
+    // فلتر القسم
+    if (departmentFilter) {
+      matches = matches && complaint.DepartmentName === departmentFilter;
+    }
+    
+    // فلتر نوع الشكوى
+    if (complaintTypeFilter) {
+      matches = matches && complaint.ComplaintType === complaintTypeFilter;
+    }
+    
+    return matches;
+  });
+  
+  displayFilteredComplaints(filteredComplaints);
+}
+
+// عرض الشكاوى المفلترة
+function displayFilteredComplaints(filteredComplaints) {
+  const tbody = document.querySelector('.complaint-list table tbody');
+  if (!tbody) return;
+
+  if (filteredComplaints.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 2rem; color: #666;">
+          لا توجد شكاوى تطابق الفلاتر المحددة
+        </td>
+      </tr>
+    `;
     return;
   }
 
-  // تحديث اسم المريض - استخدام الاسم المحفوظ في localStorage بدلاً من API
-  const patientNameElement = document.getElementById('patientName');
-  if (patientNameElement) {
-    const savedPatientName = localStorage.getItem('patientName');
-    const displayName = savedPatientName || patientData.name;
-    patientNameElement.textContent = displayName;
-    
-    console.log('الاسم المعروض في صفحة الشكاوى:', displayName);
-    console.log('الاسم المحفوظ في localStorage:', savedPatientName);
-    console.log('الاسم من API:', patientData.name);
-  }
+  tbody.innerHTML = filteredComplaints.map(complaint => `
+    <tr>
+      <td>#${complaint.ComplaintID}</td>
+      <td>${complaint.ComplaintType || 'غير محدد'}</td>
+      <td>${complaint.DepartmentName || 'غير محدد'}</td>
+      <td>${formatDate(complaint.ComplaintDate)}</td>
+      <td>
+        <span class="status-badge status-${getStatusClass(complaint.CurrentStatus)}">
+          ${complaint.CurrentStatus || 'جديدة'}
+        </span>
+      </td>
+      <td>
+        <a href="#" onclick="viewComplaintDetails('${complaint.ComplaintID}')" class="details-link">
+          عرض التفاصيل
+        </a>
+      </td>
+    </tr>
+  `).join('');
+}
 
-  // تحديث رقم الملف (رقم الهوية)
-  const fileNumberElement = document.getElementById('patientId');
-  if (fileNumberElement) {
-    fileNumberElement.textContent = patientData.nationalId;
-  }
-
-  // تحديث عدد الشكاوى
-  const complaintsCountElement = document.getElementById('complaintsCount');
-  if (complaintsCountElement) {
-    complaintsCountElement.textContent = complaintsData.length;
+// البحث برقم الشكوى
+function searchComplaints() {
+  const searchTerm = document.getElementById('searchComplaint').value.trim();
+  
+  if (!searchTerm) {
+    updateComplaintsTable();
+    return;
   }
   
-  console.log('تم تحديث معلومات المريض بنجاح');
+  const filteredComplaints = complaintsData.filter(complaint => 
+    complaint.ComplaintID.toString().includes(searchTerm)
+  );
+  
+  displayFilteredComplaints(filteredComplaints);
+}
+
+// مسح الفلاتر
+function clearFilters() {
+  document.getElementById('dateFilter').value = '';
+  document.getElementById('departmentFilter').value = '';
+  document.getElementById('complaintTypeFilter').value = '';
+  document.getElementById('searchComplaint').value = '';
+  
+  updateComplaintsTable();
 }
 
 // تحديث جدول الشكاوى

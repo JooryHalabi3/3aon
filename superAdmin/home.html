@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الصفحة الرئيسية - Super Admin</title>
+  <!-- خط عربي: Tajawal -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <!-- خط إنجليزي: Merriweather (serif) -->
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="home.css">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title" data-ar="عُــــــونَك - Super Admin" data-en="AOUNAK - Super Admin">عُــــــونَك - Super Admin</div>
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+      
+      <!-- زر الإشعارات -->
+      <button id="notifBtn" class="notif-btn" title="الإشعارات" onclick="toggleNotificationCenter()">
+        <svg class="notif-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2c.7 0 1.25.56 1.25 1.25v.51A6.75 6.75 0 0 1 19 10.5v4.06l1.49 2.49c.3.5-.06 1.12-.64 1.12H4.15c-.58 0-.94-.62-.64-1.12L5 14.56V10.5A6.75 6.75 0 0 1 10.75 3.76v-.51C10.75 2.56 11.3 2 12 2zm0 20a2.75 2.75 0 0 1-2.62-2h5.24A2.75 2.75 0 0 1 12 22z"/>
+        </svg>
+        <span id="notifCount" class="notif-count" style="display:none;">0</span>
+      </button>
+
+      <!-- رابط الملف الشخصي -->
+      <a href="/login/profile.html" class="profile-link">
+        <img src="/icon/patient1.png" alt="الملف الشخصي" class="profile-icon-small">
+        <span>الملف الشخصي</span>
+      </a>
+
+      <!-- زر اللغة -->
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- مركز الإشعارات -->
+  <div id="notificationCenter" class="notification-center" style="display: none;">
+    <div class="notification-header">
+      <span data-ar="الإشعارات" data-en="Notifications">الإشعارات</span>
+      <span id="notificationCount" class="notification-count">0</span>
+      <button onclick="closeNotificationCenter()" class="close-notifications">×</button>
+    </div>
+    <div id="notificationList" class="notification-list">
+      <!-- الإشعارات ستُضاف هنا ديناميكياً -->
+    </div>
+  </div>
+
+  <main>
+    <!-- البطاقات الرئيسية -->
+    <section class="dashboard">
+      <div class="card">
+        <img src="/icon/plus.png" alt="تقديم شكوى">
+        <h3 data-ar="انشاء الشكوى" data-en="Create Complaint">انشاء الشكوى</h3>
+        <p data-ar="إنشاء شكوى جديدة في النظام" data-en="Create a new complaint in the system">إنشاء شكوى جديدة في النظام</p>
+        <a href="/New complaint/Newcomplaint.html" class="btn" data-ar="انشاء شكوى" data-en="Create Complaint">انشاء شكوى</a>
+      </div>
+
+      <div class="card">
+        <img src="/icon/list.png" alt="متابعة الشكاوى">
+        <h3 data-ar="متابعة الشكاوى" data-en="Follow Up Complaints">متابعة الشكاوى</h3>
+        <p data-ar="متابعة حالة الشكاوى المقدمة" data-en="Follow up on submitted complaints">متابعة حالة الشكاوى المقدمة</p>
+        <a href="/Complaints-followup/followup.html" class="btn" data-ar="متابعة الشكاوى" data-en="Follow Up">متابعة الشكاوى</a>
+      </div>
+
+      <div class="card">
+        <img src="/icon/group.png" alt="الشكاوى العامة">
+        <h3 data-ar="الشكاوى العامة" data-en="General Complaints">الشكاوى العامة</h3>
+        <p data-ar="استعراض وإدارة الشكاوى العامة" data-en="View and manage general complaints">استعراض وإدارة الشكاوى العامة</p>
+        <a href="/general complaints/general-complaints.html" class="btn" data-ar="استعراض" data-en="View">استعراض</a>
+      </div>
+
+      <div class="card">
+        <img src="/icon/chart.png" alt="لوحة المعلومات">
+        <h3 data-ar="لوحة المعلومات" data-en="Dashboard">لوحة المعلومات</h3>
+        <p data-ar="إحصائيات وتحليلات الشكاوى" data-en="Complaint statistics and analytics">إحصائيات وتحليلات الشكاوى</p>
+        <a href="/DashBoard/overview.html" class="btn" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
+      </div>
+
+      <div class="card">
+        <img src="/icon/admin.png" alt="لوحة تحكم المسؤول">
+        <h3 data-ar="لوحة التحكم" data-en="Admin Panel">لوحة التحكم</h3>
+        <p data-ar="إدارة النظام والمستخدمين والصلاحيات" data-en="Manage system, users and permissions">إدارة النظام والمستخدمين والصلاحيات</p>
+        <a href="/superAdmin/superAdmin.html" class="btn" data-ar="الدخول للوحة التحكم" data-en="Access Admin Panel">الدخول للوحة التحكم</a>
+      </div>
+    </section>
+
+    <!-- KPIs صغيرة فوق البطاقات (5 عناصر) -->
+    <section class="mini-kpis">
+      <div class="mini-card">
+        <div class="title" data-ar="إجمالي الشكاوى" data-en="Total Complaints">إجمالي الشكاوى</div>
+        <div class="value" id="kpiTotal">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="title" data-ar="المفتوحة الآن" data-en="Currently Open">المفتوحة الآن</div>
+        <div class="value" id="kpiOpen">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="title" data-ar="تم الرد (%)" data-en="Responded (%)">تم الرد (%)</div>
+        <div class="value" id="kpiResponded">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="title" data-ar="قريب الانتهاء" data-en="Due Soon">قريب الانتهاء</div>
+        <div class="value" id="kpiDueSoon">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="title" data-ar="متأخرة" data-en="Overdue">متأخرة</div>
+        <div class="value" id="kpiLate">—</div>
+      </div>
+    </section>
+
+    <!-- ملخص الشكاوى التفصيلي -->
+    <section class="list-card">
+      <div class="table-title" data-ar="ملخص الشكاوى" data-en="Complaints Summary">ملخص الشكاوى</div>
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th data-ar="رقم الشكوى" data-en="Complaint ID">رقم الشكوى</th>
+            <th data-ar="نوع الشكوى" data-en="Complaint Type">نوع الشكوى</th>
+            <th data-ar="القسم" data-en="Department">القسم</th>
+            <th data-ar="التاريخ" data-en="Date">التاريخ</th>
+            <th data-ar="الحالة" data-en="Status">الحالة</th>
+            <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="complaintsTableBody">
+          <!-- البيانات ستُضاف هنا ديناميكياً -->
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="home.js"></script>
+</body>
+
+</html>
