@@ -1,42 +1,13 @@
-
 // إعدادات API
 const API_BASE_URL = 'http://localhost:3001/api';
 
 // متغيرات عامة
 let complaintData = null;
 
-// دالة لجلب باراميتر من الرابط
-function getQueryParam(name) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(name);
-}
-
 // تحميل بيانات الشكوى
 async function loadComplaintDetails() {
-  // جلب ComplaintID من الرابط
-  const complaintIdFromUrl = getQueryParam('id');
-  if (complaintIdFromUrl) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/complaints/details/${complaintIdFromUrl}`);
-      const data = await response.json();
-      if (data.success) {
-        complaintData = data.data.complaint;
-        populateComplaintDetails();
-        return;
-      } else {
-        alert('تعذر جلب بيانات الشكوى');
-        goBack();
-        return;
-      }
-    } catch (error) {
-      alert('خطأ في جلب بيانات الشكوى');
-      goBack();
-      return;
-    }
-  }
-
-  // إذا لم يوجد id في الرابط، استخدم الطريقة القديمة (localStorage)
   const selectedComplaint = localStorage.getItem("selectedComplaint");
+  
   if (!selectedComplaint) {
     alert("لا توجد بيانات شكوى متاحة");
     goBack();
