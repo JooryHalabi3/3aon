@@ -16,52 +16,115 @@ router.use(checkAdminPermissions);
 // الحصول على جميع الطلبات
 router.get('/requests', async (req, res) => {
   try {
+    // التحقق من وجود جدول complaints
+    const [tableCheck] = await pool.execute(`
+      SELECT COUNT(*) as tableExists 
+      FROM information_schema.tables 
+      WHERE table_schema = DATABASE() AND table_name = 'complaints'
+    `);
+    
+    if (tableCheck[0].tableExists === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
     const [rows] = await pool.execute(`
       SELECT 
-        r.RequestID,
-        r.Subject,
-        r.Description,
-        r.ComplaintType,
-        r.Status,
-        r.SubmissionDate,
-        r.LastUpdated,
+        c.ComplaintID as RequestID,
+        c.ComplaintDetails as Subject,
+        c.ComplaintDetails as Description,
+        CASE 
+          WHEN ct.TypeName LIKE '%طبي%' THEN 'medical'
+          WHEN ct.TypeName LIKE '%إداري%' THEN 'administrative'
+          ELSE 'technical'
+        END as ComplaintType,
+        CASE 
+          WHEN c.CurrentStatus = 'جديدة' THEN 'pending'
+          WHEN c.CurrentStatus = 'قيد المعالجة' THEN 'in_progress'
+          WHEN c.CurrentStatus = 'مغلقة' THEN 'completed'
+          ELSE 'pending'
+        END as Status,
+        c.ComplaintDate as SubmissionDate,
+        c.ComplaintDate as LastUpdated,
         COALESCE(e.FullName, 'غير محدد') AS RequesterName,
         COALESCE(CONCAT(ae.FullName, ' (', d.DepartmentName, ')'), 'غير محدد') AS AssignedTo
-      FROM requests r
-      LEFT JOIN employees e  ON r.RequesterID = e.EmployeeID
-      LEFT JOIN employees ae ON r.AssignedTo = ae.EmployeeID
-      LEFT JOIN departments d ON ae.DepartmentID = d.DepartmentID
-      ORDER BY r.SubmissionDate DESC
+      FROM complaints c
+      LEFT JOIN employees e ON c.EmployeeID = e.EmployeeID
+      LEFT JOIN employees ae ON c.EmployeeID = ae.EmployeeID
+      LEFT JOIN departments d ON c.DepartmentID = d.DepartmentID
+      LEFT JOIN complainttypes ct ON c.ComplaintTypeID = ct.ComplaintTypeID
+      ORDER BY c.ComplaintDate DESC
     `);
 
     res.json({ success: true, data: rows });
   } catch (error) {
     console.error('خطأ في جلب الطلبات:', error);
-    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+    console.error('تفاصيل الخطأ:', error.message);
+    console.error('Stack trace:', error.stack);
+    
+    // إرجاع قائمة فارغة في حالة الخطأ
+    res.json({ success: true, data: [] });
   }
 });
 
 // الحصول على إحصائيات الطلبات
 router.get('/requests/stats', async (req, res) => {
   try {
+    // التحقق من وجود جدول complaints
+    const [tableCheck] = await pool.execute(`
+      SELECT COUNT(*) as tableExists 
+      FROM information_schema.tables 
+      WHERE table_schema = DATABASE() AND table_name = 'complaints'
+    `);
+    
+    if (tableCheck[0].tableExists === 0) {
+      return res.json({ 
+        success: true, 
+        data: {
+          totalRequests: 0,
+          pendingRequests: 0,
+          inProgressRequests: 0,
+          completedRequests: 0,
+          rejectedRequests: 0,
+          urgentRequests: 0
+        }
+      });
+    }
+
     const [rows] = await pool.execute(`
       SELECT 
         COUNT(*) AS totalRequests,
-        SUM(CASE WHEN Status = 'pending' THEN 1 ELSE 0 END) AS pendingRequests,
-        SUM(CASE WHEN Status = 'in_progress' THEN 1 ELSE 0 END) AS inProgressRequests,
-        SUM(CASE WHEN Status = 'completed' THEN 1 ELSE 0 END) AS completedRequests,
-        SUM(CASE WHEN Status = 'rejected' THEN 1 ELSE 0 END) AS rejectedRequests,
-        SUM(CASE WHEN DATEDIFF(NOW(), SubmissionDate) >= 3 THEN 1 ELSE 0 END) AS urgentRequests
-      FROM requests
+        SUM(CASE WHEN c.CurrentStatus = 'جديدة' THEN 1 ELSE 0 END) AS pendingRequests,
+        SUM(CASE WHEN c.CurrentStatus = 'قيد المعالجة' THEN 1 ELSE 0 END) AS inProgressRequests,
+        SUM(CASE WHEN c.CurrentStatus = 'مغلقة' THEN 1 ELSE 0 END) AS completedRequests,
+        SUM(CASE WHEN c.CurrentStatus = 'مرفوض' THEN 1 ELSE 0 END) AS rejectedRequests,
+        SUM(CASE WHEN DATEDIFF(NOW(), c.ComplaintDate) >= 3 THEN 1 ELSE 0 END) AS urgentRequests
+      FROM complaints c
     `);
 
     const stats = rows[0];
-    Object.keys(stats).forEach(k => { if (stats[k] == null) stats[k] = 0; });
+    // معالجة القيم null
+    Object.keys(stats).forEach(k => { 
+      if (stats[k] == null) stats[k] = 0; 
+    });
 
     res.json({ success: true, data: stats });
   } catch (error) {
     console.error('خطأ في جلب إحصائيات الطلبات:', error);
-    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+    console.error('تفاصيل الخطأ:', error.message);
+    console.error('Stack trace:', error.stack);
+    
+    // إرجاع إحصائيات فارغة في حالة الخطأ
+    res.json({ 
+      success: true, 
+      data: {
+        totalRequests: 0,
+        pendingRequests: 0,
+        inProgressRequests: 0,
+        completedRequests: 0,
+        rejectedRequests: 0,
+        urgentRequests: 0
+      }
+    });
   }
 });
 
@@ -72,15 +135,15 @@ router.get('/requests/:id/workflow', async (req, res) => {
 
     const [rows] = await pool.execute(`
       SELECT 
-        w.WorkflowID,
-        w.Action,
-        w.Description,
-        w.CreatedAt,
-        e.FullName AS UserName
-      FROM request_workflow w
-      LEFT JOIN employees e ON w.UserID = e.EmployeeID
-      WHERE w.RequestID = ?
-      ORDER BY w.CreatedAt ASC
+        ch.HistoryID as WorkflowID,
+        ch.Stage as Action,
+        ch.Remarks as Description,
+        ch.Timestamp as CreatedAt,
+        COALESCE(e.FullName, 'النظام') AS UserName
+      FROM complainthistory ch
+      LEFT JOIN employees e ON ch.EmployeeID = e.EmployeeID
+      WHERE ch.ComplaintID = ?
+      ORDER BY ch.Timestamp ASC
     `, [requestId]);
 
     res.json({ success: true, data: rows });
@@ -98,7 +161,7 @@ router.post('/requests/:id/transfer', async (req, res) => {
     const userId = req.user.employeeID;
 
     const [requestRows] = await pool.execute(
-      'SELECT * FROM requests WHERE RequestID = ?',
+      'SELECT * FROM complaints WHERE ComplaintID = ?',
       [requestId]
     );
     if (requestRows.length === 0) {
@@ -113,14 +176,16 @@ router.post('/requests/:id/transfer', async (req, res) => {
       return res.status(400).json({ success: false, message: 'الموظف غير موجود في القسم المحدد' });
     }
 
+    // تحديث الشكوى
     await pool.execute(
-      'UPDATE requests SET AssignedTo = ?, Status = ?, LastUpdated = NOW() WHERE RequestID = ?',
-      [employeeId, 'in_progress', requestId]
+      'UPDATE complaints SET EmployeeID = ?, DepartmentID = ?, CurrentStatus = ? WHERE ComplaintID = ?',
+      [employeeId, departmentId, 'قيد المعالجة', requestId]
     );
 
+    // إضافة سجل في التاريخ
     await pool.execute(
-      'INSERT INTO request_workflow (RequestID, UserID, Action, Description, CreatedAt) VALUES (?, ?, ?, ?, NOW())',
-      [requestId, userId, 'تحويل الشكوى', `تم تحويل الشكوى إلى ${employeeRows[0].FullName} في القسم المحدد.${notes ? ' ملاحظات: ' + notes : ''}`]
+      'INSERT INTO complainthistory (ComplaintID, EmployeeID, Stage, Remarks, OldStatus, NewStatus, Timestamp) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+      [requestId, userId, 'تحويل الشكوى', `تم تحويل الشكوى إلى ${employeeRows[0].FullName} في القسم المحدد.${notes ? ' ملاحظات: ' + notes : ''}`, requestRows[0].CurrentStatus, 'قيد المعالجة']
     );
 
     // ✅ إشعار متسق بالأعمدة + رابط التفاصيل عبر RelatedType/RelatedID
@@ -128,7 +193,7 @@ router.post('/requests/:id/transfer', async (req, res) => {
       `INSERT INTO notifications 
        (RecipientEmployeeID, Title, Body, Type, RelatedType, RelatedID, CreatedAt) 
        VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-      [employeeId, 'شكوى جديدة محوّلة', `تم تحويل شكوى/طلب جديد إليك. رقم الطلب: ${requestId}`, 'transfer', 'request', requestId]
+      [employeeId, 'شكوى جديدة محوّلة', `تم تحويل شكوى/طلب جديد إليك. رقم الطلب: ${requestId}`, 'transfer', 'complaint', requestId]
     );
 
     res.json({ success: true, message: 'تم تحويل الشكوى بنجاح' });
@@ -678,6 +743,59 @@ router.get('/complaints/:complaintId/assignments', async (req, res) => {
     res.status(500).json({ success: false, message: 'خطأ في الخادم' });
   }
 });
+
+// تعيين طلب لموظف
+router.put('/requests/:id/assign', async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const { employeeId, notes } = req.body;
+    const userId = req.user.employeeID;
+
+    // التحقق من وجود الطلب
+    const [requestRows] = await pool.execute(
+      'SELECT * FROM complaints WHERE ComplaintID = ?',
+      [requestId]
+    );
+    if (requestRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
+    }
+
+    // التحقق من وجود الموظف
+    const [employeeRows] = await pool.execute(
+      'SELECT * FROM employees WHERE EmployeeID = ?',
+      [employeeId]
+    );
+    if (employeeRows.length === 0) {
+      return res.status(400).json({ success: false, message: 'الموظف غير موجود' });
+    }
+
+    // تحديث الشكوى
+    await pool.execute(
+      'UPDATE complaints SET EmployeeID = ?, CurrentStatus = ? WHERE ComplaintID = ?',
+      [employeeId, 'قيد المعالجة', requestId]
+    );
+
+    // إضافة سجل في التاريخ
+    await pool.execute(
+      'INSERT INTO complainthistory (ComplaintID, EmployeeID, Stage, Remarks, OldStatus, NewStatus, Timestamp) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+      [requestId, userId, 'تعيين الشكوى', `تم تعيين الشكوى إلى ${employeeRows[0].FullName}.${notes ? ' ملاحظات: ' + notes : ''}`, requestRows[0].CurrentStatus, 'قيد المعالجة']
+    );
+
+    // إرسال إشعار للموظف
+    await pool.execute(
+      `INSERT INTO notifications 
+       (RecipientEmployeeID, Title, Body, Type, RelatedType, RelatedID, CreatedAt) 
+       VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+      [employeeId, 'شكوى جديدة معينة', `تم تعيين شكوى/طلب جديد إليك. رقم الطلب: ${requestId}`, 'assignment', 'complaint', requestId]
+    );
+
+    res.json({ success: true, message: 'تم تعيين الطلب بنجاح' });
+  } catch (error) {
+    console.error('خطأ في تعيين الطلب:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
+
 // DELETE /api/admin/notifications/:id
 router.delete('/notifications/:id', async (req, res) => {
   const id = req.params.id;

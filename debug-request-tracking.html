@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug صفحة تتبع الطلبات</title>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            margin: 20px;
+            background: #f9fbfd;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #1e88e5;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1565c0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .debug-result {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug صفحة تتبع الطلبات</h1>
+    
+    <div class="debug-section">
+        <h2>معلومات التصحيح</h2>
+        <div id="debugInfo" class="debug-info">
+            <p><strong>URL الحالي:</strong> <span id="currentUrl"></span></p>
+            <p><strong>Token موجود:</strong> <span id="tokenStatus"></span></p>
+            <p><strong>User Data:</strong> <span id="userData"></span></p>
+            <p><strong>API Base URL:</strong> <span id="apiUrl"></span></p>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>اختبار الاتصال بالخادم</h2>
+        <button class="btn" onclick="testServerConnection()">اختبار الاتصال بالخادم</button>
+        <div id="serverResult" class="debug-result" style="display: none;"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>اختبار API بدون Token</h2>
+        <button class="btn" onclick="testAPIWithoutToken()">اختبار API بدون Token</button>
+        <div id="apiWithoutTokenResult" class="debug-result" style="display: none;"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>اختبار API مع Token</h2>
+        <button class="btn" onclick="testAPIWithToken()">اختبار API مع Token</button>
+        <div id="apiWithTokenResult" class="debug-result" style="display: none;"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>حالة الاختبار</h2>
+        <div id="testStatus" class="status info">لم يتم بدء الاختبار بعد</div>
+    </div>
+
+    <div class="debug-section">
+        <h2>إصلاح سريع</h2>
+        <button class="btn" onclick="redirectToLogin()">توجيه لصفحة تسجيل الدخول</button>
+        <button class="btn" onclick="clearLocalStorage()">مسح البيانات المحفوظة</button>
+        <button class="btn" onclick="openRequestTracking()">فتح صفحة تتبع الطلبات</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3001/api';
+
+        // تحديث معلومات التصحيح
+        function updateDebugInfo() {
+            document.getElementById('currentUrl').textContent = window.location.href;
+            document.getElementById('apiUrl').textContent = API_BASE_URL;
+            
+            const token = localStorage.getItem('token');
+            document.getElementById('tokenStatus').textContent = token ? 'نعم' : 'لا';
+            
+            const userData = localStorage.getItem('user');
+            document.getElementById('userData').textContent = userData ? userData : 'غير موجود';
+        }
+
+        // تحديث حالة الاختبار
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('testStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // اختبار الاتصال بالخادم
+        async function testServerConnection() {
+            try {
+                updateStatus('جاري اختبار الاتصال بالخادم...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                    method: 'GET'
+                });
+
+                const resultDiv = document.getElementById('serverResult');
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = `Status: ${response.status}\nStatus Text: ${response.statusText}\nHeaders: ${JSON.stringify([...response.headers.entries()], null, 2)}`;
+
+                if (response.ok) {
+                    updateStatus('✅ الخادم يعمل بشكل صحيح', 'success');
+                } else {
+                    updateStatus(`❌ الخادم يعمل لكن هناك خطأ: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ خطأ في الاتصال بالخادم: ${error.message}`, 'error');
+                const resultDiv = document.getElementById('serverResult');
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = `Error: ${error.message}\nStack: ${error.stack}`;
+            }
+        }
+
+        // اختبار API بدون Token
+        async function testAPIWithoutToken() {
+            try {
+                updateStatus('جاري اختبار API بدون Token...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/admin/requests`, {
+                    method: 'GET'
+                });
+
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('apiWithoutTokenResult');
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = `Status: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+
+                if (response.status === 401) {
+                    updateStatus('✅ API يعمل - مطلوب تسجيل دخول', 'success');
+                } else {
+                    updateStatus(`❌ استجابة غير متوقعة: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ خطأ في اختبار API: ${error.message}`, 'error');
+                const resultDiv = document.getElementById('apiWithoutTokenResult');
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // اختبار API مع Token
+        async function testAPIWithToken() {
+            try {
+                updateStatus('جاري اختبار API مع Token...', 'info');
+                
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    updateStatus('❌ لا يوجد Token', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/admin/requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('apiWithTokenResult');
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = `Status: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+
+                if (data.success) {
+                    updateStatus(`✅ API يعمل - تم جلب ${data.data.length} طلب`, 'success');
+                } else {
+                    updateStatus(`❌ فشل في جلب البيانات: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ خطأ في اختبار API: ${error.message}`, 'error');
+                const resultDiv = document.getElementById('apiWithTokenResult');
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // توجيه لصفحة تسجيل الدخول
+        function redirectToLogin() {
+            window.location.href = '/login/login.html';
+        }
+
+        // مسح البيانات المحفوظة
+        function clearLocalStorage() {
+            localStorage.clear();
+            updateStatus('✅ تم مسح البيانات المحفوظة', 'success');
+            updateDebugInfo();
+        }
+
+        // فتح صفحة تتبع الطلبات
+        function openRequestTracking() {
+            window.open('/admin/request-tracking.html', '_blank');
+            updateStatus('✅ تم فتح صفحة تتبع الطلبات', 'success');
+        }
+
+        // تحديث المعلومات عند تحميل الصفحة
+        window.addEventListener('load', function() {
+            updateDebugInfo();
+            updateStatus('✅ تم تحميل صفحة التصحيح', 'success');
+        });
+    </script>
+</body>
+</html>
