@@ -92,8 +92,7 @@
   <div class="mini-card"><div class="title">متأخرة</div><div class="value" id="kpiLate">—</div></div>
 </section>
 
-
-   <!-- ملخص الشكاوى التفصيلي -->
+<!-- ملخص الشكاوى التفصيلي -->
 <section class="list-card">
   <div class="table-title">ملخص الشكاوى</div>
   <table class="comp-table">
@@ -109,7 +108,9 @@
       </tr>
     </thead>
     <tbody id="compBody">
-      <tr><td colspan="7" style="text-align:center;color:#666;">—</td></tr>
+      <tr>
+        <td colspan="7" style="text-align:center;color:#666;">—</td>
+      </tr>
     </tbody>
   </table>
 </section>
@@ -120,13 +121,19 @@
     <div class="modal-content logos-modal">
       <div class="logos-modal-header">
         <h3>إشعارات الشكاوى الجديدة</h3>
-        <button id="closeNotif" class="close-modal">×</button>
+        <button id="notifBtn" class="notif-btn">
+          🔔
+          <span id="notifCount" class="notif-count">0</span>
+        </button>
       </div>
-      <div id="notifList" class="notif-list"></div>
+      <div id="notifModal" class="notif-modal">
+        <div id="notifList" class="notif-list"></div>
+      </div>
     </div>
   </div>
 
   <!-- سكربت خارجي -->
   <script src="home.js"></script>
+
 </body>
 </html>
