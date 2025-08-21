@@ -13,7 +13,8 @@ document.querySelectorAll(".service-box").forEach(service => {
 });
 
 // تقليل عدد الإشعارات عند الضغط
-z
+let notifBtn = document.getElementById("notif-btn");
+let notifCount = document.getElementById("notif-count");
 
 if (notifBtn && notifCount) {
     notifBtn.addEventListener("click", function() {
@@ -243,158 +244,52 @@ async function loadComplaintsTable() {
 // دالة لجلب الشكاوى الجديدة للإشعارات
 async function loadNewComplaints() {
     try {
-        console.log('جاري تحميل الإشعارات...');
-        
-        // جلب الشكاوى الجديدة (آخر 7 أيام)
-        const response = await fetchFromAPI('/complaints/all?dateFilter=7');
+        const response = await fetchFromAPI('/complaints/all?dateFilter=7'); // الشكاوى في آخر 7 أيام
         const complaints = response.data || [];
-        
-        console.log('عدد الشكاوى الجديدة:', complaints.length);
         
         // عدّاد الجرس
         const countEl = document.getElementById('notifCount');
         if (countEl) {
             countEl.textContent = complaints.length;
             countEl.style.display = complaints.length > 0 ? 'inline-block' : 'none';
-            
-            // إضافة تأثير بصري للعدّاد
-            if (complaints.length > 0) {
-                countEl.style.animation = 'pulse 1s infinite';
-            } else {
-                countEl.style.animation = 'none';
-            }
         }
         
         // قائمة النافذة
         const notifList = document.getElementById('notifList');
         if (notifList) {
             if (complaints.length === 0) {
-                notifList.innerHTML = `
-                    <div class="notif-item empty-notif">
-                        <div class="text">لا توجد شكاوى جديدة</div>
-                        <small>آخر تحديث: ${new Date().toLocaleString('ar-SA')}</small>
-                    </div>
-                `;
+                notifList.innerHTML = '<div class="notif-item">لا توجد شكاوى جديدة</div>';
             } else {
-                // ترتيب الشكاوى حسب التاريخ (الأحدث أولاً)
-                const sortedComplaints = complaints.sort((a, b) => 
-                    new Date(b.ComplaintDate) - new Date(a.ComplaintDate)
-                );
-                
-                notifList.innerHTML = sortedComplaints.slice(0, 10).map(complaint => {
-                    // تنسيق التاريخ
-                    const complaintDate = new Date(complaint.ComplaintDate);
-                    const timeAgo = getTimeAgo(complaintDate);
-                    
-                    // تنسيق حالة الشكوى
-                    const statusBadge = getStatusBadge(complaint.CurrentStatus);
-                    
-                    // تنسيق النص
-                    const complaintText = complaint.ComplaintDetails ? 
-                        complaint.ComplaintDetails.substring(0, 60) + (complaint.ComplaintDetails.length > 60 ? '...' : '') : 
-                        'لا توجد تفاصيل';
-                    
-                    return `
-                        <div class="notif-item" data-complaint-id="${complaint.ComplaintID}">
-                            <div class="notif-header">
-                                <div class="meta">
-                                    <span class="time-ago">${timeAgo}</span>
-                                    <span class="separator">•</span>
-                                    <span class="department">${complaint.DepartmentName || 'غير محدد'}</span>
-                                    <span class="separator">•</span>
-                                    <span class="type">${complaint.ComplaintTypeName || 'غير محدد'}</span>
-                                </div>
-                                ${statusBadge}
-                            </div>
-                            <div class="text">
-                                <strong>#${complaint.ComplaintID}</strong> - ${complaintText}
-                            </div>
-                            <div class="notif-actions">
-                                <button class="go-details" data-id="${complaint.ComplaintID}" title="عرض تفاصيل الشكوى">
-                                    <i class="ri-eye-line"></i>
-                                    التفاصيل
-                                </button>
-                            </div>
+                notifList.innerHTML = complaints.slice(0, 10).map(complaint => `
+                    <div class="notif-item">
+                        <div class="meta">
+                            ${new Date(complaint.ComplaintDate).toLocaleString('ar-SA')} • 
+                            ${complaint.DepartmentName || 'غير محدد'} • 
+                            ${complaint.ComplaintTypeName || 'غير محدد'}
                         </div>
-                    `;
-                }).join('');
-                
+                        <div class="text">
+                            #${complaint.ComplaintID} - ${complaint.ComplaintDetails ? complaint.ComplaintDetails.substring(0, 50) + '...' : 'لا توجد تفاصيل'}
+                        </div>
+                        <div class="notif-actions">
+                            <button class="go-details" data-id="${complaint.ComplaintID}">التفاصيل</button>
+                        </div>
+                    </div>
+                `).join('');
                 // إضافة حدث الضغط على زر التفاصيل
                 notifList.querySelectorAll('.go-details').forEach(btn => {
                     btn.addEventListener('click', function(e) {
                         e.stopPropagation();
                         const id = this.getAttribute('data-id');
                         if (id) {
-                            console.log('الانتقال لتفاصيل الشكوى رقم:', id);
-                            
-                            // حفظ معرف الشكوى في localStorage كنسخة احتياطية
-                            localStorage.setItem('selectedComplaintId', id);
-                            
-                            // حفظ بيانات الشكوى الكاملة للاستخدام في صفحة التفاصيل
-                            const complaintItem = this.closest('.notif-item');
-                            const complaintData = complaints.find(c => c.ComplaintID == id);
-                            if (complaintData) {
-                                localStorage.setItem('selectedComplaint', JSON.stringify(complaintData));
-                            }
-                            
-                            // إغلاق نافذة الإشعارات
-                            document.getElementById('notifModal').style.display = 'none';
-                            
-                            // الانتقال لصفحة التفاصيل مع معرف الشكوى المحددة
-                            window.location.href = `/general complaints/details.html?id=${id}`;
+                            window.open(`/general complaints/details.html?id=${id}`, '_blank');
                         }
                     });
                 });
             }
         }
-        
-        console.log('تم تحميل الإشعارات بنجاح');
-        
     } catch (error) {
         console.error('خطأ في تحميل الإشعارات:', error);
-        
-        // إظهار رسالة خطأ للمستخدم
-        const notifList = document.getElementById('notifList');
-        if (notifList) {
-            notifList.innerHTML = `
-                <div class="notif-item error-notif">
-                    <div class="text">خطأ في تحميل الإشعارات</div>
-                    <small>يرجى المحاولة مرة أخرى</small>
-                </div>
-            `;
-        }
     }
-}
-
-// دالة لحساب الوقت المنقضي
-function getTimeAgo(date) {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) {
-        return 'الآن';
-    } else if (diffInSeconds < 3600) {
-        const minutes = Math.floor(diffInSeconds / 60);
-        return `منذ ${minutes} دقيقة`;
-    } else if (diffInSeconds < 86400) {
-        const hours = Math.floor(diffInSeconds / 3600);
-        return `منذ ${hours} ساعة`;
-    } else {
-        const days = Math.floor(diffInSeconds / 86400);
-        return `منذ ${days} يوم`;
-    }
-}
-
-// دالة لتنسيق حالة الشكوى
-function getStatusBadge(status) {
-    const statusMap = {
-        'جديدة': '<span class="status-badge new">جديدة</span>',
-        'قيد المعالجة': '<span class="status-badge processing">قيد المعالجة</span>',
-        'تم الرد': '<span class="status-badge responded">تم الرد</span>',
-        'مغلقة': '<span class="status-badge closed">مغلقة</span>'
-    };
-    
-    return statusMap[status] || `<span class="status-badge unknown">${status || 'غير محدد'}</span>`;
 }
 
 let currentLang = localStorage.getItem('lang') || 'ar';
@@ -538,28 +433,10 @@ document.addEventListener('DOMContentLoaded', () => {
   loadComplaintsTable();
   loadNewComplaints();
   
-  // تحديث البيانات كل دقيقة للإشعارات
-  setInterval(() => {
-    loadNewComplaints();
-  }, 60 * 1000);
-  
-  // تحديث البيانات كل 5 دقائق للبيانات الأخرى
+  // تحديث البيانات كل 5 دقائق
   setInterval(() => {
     loadKPIs();
     loadComplaintsTable();
-  }, 5 * 60 * 1000);
-  
-  // تحديث الإشعارات عند التركيز على النافذة
-  window.addEventListener('focus', () => {
-    console.log('تم التركيز على النافذة، تحديث الإشعارات...');
     loadNewComplaints();
-  });
-  
-  // تحديث الإشعارات عند العودة للصفحة
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      console.log('تم العودة للصفحة، تحديث الإشعارات...');
-      loadNewComplaints();
-    }
-  });
+  }, 5 * 60 * 1000);
 });

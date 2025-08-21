@@ -15,76 +15,29 @@ function getQueryParam(name) {
 async function loadComplaintDetails() {
   // جلب ComplaintID من الرابط
   const complaintIdFromUrl = getQueryParam('id');
-  console.log('معرف الشكوى من الرابط:', complaintIdFromUrl);
-  
-  // إذا لم يوجد id في الرابط، جرب localStorage
-  let complaintId = complaintIdFromUrl;
-  if (!complaintId) {
-    complaintId = localStorage.getItem('selectedComplaintId');
-    console.log('معرف الشكوى من localStorage:', complaintId);
-  }
-  
-  if (complaintId) {
+  if (complaintIdFromUrl) {
     try {
-      console.log('جلب تفاصيل الشكوى رقم:', complaintId);
-      
-      // إظهار رسالة تحميل
-      const complaintTitle = document.querySelector('.complaint-title');
-      if (complaintTitle) {
-        complaintTitle.textContent = `جاري تحميل تفاصيل الشكوى رقم #${complaintId}...`;
-      }
-      
-      // إضافة token للمصادقة
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(`${API_BASE_URL}/complaints/details/${complaintId}`, {
-        method: 'GET',
-        headers: headers
-      });
-      
-      console.log('استجابة API:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
+      const response = await fetch(`${API_BASE_URL}/complaints/details/${complaintIdFromUrl}`);
       const data = await response.json();
-      console.log('بيانات API:', data);
-      
       if (data.success) {
         complaintData = data.data.complaint;
-        console.log('تم جلب بيانات الشكوى بنجاح:', complaintData);
-        
-        // تحديث عنوان الصفحة
-        document.title = `تفاصيل الشكوى رقم #${complaintData.ComplaintID} - نظام الشكاوى`;
-        
         populateComplaintDetails();
         return;
       } else {
-        console.error('فشل في جلب بيانات الشكوى:', data.message);
-        alert('تعذر جلب بيانات الشكوى: ' + (data.message || 'خطأ غير معروف'));
+        alert('تعذر جلب بيانات الشكوى');
         goBack();
         return;
       }
     } catch (error) {
-      console.error('خطأ في الاتصال بالخادم:', error);
-      alert('خطأ في الاتصال بالخادم: ' + error.message);
+      alert('خطأ في جلب بيانات الشكوى');
       goBack();
       return;
     }
   }
 
-  // إذا لم يوجد معرف شكوى، استخدم الطريقة القديمة (localStorage)
+  // إذا لم يوجد id في الرابط، استخدم الطريقة القديمة (localStorage)
   const selectedComplaint = localStorage.getItem("selectedComplaint");
   if (!selectedComplaint) {
-    console.error("لا توجد بيانات شكوى متاحة");
     alert("لا توجد بيانات شكوى متاحة");
     goBack();
     return;
@@ -95,32 +48,13 @@ async function loadComplaintDetails() {
     console.log('بيانات الشكوى من localStorage:', complaintFromStorage);
     
     // جلب التفاصيل الكاملة من API
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    const headers = {
-      'Content-Type': 'application/json'
-    };
+    const response = await fetch(`${API_BASE_URL}/complaints/details/${complaintFromStorage.ComplaintID}`);
+    const data = await response.json();
     
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`${API_BASE_URL}/complaints/details/${complaintFromStorage.ComplaintID}`, {
-      method: 'GET',
-      headers: headers
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.success) {
-        complaintData = data.data.complaint;
-        console.log('بيانات الشكوى من API:', complaintData);
-        populateComplaintDetails();
-      } else {
-        // إذا فشل API، استخدم البيانات من localStorage
-        console.log('فشل API، استخدام البيانات من localStorage');
-        complaintData = complaintFromStorage;
-        populateComplaintDetails();
-      }
+    if (data.success) {
+      complaintData = data.data.complaint;
+      console.log('بيانات الشكوى من API:', complaintData);
+      populateComplaintDetails();
     } else {
       // إذا فشل API، استخدم البيانات من localStorage
       console.log('فشل API، استخدام البيانات من localStorage');
@@ -135,7 +69,6 @@ async function loadComplaintDetails() {
       console.log('استخدام البيانات من localStorage كبديل');
       populateComplaintDetails();
     } catch (localError) {
-      console.error('خطأ في تحليل البيانات من localStorage:', localError);
       alert("خطأ في تحميل بيانات الشكوى");
       goBack();
     }
@@ -144,30 +77,15 @@ async function loadComplaintDetails() {
 
 // تعبئة تفاصيل الشكوى
 function populateComplaintDetails() {
-  if (!complaintData) {
-    console.error('لا توجد بيانات شكوى متاحة');
-    alert('لا توجد بيانات شكوى متاحة');
-    return;
-  }
-
-  console.log('بدء تعبئة تفاصيل الشكوى:', complaintData);
-  
-  // التحقق من وجود معرف الشكوى
-  if (!complaintData.ComplaintID) {
-    console.error('معرف الشكوى غير موجود في البيانات:', complaintData);
-    alert('معرف الشكوى غير موجود في البيانات');
-    return;
-  }
+  if (!complaintData) return;
 
   // تحديث عنوان الشكوى مع تنسيق رقم الشكوى
   const complaintTitle = document.querySelector('.complaint-title');
   if (complaintTitle) {
     const complaintNumber = String(complaintData.ComplaintID).padStart(6, '0');
-    const titleText = `تفاصيل الشكوى رقم #${complaintNumber}`;
-    complaintTitle.textContent = titleText;
-    complaintTitle.setAttribute('data-ar', titleText);
+    complaintTitle.textContent = `تفاصيل الشكوى رقم #${complaintNumber}`;
+    complaintTitle.setAttribute('data-ar', `تفاصيل الشكوى رقم #${complaintNumber}`);
     complaintTitle.setAttribute('data-en', `Complaint Details No. #${complaintNumber}`);
-    console.log('تم تحديث عنوان الشكوى:', titleText);
   }
 
   // تحديث تاريخ الشكوى مع الوقت
@@ -224,73 +142,44 @@ function populateComplaintDetails() {
 
   // تحديث اللغة للعناصر الجديدة
   applyLanguage(currentLang);
-  
-  console.log('تم تعبئة جميع تفاصيل الشكوى بنجاح');
 }
 
 // تحديث بيانات مقدم الشكوى
 function updateComplainantInfo() {
-  console.log('تحديث بيانات المريض:', complaintData);
-  
-  // التحقق من وجود البيانات
-  if (!complaintData) {
-    console.error('لا توجد بيانات شكوى متاحة لتحديث بيانات المريض');
-    return;
-  }
+  console.log('بيانات المريض:', complaintData);
   
   // تحديث الاسم الكامل
   const patientNameElement = document.getElementById('patientName');
   if (patientNameElement) {
-    const patientName = complaintData.PatientName || complaintData.FullName || complaintData.Name || 'غير محدد';
-    patientNameElement.textContent = patientName;
-    console.log('تم تحديث الاسم:', patientName);
-  } else {
-    console.warn('عنصر الاسم غير موجود في الصفحة');
+    patientNameElement.textContent = complaintData.PatientName || 'غير محدد';
+    console.log('تم تحديث الاسم:', complaintData.PatientName);
   }
   
   // تحديث رقم الهوية
   const nationalIdElement = document.getElementById('nationalId');
   if (nationalIdElement) {
-    const nationalId = complaintData.NationalID_Iqama || complaintData.NationalID || complaintData.IDNumber || 'غير محدد';
-    nationalIdElement.textContent = nationalId;
-    console.log('تم تحديث رقم الهوية:', nationalId);
-  } else {
-    console.warn('عنصر رقم الهوية غير موجود في الصفحة');
+    nationalIdElement.textContent = complaintData.NationalID_Iqama || 'غير محدد';
   }
   
   // تحديث رقم الملف الطبي (نفس رقم الهوية)
   const medicalFileElement = document.getElementById('medicalFileNumber');
   if (medicalFileElement) {
-    const medicalFile = complaintData.NationalID_Iqama || complaintData.NationalID || complaintData.MedicalFileNumber || 'غير محدد';
-    medicalFileElement.textContent = medicalFile;
-    console.log('تم تحديث رقم الملف الطبي:', medicalFile);
-  } else {
-    console.warn('عنصر رقم الملف الطبي غير موجود في الصفحة');
+    medicalFileElement.textContent = complaintData.NationalID_Iqama || 'غير محدد';
   }
   
   // تحديث رقم الجوال
   const mobileElement = document.getElementById('mobileNumber');
   if (mobileElement) {
-    const mobileNumber = complaintData.ContactNumber || complaintData.PhoneNumber || complaintData.MobileNumber || 'غير محدد';
-    mobileElement.textContent = mobileNumber;
-    console.log('تم تحديث رقم الجوال:', mobileNumber);
-  } else {
-    console.warn('عنصر رقم الجوال غير موجود في الصفحة');
+    mobileElement.textContent = complaintData.ContactNumber || 'غير محدد';
   }
-  
-  console.log('تم تحديث جميع بيانات المريض بنجاح');
 }
 
 // تحديث تفاصيل الشكوى
 function updateComplaintInfo() {
-  console.log('تحديث تفاصيل الشكوى');
-  
   // تحديث القسم المرتبط
   const departmentElement = document.getElementById('departmentName');
   if (departmentElement) {
-    const departmentName = complaintData.DepartmentName || 'غير محدد';
-    departmentElement.textContent = departmentName;
-    console.log('تم تحديث القسم:', departmentName);
+    departmentElement.textContent = complaintData.DepartmentName || 'غير محدد';
   }
   
   // تحديث تاريخ الزيارة مع الوقت
@@ -307,36 +196,26 @@ function updateComplaintInfo() {
       minute: '2-digit',
       hour12: true
     });
-    const fullVisitDateTime = `${formattedVisitDate}<br><small style="color: #666;">${formattedVisitTime}</small>`;
-    visitDateElement.innerHTML = fullVisitDateTime;
-    console.log('تم تحديث تاريخ الزيارة:', formattedVisitDate, formattedVisitTime);
+    visitDateElement.innerHTML = `${formattedVisitDate}<br><small style="color: #666;">${formattedVisitTime}</small>`;
   }
   
   // تحديث نوع الشكوى الرئيسي
   const complaintTypeElement = document.getElementById('complaintTypeName');
   if (complaintTypeElement) {
-    const complaintType = complaintData.ComplaintTypeName || complaintData.TypeName || 'غير محدد';
-    complaintTypeElement.textContent = complaintType;
-    console.log('تم تحديث نوع الشكوى:', complaintType);
+    complaintTypeElement.textContent = complaintData.ComplaintTypeName || 'غير محدد';
   }
   
   // تحديث الشكوى الفرعية
   const subTypeElement = document.getElementById('subTypeName');
   if (subTypeElement) {
-    const subType = complaintData.SubTypeName || complaintData.SubcategoryName || 'غير محدد';
-    subTypeElement.textContent = subType;
-    console.log('تم تحديث الشكوى الفرعية:', subType);
+    subTypeElement.textContent = complaintData.SubTypeName || 'غير محدد';
   }
 
   // تحديث تفاصيل الشكوى
   const detailsElement = document.getElementById('complaintDetails');
   if (detailsElement) {
-    const details = complaintData.ComplaintDetails || complaintData.Details || 'لا توجد تفاصيل';
-    detailsElement.textContent = details;
-    console.log('تم تحديث تفاصيل الشكوى:', details.substring(0, 50) + '...');
+    detailsElement.textContent = complaintData.ComplaintDetails || 'لا توجد تفاصيل';
   }
-  
-  console.log('تم تحديث جميع تفاصيل الشكوى بنجاح');
 }
 
 // تحديث المرفقات
@@ -346,32 +225,25 @@ function updateAttachments() {
     // إذا كانت هناك مرفقات في البيانات
     if (complaintData.attachments && complaintData.attachments.length > 0) {
       const attachmentsHTML = complaintData.attachments.map(attachment => {
-        const fileName = attachment.FileName || attachment.name || 'ملف غير معروف';
-        const fileType = attachment.FileType || attachment.type || 'application/octet-stream';
-        const fileSize = attachment.FileSize || attachment.size || 0;
-        const filePath = attachment.FilePath || attachment.path || '';
-        
-        const fileUrl = filePath ? `http://localhost:3001/uploads/${filePath}` : '';
-        const isImage = fileType && fileType.startsWith('image/');
+        const fileUrl = `http://localhost:3001/uploads/${attachment.path}`;
+        const isImage = attachment.type && attachment.type.startsWith('image/');
         
         return `
           <div class="attachment-file">
             <i class="ri-${isImage ? 'image-line' : 'file-text-line'}"></i>
-            <span>${fileName}</span>
-            <small>(${(fileSize / 1024 / 1024).toFixed(2)} MB)</small>
+            <span>${attachment.name}</span>
+            <small>(${(attachment.size / 1024 / 1024).toFixed(2)} MB)</small>
           </div>
-          ${fileUrl ? `
           <div class="attachment-actions">
-            <button onclick="previewAttachment('${fileUrl}', '${fileName}', '${fileType}')">
+            <button onclick="previewAttachment('${fileUrl}', '${attachment.name}', '${attachment.type}')">
               <i class="ri-eye-line"></i>
               <span data-ar="معاينة" data-en="Preview">معاينة</span>
             </button>
-            <button onclick="downloadFile('${fileUrl}', '${fileName}')">
+            <button onclick="downloadFile('${fileUrl}', '${attachment.name}')">
               <i class="ri-download-2-line"></i>
               <span data-ar="تحميل" data-en="Download">تحميل</span>
             </button>
           </div>
-          ` : ''}
         `;
       }).join('');
       
@@ -393,8 +265,7 @@ function updateResponse() {
   const replyBox = document.querySelector('.reply-box');
   if (replyBox) {
     // إذا كان هناك رد في البيانات
-    const resolutionDetails = complaintData.ResolutionDetails || complaintData.ResponseDetails || complaintData.ReplyDetails;
-    if (resolutionDetails) {
+    if (complaintData.ResolutionDetails) {
       const replyDate = complaintData.ResolutionDate ? new Date(complaintData.ResolutionDate) : new Date();
       const formattedReplyDate = replyDate.toLocaleDateString('ar-SA', {
         year: 'numeric',
@@ -413,7 +284,7 @@ function updateResponse() {
           <span class="reply-from" data-ar="إدارة تجربة المريض" data-en="Patient Experience Department">إدارة تجربة المريض</span>
           <span class="reply-date">${fullReplyDateTime}</span>
         </div>
-        <div class="reply-text">${resolutionDetails}</div>
+        <div class="reply-text">${complaintData.ResolutionDetails}</div>
         <span class="reply-status" data-ar="تم الرد" data-en="Responded">تم الرد</span>
       `;
     } else {
@@ -435,12 +306,9 @@ function updateResponse() {
 // تحديث سجل التاريخ
 function updateHistory() {
   const historyContainer = document.getElementById('historyContainer');
-  if (!historyContainer) return;
+  if (!historyContainer || !complaintData.history) return;
 
-  // التحقق من وجود بيانات التاريخ
-  const historyData = complaintData.history || complaintData.History || [];
-  
-  if (historyData.length === 0) {
+  if (complaintData.history.length === 0) {
     historyContainer.innerHTML = `
       <div class="history-item">
         <div class="history-text" data-ar="لا يوجد سجل تاريخ لهذه الشكوى" data-en="No history available for this complaint">
@@ -451,8 +319,8 @@ function updateHistory() {
     return;
   }
 
-  const historyHTML = historyData.map(item => {
-    const timestamp = new Date(item.Timestamp || item.CreatedAt || item.Date);
+  const historyHTML = complaintData.history.map(item => {
+    const timestamp = new Date(item.Timestamp);
     const formattedHistoryDate = timestamp.toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
@@ -465,23 +333,17 @@ function updateHistory() {
     });
     const fullHistoryDateTime = `${formattedHistoryDate} - الساعة ${formattedHistoryTime}`;
 
-    const stage = item.Stage || item.Status || 'تحديث';
-    const remarks = item.Remarks || item.Comment || item.Description || 'لا توجد ملاحظات';
-    const employeeName = item.EmployeeName || item.Employee || item.CreatedBy || '';
-    const oldStatus = item.OldStatus || '';
-    const newStatus = item.NewStatus || '';
-
     return `
       <div class="history-item">
         <div class="history-header">
-          <span class="history-stage">${stage}</span>
+          <span class="history-stage">${item.Stage}</span>
           <span class="history-date">${fullHistoryDateTime}</span>
         </div>
-        <div class="history-text">${remarks}</div>
-        ${employeeName ? `<div class="history-employee">بواسطة: ${employeeName}</div>` : ''}
-        ${oldStatus && newStatus ? `
+        <div class="history-text">${item.Remarks}</div>
+        ${item.EmployeeName ? `<div class="history-employee">بواسطة: ${item.EmployeeName}</div>` : ''}
+        ${item.OldStatus && item.NewStatus ? `
           <div class="history-status-change">
-            <span class="status-change">${oldStatus} → ${newStatus}</span>
+            <span class="status-change">${item.OldStatus} → ${item.NewStatus}</span>
           </div>
         ` : ''}
       </div>

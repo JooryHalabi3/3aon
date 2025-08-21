@@ -12,7 +12,24 @@
         });
     });
     
+        // تقليل عدد الإشعارات عند الضغط
+    let notifBtn = document.getElementById("notif-btn");
+    let notifCount = document.getElementById("notif-count");
 
+    if (notifBtn && notifCount) {
+        notifBtn.addEventListener("click", function() {
+            let count = parseInt(notifCount.textContent) || 0;
+
+            if (count > 0) {
+                count--;
+                notifCount.textContent = count;
+
+                if (count === 0) {
+                    notifCount.style.display = "none";
+                }
+            }
+        });
+    }
 ;
 // إعدادات API
 const API_BASE_URL = 'http://localhost:3001/api';
