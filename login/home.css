@@ -207,3 +207,35 @@ body {
   .comp-table th:nth-child(6), .comp-table td:nth-child(6)  /* الموعد النهائي */
   { display:none; }
 }
+.notif-actions {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.notif-actions .go-details,
+.notif-actions .delete-notif {
+  border:none;
+  cursor:pointer;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:.85rem;
+  transition:background .2s;
+}
+
+.notif-actions .go-details {
+  background:#2563eb;   /* أزرق */
+  color:#fff;
+}
+.notif-actions .go-details:hover {
+  background:#1e40af;
+}
+
+.notif-actions .delete-notif {
+  background:#e5e7eb;   /* رمادي فاتح */
+  color:#111827;
+}
+.notif-actions .delete-notif:hover {
+  background:#d1d5db;
+}
+

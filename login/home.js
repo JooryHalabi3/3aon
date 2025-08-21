@@ -270,8 +270,21 @@ async function loadNewComplaints() {
                         <div class="text">
                             #${complaint.ComplaintID} - ${complaint.ComplaintDetails ? complaint.ComplaintDetails.substring(0, 50) + '...' : 'لا توجد تفاصيل'}
                         </div>
+                        <div class="notif-actions">
+                            <button class="go-details" data-id="${complaint.ComplaintID}">التفاصيل</button>
+                        </div>
                     </div>
                 `).join('');
+                // إضافة حدث الضغط على زر التفاصيل
+                notifList.querySelectorAll('.go-details').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.getAttribute('data-id');
+                        if (id) {
+                            window.open(`/general complaints/details.html?id=${id}`, '_blank');
+                        }
+                    });
+                });
             }
         }
     } catch (error) {
