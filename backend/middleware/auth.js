@@ -38,6 +38,7 @@ const authenticateToken = async (req, res, next) => {
         req.user = {
             ...user,
             role: user.RoleName,
+            roleId: user.RoleID,
             departmentId: user.DepartmentID,
             departmentName: user.DepartmentName,
             permissions: getUserPermissions(user.RoleName)
