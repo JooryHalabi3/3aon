@@ -1,224 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>إدارة القسم - Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="department-management.css">
-</head>
-
-<body>
-  <div class="back-button">
-    <a href="/admin/admin.html">
-      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
-      <span data-ar="عودة" data-en="Back">عودة</span>
-    </a>
-  </div>
-
-  <header class="header">
-    <div class="header-content">
-      <div class="header-title" data-ar="إدارة القسم - Admin" data-en="Department Management - Admin">إدارة القسم - Admin</div>
-      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
-      <button id="langToggle" class="lang-toggle-btn">
-        <img src="/icon/lang.png" alt="language" class="lang-icon" />
-        <span id="langText">العربية | English</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- نظام الحماية - سيتم إخفاؤه إذا كان المستخدم Admin -->
-  <div id="accessDenied" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-    <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 500px;">
-      <div style="font-size: 80px; margin-bottom: 20px;">🚫</div>
-      <h1 style="color: #e74c3c; margin-bottom: 15px;">رفض الوصول</h1>
-      <p style="color: #666; margin-bottom: 25px;">عذراً، لا يمكنك الوصول لهذه الصفحة. هذه الصفحة مخصصة لـ Admin فقط.</p>
-      <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 20px 0; font-family: monospace; color: #e74c3c; font-weight: bold;">خطأ 403: Forbidden</div>
-      <p style="color: #666;">إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع مدير النظام.</p>
-      <a href="/login/login.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 20px;">العودة لصفحة تسجيل الدخول</a>
-    </div>
-  </div>
-
-  <main class="main-content">
-    <!-- معلومات القسم -->
-    <div class="department-info">
-      <h2 id="departmentName" data-ar="اسم القسم" data-en="Department Name">اسم القسم</h2>
-      <p id="departmentDescription" data-ar="وصف القسم" data-en="Department Description">وصف القسم</p>
-    </div>
-
-    <!-- إحصائيات سريعة -->
-    <div class="stats-section">
-      <div class="stat-card">
-        <div class="stat-number" id="totalEmployees">0</div>
-        <div class="stat-label" data-ar="إجمالي الموظفين" data-en="Total Employees">إجمالي الموظفين</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="totalComplaints">0</div>
-        <div class="stat-label" data-ar="إجمالي الشكاوى" data-en="Total Complaints">إجمالي الشكاوى</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="pendingComplaints">0</div>
-        <div class="stat-label" data-ar="الشكاوى المعلقة" data-en="Pending Complaints">الشكاوى المعلقة</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="assignedComplaints">0</div>
-        <div class="stat-label" data-ar="الشكاوى المعينة" data-en="Assigned Complaints">الشكاوى المعينة</div>
-      </div>
-    </div>
-
-    <!-- تبويبات المحتوى -->
-    <div class="tabs-container">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('employees')" data-ar="الموظفين" data-en="Employees">الموظفين</button>
-        <button class="tab-btn" onclick="showTab('complaints')" data-ar="الشكاوى" data-en="Complaints">الشكاوى</button>
-      </div>
-
-      <!-- محتوى تبويب الموظفين -->
-      <div id="employees-tab" class="tab-content active">
-        <div class="section-header">
-          <h3 data-ar="موظفي القسم" data-en="Department Employees">موظفي القسم</h3>
-          <button onclick="refreshEmployees()" class="refresh-btn" data-ar="تحديث" data-en="Refresh">تحديث</button>
-        </div>
-
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th data-ar="الاسم الكامل" data-en="Full Name">الاسم الكامل</th>
-                <th data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</th>
-                <th data-ar="رقم الهاتف" data-en="Phone">رقم الهاتف</th>
-                <th data-ar="الوظيفة" data-en="Role">الوظيفة</th>
-                <th data-ar="تاريخ التعيين" data-en="Hire Date">تاريخ التعيين</th>
-                <th data-ar="الحالة" data-en="Status">الحالة</th>
-              </tr>
-            </thead>
-            <tbody id="employeesTableBody">
-              <!-- البيانات ستُضاف هنا ديناميكياً -->
-            </tbody>
-          </table>
-        </div>
-
-        <div id="noEmployeesMessage" class="no-data-message" style="display: none;">
-          <div class="no-data-icon">👥</div>
-          <p data-ar="لا يوجد موظفين في هذا القسم" data-en="No employees in this department">لا يوجد موظفين في هذا القسم</p>
-        </div>
-      </div>
-
-      <!-- محتوى تبويب الشكاوى -->
-      <div id="complaints-tab" class="tab-content">
-        <div class="section-header">
-          <h3 data-ar="شكاوى القسم" data-en="Department Complaints">شكاوى القسم</h3>
-          <div class="header-actions">
-            <select id="statusFilter" onchange="filterComplaints()">
-              <option value="" data-ar="جميع الحالات" data-en="All Status">جميع الحالات</option>
-              <option value="جديدة" data-ar="جديدة" data-en="New">جديدة</option>
-              <option value="قيد المعالجة" data-ar="قيد المعالجة" data-en="In Progress">قيد المعالجة</option>
-              <option value="مغلقة" data-ar="مغلقة" data-en="Closed">مغلقة</option>
-            </select>
-            <button onclick="refreshComplaints()" class="refresh-btn" data-ar="تحديث" data-en="Refresh">تحديث</button>
-          </div>
-        </div>
-
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th data-ar="رقم الشكوى" data-en="Complaint ID">رقم الشكوى</th>
-                <th data-ar="تاريخ الشكوى" data-en="Complaint Date">تاريخ الشكوى</th>
-                <th data-ar="اسم المريض" data-en="Patient Name">اسم المريض</th>
-                <th data-ar="نوع الشكوى" data-en="Complaint Type">نوع الشكوى</th>
-                <th data-ar="الحالة" data-en="Status">الحالة</th>
-                <th data-ar="المعينة إلى" data-en="Assigned To">المعينة إلى</th>
-                <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody id="complaintsTableBody">
-              <!-- البيانات ستُضاف هنا ديناميكياً -->
-            </tbody>
-          </table>
-        </div>
-
-        <div id="noComplaintsMessage" class="no-data-message" style="display: none;">
-          <div class="no-data-icon">📋</div>
-          <p data-ar="لا توجد شكاوى في هذا القسم" data-en="No complaints in this department">لا توجد شكاوى في هذا القسم</p>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Modal تفاصيل الشكوى -->
-  <div id="complaintModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 data-ar="تفاصيل الشكوى" data-en="Complaint Details">تفاصيل الشكوى</h3>
-        <span class="close" onclick="closeComplaintModal()">&times;</span>
-      </div>
-      <div class="modal-body">
-        <div class="complaint-details">
-          <div class="detail-row">
-            <label data-ar="رقم الشكوى:" data-en="Complaint ID:">رقم الشكوى:</label>
-            <span id="modalComplaintId"></span>
-          </div>
-          <div class="detail-row">
-            <label data-ar="اسم المريض:" data-en="Patient Name:">اسم المريض:</label>
-            <span id="modalPatientName"></span>
-          </div>
-          <div class="detail-row">
-            <label data-ar="نوع الشكوى:" data-en="Complaint Type:">نوع الشكوى:</label>
-            <span id="modalComplaintType"></span>
-          </div>
-          <div class="detail-row">
-            <label data-ar="تفاصيل الشكوى:" data-en="Complaint Details:">تفاصيل الشكوى:</label>
-            <span id="modalComplaintDetails"></span>
-          </div>
-          <div class="detail-row">
-            <label data-ar="الحالة الحالية:" data-en="Current Status:">الحالة الحالية:</label>
-            <span id="modalCurrentStatus"></span>
-          </div>
-          <div class="detail-row">
-            <label data-ar="المعينة حالياً إلى:" data-en="Currently Assigned To:">المعينة حالياً إلى:</label>
-            <span id="modalAssignedTo"></span>
-          </div>
-        </div>
-
-        <!-- قسم تعيين الشكوى -->
-        <div class="assignment-section">
-          <h4 data-ar="تعيين الشكوى" data-en="Assign Complaint">تعيين الشكوى</h4>
-          <div class="assignment-form">
-            <div class="form-group">
-              <label data-ar="اختر الموظف:" data-en="Select Employee:">اختر الموظف:</label>
-              <select id="employeeSelect">
-                <option value="" data-ar="اختر موظف..." data-en="Select employee...">اختر موظف...</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label data-ar="سبب التعيين (اختياري):" data-en="Assignment Reason (Optional):">سبب التعيين (اختياري):</label>
-              <textarea id="assignmentReason" rows="3" placeholder="أدخل سبب التعيين..."></textarea>
-            </div>
-            <button onclick="assignComplaint()" class="assign-btn" data-ar="تعيين الشكوى" data-en="Assign Complaint">تعيين الشكوى</button>
-          </div>
-        </div>
-
-        <!-- سجل التعيينات -->
-        <div class="assignments-history">
-          <h4 data-ar="سجل التعيينات" data-en="Assignment History">سجل التعيينات</h4>
-          <div id="assignmentsHistory" class="history-list">
-            <!-- سجل التعيينات سيُضاف هنا ديناميكياً -->
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- رسالة التحميل -->
-  <div id="loadingMessage" class="loading-message">
-    <div class="loading-spinner"></div>
-    <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
-  </div>
-
-  <script src="department-management.js"></script>
-</body>
-
-</html>

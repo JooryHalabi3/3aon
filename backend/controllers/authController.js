@@ -74,7 +74,8 @@ const register = async (req, res) => {
         employeeID: newEmployee[0].EmployeeID,
         username: newEmployee[0].Username,
         roleID: newEmployee[0].RoleID,
-        roleName: newEmployee[0].RoleName
+        roleName: newEmployee[0].RoleName,
+        departmentID: newEmployee[0].DepartmentID
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
@@ -124,7 +125,7 @@ const login = async (req, res) => {
     // البحث عن المستخدم باستخدام البريد الإلكتروني أو رقم الموظف فقط
     const [employees] = await pool.execute(
       `SELECT e.EmployeeID, e.FullName, e.Username, e.PasswordHash, e.Email, 
-              e.PhoneNumber, e.Specialty, e.JoinDate, r.RoleName, r.RoleID
+              e.PhoneNumber, e.Specialty, e.JoinDate, e.DepartmentID, r.RoleName, r.RoleID
        FROM Employees e 
        JOIN Roles r ON e.RoleID = r.RoleID 
        WHERE e.Email = ? OR e.Username = ?`,
@@ -156,7 +157,8 @@ const login = async (req, res) => {
         employeeID: employee.EmployeeID,
         username: employee.Username,
         roleID: employee.RoleID,
-        roleName: employee.RoleName
+        roleName: employee.RoleName,
+        departmentID: employee.DepartmentID
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }

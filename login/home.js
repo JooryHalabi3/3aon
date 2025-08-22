@@ -76,19 +76,35 @@ document.querySelectorAll(".service-box").forEach(service => {
     return 'ضمن المهلة';
   }
   
-  // ======================
+    // ======================
   // KPIs
   // ======================
   async function loadKPIs() {
     try {
-      const response = await fetchFromAPI('/complaints/all');
+      // تحديد endpoint حسب دور المستخدم
+      let endpoint = '/complaints/all';
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const roleID = user.RoleID || 2;
+      const departmentID = user.DepartmentID;
+
+      // إذا كان المستخدم أدمن وله قسم محدد، تصفية الشكاوى حسب القسم
+      if (roleID === 3 && departmentID) {
+        endpoint = `/complaints/department/${departmentID}`;
+        console.log('🔍 أدمن - جلب شكاوى القسم:', departmentID);
+        console.log('🔍 معلومات المستخدم:', { roleID, departmentID, username: user.Username });
+      } else {
+        console.log('🔍 جلب جميع الشكاوى');
+        console.log('🔍 معلومات المستخدم:', { roleID, departmentID, username: user.Username });
+      }
+
+      const response = await fetchFromAPI(endpoint);
       const complaints = response.data || [];
-  
+
       const total = complaints.length;
       const open = complaints.filter(c => c.CurrentStatus === 'جديدة' || c.CurrentStatus === 'قيد المعالجة').length;
       const responded = complaints.filter(c => c.CurrentStatus === 'تم الرد' || c.CurrentStatus === 'مغلقة').length;
       const respondedPercentage = total > 0 ? Math.round((responded / total) * 100) : 0;
-  
+
       let dueSoon = 0, late = 0;
       complaints.forEach(c => {
         if (c.ResponseDeadline) {
@@ -113,7 +129,7 @@ document.querySelectorAll(".service-box").forEach(service => {
     }
   }
   
-  // =======================
+    // =======================
   // جدول الشكاوى (بدون أزرار إضافية)
   // =======================
   async function loadComplaintsTable() {
@@ -121,9 +137,29 @@ document.querySelectorAll(".service-box").forEach(service => {
       const tbody = document.getElementById('compBody');
       if (!tbody) return;
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;">جاري التحميل...</td></tr>';
-  
-      const response = await fetchFromAPI('/complaints/all');
+
+      // تحديد endpoint حسب دور المستخدم
+      let endpoint = '/complaints/all';
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const roleID = user.RoleID || 2;
+      const departmentID = user.DepartmentID;
+
+      // إذا كان المستخدم أدمن وله قسم محدد، تصفية الشكاوى حسب القسم
+      if (roleID === 3 && departmentID) {
+        endpoint = `/complaints/department/${departmentID}`;
+        console.log('📋 أدمن - جلب جدول شكاوى القسم:', departmentID);
+        console.log('📋 معلومات المستخدم:', { roleID, departmentID, username: user.Username });
+      } else {
+        console.log('📋 جلب جميع الشكاوى للجدول');
+        console.log('📋 معلومات المستخدم:', { roleID, departmentID, username: user.Username });
+      }
+
+      const response = await fetchFromAPI(endpoint);
       const complaints = response.data || [];
+      
+      // فحص البيانات للتأكد من وجود أسماء الأقسام
+      console.log('📋 بيانات الشكاوى المستلمة:', complaints.slice(0, 3));
+      
       if (complaints.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#666;">لا توجد شكاوى</td></tr>';
         return;
@@ -145,7 +181,7 @@ document.querySelectorAll(".service-box").forEach(service => {
         return `
           <tr data-id="${c.ComplaintID}">
             <td>#${c.ComplaintID}</td>
-            <td>${c.DepartmentName || '—'}</td>
+            <td>${c.DepartmentName || `قسم رقم ${c.DepartmentID || 'غير محدد'}`}</td>
             <td>${statusBadge}</td>
             <td>${c.ComplaintTypeName || '—'}</td>
             <td>${createdDate}</td>
@@ -170,8 +206,22 @@ document.querySelectorAll(".service-box").forEach(service => {
   // ===========================================
   async function loadNotifications() {
     try {
+      // تحديد endpoint حسب دور المستخدم
+      let endpoint = '/complaints/all?dateFilter=7';
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const roleID = user.RoleID || 2;
+      const departmentID = user.DepartmentID;
+
+      // إذا كان المستخدم أدمن وله قسم محدد، تصفية الشكاوى حسب القسم
+      if (roleID === 3 && departmentID) {
+        endpoint = `/complaints/department/${departmentID}?dateFilter=7`;
+        console.log('🔔 أدمن - جلب إشعارات القسم:', departmentID);
+      } else {
+        console.log('🔔 جلب جميع الإشعارات');
+      }
+
       // الشكاوى في آخر 7 أيام (عدّل الفترة إن حبيت)
-      const res = await fetchFromAPI('/complaints/all?dateFilter=7');
+      const res = await fetchFromAPI(endpoint);
       const complaints = (res && res.data) || [];
   
       // تحديث شارة الجرس
@@ -274,39 +324,110 @@ document.querySelectorAll(".service-box").forEach(service => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       if (!user) { window.location.href = 'login.html'; return; }
-  
+
       const userRole = user.RoleName || '';
       const roleID = user.RoleID || 2;
       const username = user.Username || '';
-      const userPermissions = JSON.parse(localStorage.getItem('userPermissions')) || {};
-  
-      if (roleID === 1 || username.toLowerCase() === 'admin' || userRole.includes('مدير')) {
-        document.querySelectorAll('.admin-only').forEach(card => { card.style.display = 'block'; });
-        document.querySelectorAll('.card').forEach(card => { card.style.display = 'block'; });
+
+      console.log('🔍 فحص صلاحيات المستخدم:', {
+        RoleID: roleID,
+        RoleName: userRole,
+        Username: username
+      });
+
+      // تطبيق الصلاحيات حسب الدور
+      if (roleID === 1 || username.toLowerCase() === 'admin' || userRole.includes('سوبر أدمن') || userRole === 'SUPER_ADMIN') {
+        console.log('✅ سوبر أدمن - عرض جميع البطاقات');
+        // عرض جميع البطاقات للسوبر أدمن
+        document.querySelectorAll('.card').forEach(card => { 
+          card.style.display = 'block'; 
+          console.log('✅ تم عرض البطاقة للسوبر أدمن:', card.querySelector('h3')?.textContent);
+        });
+        
+        // تحديد الرابط الصحيح للسوبر أدمن
+        const adminDashboardLink = document.getElementById('adminDashboardLink');
+        if (adminDashboardLink) {
+          adminDashboardLink.href = '../superAdmin/superAdmin.html';
+          console.log('✅ تم تعيين رابط لوحة تحكم السوبر أدمن');
+        }
+      } else if (roleID === 3 || userRole.includes('أدمن') || userRole === 'ADMIN') {
+        console.log('✅ أدمن - عرض البطاقات المخصصة');
+        applyAdminPermissions();
       } else {
-        applyEmployeePermissions(userPermissions);
+        console.log('✅ موظف - عرض البطاقات المخصصة');
+        applyEmployeePermissions();
       }
     } catch (error) {
       console.error('خطأ في فحص الصلاحيات:', error);
       window.location.href = 'login.html';
     }
   }
-  
-  function applyEmployeePermissions(permissions) {
-    const submitComplaintCard = document.querySelector('.card a[href="/New complaint/Newcomplaint.html"]')?.closest('.card');
-    if (submitComplaintCard) submitComplaintCard.style.display = permissions.submit_complaint ? 'block' : 'none';
-  
-    const followComplaintsCard = document.querySelector('.card a[href="/Complaints-followup/followup.html"]')?.closest('.card');
-    if (followComplaintsCard) followComplaintsCard.style.display = permissions.follow_own_complaint ? 'block' : 'none';
-  
-    const publicComplaintsCard = document.querySelector('.card a[href="/general complaints/general-complaints.html"]')?.closest('.card');
-    if (publicComplaintsCard) publicComplaintsCard.style.display = permissions.view_public_complaints ? 'block' : 'none';
-  
-    const dashboardCard = document.querySelector('.card a[href="/DashBoard/overview.html"]')?.closest('.card');
-    if (dashboardCard) dashboardCard.style.display = permissions.access_dashboard ? 'block' : 'none';
-  
-    const adminPanelCard = document.querySelector('.card a[href="/admin/admin.html"]')?.closest('.card');
-    if (adminPanelCard) adminPanelCard.style.display = 'none';
+
+  function applyAdminPermissions() {
+    // إخفاء جميع البطاقات أولاً
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.display = 'none';
+    });
+
+    // تحديد الرابط الصحيح حسب نوع المستخدم
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isSuperAdmin = user.RoleID === 1;
+    const adminDashboardLink = document.getElementById('adminDashboardLink');
+    
+    if (adminDashboardLink) {
+      if (isSuperAdmin) {
+        adminDashboardLink.href = '../superAdmin/superAdmin.html';
+        console.log('✅ تم تعيين رابط لوحة تحكم السوبر أدمن');
+      } else {
+        adminDashboardLink.href = '../admin-pages/admin.html';
+        console.log('✅ تم تعيين رابط لوحة تحكم الأدمن');
+      }
+    }
+
+    // البطاقات المتاحة للأدمن
+    const adminCards = [
+      '.card a[href="/New complaint/Newcomplaint.html"]', // تقديم شكوى
+      '.card a[href="/Complaints-followup/followup.html"]', // متابعة الشكاوى
+      '.card a[href="/general complaints/general-complaints.html"]', // الشكاوى العامة
+      '.card a[href="/DashBoard/overview.html"]', // لوحة المعلومات
+      '#adminDashboardLink' // لوحة تحكم المسؤول (ديناميكي)
+    ];
+
+    adminCards.forEach(selector => {
+      const card = document.querySelector(selector)?.closest('.card');
+      if (card) {
+        card.style.display = 'block';
+        console.log(`✅ تم عرض البطاقة للأدمن: ${selector}`);
+      }
+    });
+
+    // عرض جميع البطاقات المخصصة للأدمن
+    document.querySelectorAll('.admin-only').forEach(card => {
+      card.style.display = 'block';
+      console.log('✅ تم عرض البطاقة المخصصة للأدمن');
+    });
+  }
+
+  function applyEmployeePermissions() {
+    // إخفاء جميع البطاقات أولاً
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.display = 'none';
+    });
+
+    // البطاقات المتاحة للموظف
+    const employeeCards = [
+      '.card a[href="/New complaint/Newcomplaint.html"]', // تقديم شكوى
+      '.card a[href="/Complaints-followup/followup.html"]', // متابعة الشكاوى
+      '.card a[href="/general complaints/general-complaints.html"]' // الشكاوى العامة
+    ];
+
+    employeeCards.forEach(selector => {
+      const card = document.querySelector(selector)?.closest('.card');
+      if (card) {
+        card.style.display = 'block';
+        console.log(`✅ تم عرض البطاقة للموظف: ${selector}`);
+      }
+    });
   }
   
   // =====================

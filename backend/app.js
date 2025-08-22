@@ -117,24 +117,30 @@ async function setupPermissionsTable() {
         
         // إدخال الصلاحيات الافتراضية
         const defaultPermissions = [
-            // صلاحيات الموظف
-            ['employee', 'submit_complaint', 0],
-            ['employee', 'follow_own_complaint', 1],
-            ['employee', 'view_public_complaints', 1],
-            ['employee', 'reply_complaints', 1],
-            ['employee', 'change_complaint_status', 1],
-            ['employee', 'export_reports', 1],
-            ['employee', 'access_dashboard', 1],
+            // صلاحيات سوبر أدمن
+            ['SUPER_ADMIN', 'full_system_access', 1],
+            ['SUPER_ADMIN', 'user_management', 1],
+            ['SUPER_ADMIN', 'department_management', 1],
+            ['SUPER_ADMIN', 'assign_complaints', 1],
+            ['SUPER_ADMIN', 'transfer_complaints', 1],
+            ['SUPER_ADMIN', 'view_all_complaints', 1],
+            ['SUPER_ADMIN', 'view_reports', 1],
             
-            // صلاحيات المدير
-            ['manager', 'full_system_access', 1],
-            ['manager', 'user_management', 1],
-            ['manager', 'roles_management', 1],
-            ['manager', 'performance_reports', 1],
-            ['manager', 'export_data', 1],
-            ['manager', 'audit_logs', 1],
-            ['manager', 'system_config', 1],
-            ['manager', 'backup_restore', 1]
+            // صلاحيات أدمن
+            ['ADMIN', 'assign_complaints', 1],
+            ['ADMIN', 'transfer_complaints', 1],
+            ['ADMIN', 'view_department_complaints', 1],
+            ['ADMIN', 'view_reports', 1],
+            ['ADMIN', 'update_complaint_status', 1],
+            ['ADMIN', 'add_comments', 1],
+            
+            // صلاحيات موظف
+            ['EMPLOYEE', 'view_assigned_complaints', 1],
+            ['EMPLOYEE', 'update_complaint_status', 1],
+            ['EMPLOYEE', 'add_comments', 1],
+            ['EMPLOYEE', 'submit_complaint', 1],
+            ['EMPLOYEE', 'follow_own_complaint', 1],
+            ['EMPLOYEE', 'view_public_complaints', 1]
         ];
         
         for (const [role, permission, hasPermission] of defaultPermissions) {

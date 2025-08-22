@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدليل التنظيمي للسوبر أدمن - عونك</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="superAdminorganizational-directory.css">
+</head>
+<body>
+  <!-- نظام الحماية - سيتم إخفاؤه إذا كان المستخدم Super Admin -->
+  <div id="accessDenied" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 500px;">
+      <div style="font-size: 80px; margin-bottom: 20px;">🚫</div>
+      <h1 style="color: #e74c3c; margin-bottom: 15px;">رفض الوصول</h1>
+      <p style="color: #666; margin-bottom: 25px;">عذراً، لا يمكنك الوصول لهذه الصفحة. هذه الصفحة مخصصة لـ Super Admin فقط.</p>
+      <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 20px 0; font-family: monospace; color: #e74c3c; font-weight: bold;">خطأ 403: Forbidden</div>
+      <p style="color: #666;">إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع مدير النظام.</p>
+      <a href="/login/login.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 20px;">العودة لصفحة تسجيل الدخول</a>
+    </div>
+  </div>
+
+  <div class="back-button">
+    <a href="superAdmin.html">
+      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
+      <span data-ar="عودة" data-en="Back">عودة</span>
+    </a>
+  </div>
+
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title" data-ar="الدليل التنظيمي للسوبر أدمن" data-en="Super Admin Organizational Directory">الدليل التنظيمي للسوبر أدمن</div>
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- فلاتر البحث -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label data-ar="القسم:" data-en="Department:">القسم:</label>
+        <select id="departmentFilter">
+          <option value="" data-ar="جميع الأقسام" data-en="All Departments">جميع الأقسام</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label data-ar="البحث:" data-en="Search:">البحث:</label>
+        <input type="text" id="searchFilter" placeholder="البحث في اسم الموظف...">
+      </div>
+
+      <button onclick="applyFilters()" class="filter-btn" data-ar="تطبيق الفلاتر" data-en="Apply Filters">تطبيق الفلاتر</button>
+      <button onclick="clearFilters()" class="clear-btn" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
+    </div>
+
+    <!-- إحصائيات سريعة -->
+    <div class="stats-section">
+      <div class="stat-card">
+        <h3 data-ar="إجمالي الموظفين" data-en="Total Employees">إجمالي الموظفين</h3>
+        <span id="totalEmployees" class="stat-number">0</span>
+      </div>
+      <div class="stat-card">
+        <h3 data-ar="عدد الأقسام" data-en="Departments Count">عدد الأقسام</h3>
+        <span id="totalDepartments" class="stat-number">0</span>
+      </div>
+      <div class="stat-card">
+        <h3 data-ar="المديرين" data-en="Managers">المديرين</h3>
+        <span id="totalManagers" class="stat-number">0</span>
+      </div>
+    </div>
+
+    <!-- جدول الدليل التنظيمي -->
+    <div class="table-container">
+      <table id="directoryTable" class="data-table">
+        <thead>
+          <tr>
+            <th data-ar="اسم الموظف" data-en="Employee Name">اسم الموظف</th>
+            <th data-ar="رقم الموظف" data-en="Employee ID">رقم الموظف</th>
+            <th data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</th>
+            <th data-ar="القسم" data-en="Department">القسم</th>
+            <th data-ar="مدير القسم" data-en="Department Manager">مدير القسم</th>
+            <th data-ar="الدور" data-en="Role">الدور</th>
+            <th data-ar="تاريخ الانضمام" data-en="Join Date">تاريخ الانضمام</th>
+            <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="directoryBody">
+          <!-- البيانات ستُضاف هنا ديناميكياً -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- رسالة عدم وجود بيانات -->
+    <div id="noDataMessage" class="no-data-message" style="display: none;">
+      <p data-ar="لا توجد بيانات للعرض" data-en="No data to display">لا توجد بيانات للعرض</p>
+    </div>
+
+    <!-- رسالة التحميل -->
+    <div id="loadingMessage" class="loading-message">
+      <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
+    </div>
+  </main>
+
+  <!-- Modal تفاصيل الموظف -->
+  <div id="employeeModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3 data-ar="تفاصيل الموظف" data-en="Employee Details">تفاصيل الموظف</h3>
+      <div id="employeeDetails" class="employee-details">
+        <!-- التفاصيل ستُضاف هنا ديناميكياً -->
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeEmployeeModal()" class="close-btn" data-ar="إغلاق" data-en="Close">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // نظام الحماية لصفحات Super Admin
+  async function checkSuperAdminAccess() {
+    try {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (!token) {
+        console.log('لا يوجد توكن، عرض رسالة رفض الوصول');
+        showAccessDenied();
+        return false;
+      }
+      
+      // التحقق من أن المستخدم هو Super Admin (RoleID = 1)
+      if (user.RoleID !== 1) {
+        console.log('المستخدم ليس Super Admin، عرض رسالة رفض الوصول');
+        showAccessDenied();
+        return false;
+      }
+      
+      // التحقق من صحة التوكن مع الخادم
+      const response = await fetch('http://localhost:3001/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        console.log('التوكن غير صالح، توجيه لصفحة تسجيل الدخول');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login/login.html';
+        return false;
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success || data.data.RoleID !== 1) {
+        console.log('المستخدم ليس Super Admin، عرض رسالة رفض الوصول');
+        showAccessDenied();
+        return false;
+      }
+      
+      console.log('✅ المستخدم Super Admin، يمكن الوصول للصفحة');
+      hideAccessDenied();
+      return true;
+      
+    } catch (error) {
+      console.error('خطأ في التحقق من الصلاحيات:', error);
+      showAccessDenied();
+      return false;
+    }
+  }
+
+  function showAccessDenied() {
+    document.getElementById('accessDenied').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideAccessDenied() {
+    document.getElementById('accessDenied').style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  // تشغيل التحقق عند تحميل الصفحة
+  window.addEventListener('load', function() {
+    checkSuperAdminAccess();
+  });
+
+  // التحقق كل 30 ثانية للتأكد من صحة الجلسة
+  setInterval(checkSuperAdminAccess, 30000);
+  </script>
+
+  <script src="superAdminProtection.js"></script>
+  <script src="superAdminorganizational-directory.js"></script>
+</body>
+</html>

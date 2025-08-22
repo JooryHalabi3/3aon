@@ -1,4 +1,4 @@
-// نظام الحماية المشترك لصفحات Super Admin
+// نظام الحماية المشترك لصفحات السوبر أدمن
 class SuperAdminProtection {
     constructor() {
         this.API_BASE_URL = 'http://localhost:3001/api';
@@ -6,13 +6,13 @@ class SuperAdminProtection {
         this.checkInterval = null;
     }
 
-    // التحقق من صلاحيات Super Admin
+    // التحقق من صلاحيات السوبر أدمن
     async checkSuperAdminAccess() {
         if (this.isChecking) return false;
         this.isChecking = true;
 
         try {
-            console.log('🔒 فحص صلاحيات Super Admin...');
+            console.log('🔒 فحص صلاحيات السوبر أدمن...');
             
             const token = localStorage.getItem('token');
             const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -26,7 +26,7 @@ class SuperAdminProtection {
             
             // فحص RoleID من localStorage أولاً (للسرعة)
             if (user.RoleID !== 1) {
-                console.log('❌ المستخدم ليس Super Admin (localStorage)، RoleID:', user.RoleID);
+                console.log('❌ المستخدم ليس السوبر أدمن (localStorage)، RoleID:', user.RoleID);
                 this.showAccessDenied(`دورك الحالي: ${user.RoleName || 'غير محدد'}`);
                 return false;
             }
@@ -49,12 +49,12 @@ class SuperAdminProtection {
             const data = await response.json();
             
             if (!data.success || data.data.RoleID !== 1) {
-                console.log('❌ المستخدم ليس Super Admin (خادم)، RoleID:', data.data?.RoleID);
+                console.log('❌ المستخدم ليس السوبر أدمن (خادم)، RoleID:', data.data?.RoleID);
                 this.showAccessDenied(`دورك الحالي: ${data.data?.RoleName || 'غير محدد'}`);
                 return false;
             }
             
-            console.log('✅ المستخدم Super Admin، يمكن الوصول للصفحة');
+            console.log('✅ المستخدم السوبر أدمن، يمكن الوصول للصفحة');
             this.hideAccessDenied();
             return true;
             
@@ -112,7 +112,7 @@ class SuperAdminProtection {
                 <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                     <div style="font-size: 80px; margin-bottom: 20px;">🚫</div>
                     <h1 style="color: #e74c3c; margin-bottom: 15px; font-family: 'Tajawal', sans-serif;">رفض الوصول</h1>
-                    <p style="color: #666; margin-bottom: 25px; line-height: 1.6;">عذراً، لا يمكنك الوصول لهذه الصفحة.<br>هذه الصفحة مخصصة لـ <strong>Super Admin</strong> فقط.</p>
+                    <p style="color: #666; margin-bottom: 25px; line-height: 1.6;">عذراً، لا يمكنك الوصول لهذه الصفحة.<br>هذه الصفحة مخصصة لـ <strong>السوبر أدمن</strong> فقط.</p>
                     <div class="access-reason" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; font-family: monospace; color: #e74c3c; font-weight: bold; border-left: 4px solid #e74c3c;">
                         خطأ 403: Forbidden
                     </div>
@@ -134,7 +134,7 @@ class SuperAdminProtection {
 
     // بدء نظام الحماية
     async init() {
-        console.log('🛡️ تشغيل نظام حماية Super Admin...');
+        console.log('🛡️ تشغيل نظام حماية السوبر أدمن...');
         
         // إنشاء عنصر رسالة رفض الوصول
         this.createAccessDeniedElement();

@@ -41,7 +41,7 @@ const authenticateToken = async (req, res, next) => {
             roleId: user.RoleID,
             departmentId: user.DepartmentID,
             departmentName: user.DepartmentName,
-            permissions: getUserPermissions(user.RoleName)
+            permissions: await getUserPermissions(user.RoleName)
         };
         
         next();
@@ -55,8 +55,83 @@ const authenticateToken = async (req, res, next) => {
 };
 
 // تحديد صلاحيات المستخدم حسب دوره
-const getUserPermissions = (role) => {
-    const permissions = {
+const getUserPermissions = async (role) => {
+    try {
+        // محاولة جلب الصلاحيات من قاعدة البيانات أولاً
+        const [permissions] = await db.execute(
+            `SELECT permission_name, has_permission 
+             FROM RolePermissions 
+             WHERE role_name = ?`,
+            [role.toLowerCase()]
+        );
+
+        if (permissions.length > 0) {
+            // تحويل البيانات من قاعدة البيانات إلى التنسيق المطلوب
+            const dynamicPermissions = {
+                canAccessAllDepartments: false,
+                canAssignComplaints: false,
+                canTransferComplaints: false,
+                canViewAllComplaints: false,
+                canViewDepartmentComplaints: false,
+                canViewAssignedComplaints: false,
+                canUpdateComplaintStatus: false,
+                canAddNotes: false,
+                canManageUsers: false,
+                canManageDepartments: false,
+                canViewReports: false,
+                canManageSystem: false
+            };
+
+            // تطبيق الصلاحيات من قاعدة البيانات
+            permissions.forEach(perm => {
+                switch (perm.permission_name) {
+                    case 'full_system_access':
+                        dynamicPermissions.canAccessAllDepartments = !!perm.has_permission;
+                        dynamicPermissions.canManageSystem = !!perm.has_permission;
+                        break;
+                    case 'assign_complaints':
+                        dynamicPermissions.canAssignComplaints = !!perm.has_permission;
+                        break;
+                    case 'transfer_complaints':
+                        dynamicPermissions.canTransferComplaints = !!perm.has_permission;
+                        break;
+                    case 'view_all_complaints':
+                        dynamicPermissions.canViewAllComplaints = !!perm.has_permission;
+                        break;
+                    case 'view_department_complaints':
+                        dynamicPermissions.canViewDepartmentComplaints = !!perm.has_permission;
+                        break;
+                    case 'view_assigned_complaints':
+                        dynamicPermissions.canViewAssignedComplaints = !!perm.has_permission;
+                        break;
+                    case 'update_complaint_status':
+                        dynamicPermissions.canUpdateComplaintStatus = !!perm.has_permission;
+                        break;
+                    case 'add_comments':
+                        dynamicPermissions.canAddNotes = !!perm.has_permission;
+                        break;
+                    case 'user_management':
+                        dynamicPermissions.canManageUsers = !!perm.has_permission;
+                        break;
+                    case 'department_management':
+                        dynamicPermissions.canManageDepartments = !!perm.has_permission;
+                        break;
+                    case 'view_reports':
+                        dynamicPermissions.canViewReports = !!perm.has_permission;
+                        break;
+                }
+            });
+
+            console.log(`✅ تم تحميل الصلاحيات الديناميكية لـ ${role}:`, dynamicPermissions);
+            return dynamicPermissions;
+        }
+    } catch (error) {
+        console.error('❌ خطأ في جلب الصلاحيات من قاعدة البيانات:', error);
+    }
+
+    // إذا فشل في جلب الصلاحيات من قاعدة البيانات، استخدم الصلاحيات الافتراضية
+    console.log(`⚠️ استخدام الصلاحيات الافتراضية لـ ${role}`);
+    const defaultPermissions = {
         SUPER_ADMIN: {
             canAccessAllDepartments: true,
             canAssignComplaints: true,
@@ -91,7 +166,7 @@ const getUserPermissions = (role) => {
         }
     };
     
-    return permissions[role] || permissions.EMPLOYEE;
+    return defaultPermissions[role] || defaultPermissions.EMPLOYEE;
 };
 
 // middleware للتحقق من الصلاحيات

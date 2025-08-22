@@ -1,226 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>استرجاع المحذوفات - Super Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="recycle-bin.css">
-</head>
-<body>
-  <!-- نظام الحماية - سيتم إخفاؤه إذا كان المستخدم Super Admin -->
-  <div id="accessDenied" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-    <div style="background: white; padding: 40px; border-radius: 15px; text-align: center; max-width: 500px;">
-      <div style="font-size: 80px; margin-bottom: 20px;">🚫</div>
-      <h1 style="color: #e74c3c; margin-bottom: 15px;">رفض الوصول</h1>
-      <p style="color: #666; margin-bottom: 25px;">عذراً، لا يمكنك الوصول لهذه الصفحة. هذه الصفحة مخصصة لـ Super Admin فقط.</p>
-      <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin: 20px 0; font-family: monospace; color: #e74c3c; font-weight: bold;">خطأ 403: Forbidden</div>
-      <p style="color: #666;">إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع مدير النظام.</p>
-      <a href="/login/login.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 20px;">العودة لصفحة تسجيل الدخول</a>
-    </div>
-  </div>
-
-  <div class="back-button">
-    <a href="/superAdmin/superAdmin.html">
-      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
-      <span data-ar="عودة" data-en="Back">عودة</span>
-    </a>
-  </div>
-
-  <header class="header">
-    <div class="header-content">
-      <div class="header-title" data-ar="استرجاع المحذوفات" data-en="Recycle Bin">استرجاع المحذوفات</div>
-      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
-      <button id="langToggle" class="lang-toggle-btn">
-        <img src="/icon/lang.png" alt="language" class="lang-icon" />
-        <span id="langText">العربية | English</span>
-      </button>
-    </div>
-  </header>
-
-  <main class="main-content">
-    <!-- فلاتر البحث -->
-    <div class="filters-section">
-      <div class="filter-group">
-        <label data-ar="نوع الكيان:" data-en="Entity Type:">نوع الكيان:</label>
-        <select id="entityTypeFilter">
-          <option value="" data-ar="جميع الأنواع" data-en="All Types">جميع الأنواع</option>
-          <option value="complaints" data-ar="الشكاوى" data-en="Complaints">الشكاوى</option>
-          <option value="employees" data-ar="الموظفين" data-en="Employees">الموظفين</option>
-          <option value="departments" data-ar="الأقسام" data-en="Departments">الأقسام</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label data-ar="من تاريخ:" data-en="From Date:">من تاريخ:</label>
-        <input type="date" id="fromDateFilter">
-      </div>
-
-      <div class="filter-group">
-        <label data-ar="إلى تاريخ:" data-en="To Date:">إلى تاريخ:</label>
-        <input type="date" id="toDateFilter">
-      </div>
-
-      <div class="filter-group">
-        <label data-ar="البحث:" data-en="Search:">البحث:</label>
-        <input type="text" id="searchFilter" placeholder="البحث في المحذوفات...">
-      </div>
-
-      <button onclick="applyFilters()" class="filter-btn" data-ar="تطبيق الفلاتر" data-en="Apply Filters">تطبيق الفلاتر</button>
-      <button onclick="clearFilters()" class="clear-btn" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
-    </div>
-
-    <!-- جدول المحذوفات -->
-    <div class="table-container">
-      <table id="deletedItemsTable" class="data-table">
-        <thead>
-          <tr>
-            <th data-ar="نوع الكيان" data-en="Entity Type">نوع الكيان</th>
-            <th data-ar="المعرف" data-en="ID">المعرف</th>
-            <th data-ar="الاسم/الملخص" data-en="Name/Summary">الاسم/الملخص</th>
-            <th data-ar="تاريخ الحذف" data-en="Deleted Date">تاريخ الحذف</th>
-            <th data-ar="المحذوف بواسطة" data-en="Deleted By">المحذوف بواسطة</th>
-            <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="deletedItemsBody">
-          <!-- البيانات ستُضاف هنا ديناميكياً -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- نافذة تأكيد الحذف النهائي -->
-    <div id="confirmDeleteModal" class="modal-overlay" style="display: none;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 data-ar="تأكيد الحذف النهائي" data-en="Confirm Final Deletion">تأكيد الحذف النهائي</h3>
-          <button onclick="closeConfirmDeleteModal()" class="close-modal">×</button>
-        </div>
-        <div class="modal-body">
-          <p data-ar="هل أنت متأكد من حذف هذا العنصر نهائياً؟ لا يمكن التراجع عن هذا الإجراء." data-en="Are you sure you want to permanently delete this item? This action cannot be undone.">
-            هل أنت متأكد من حذف هذا العنصر نهائياً؟ لا يمكن التراجع عن هذا الإجراء.
-          </p>
-          <div class="item-details" id="itemToDeleteDetails">
-            <!-- تفاصيل العنصر المراد حذفه -->
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button onclick="closeConfirmDeleteModal()" class="btn btn-secondary" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
-          <button onclick="confirmFinalDelete()" class="btn btn-danger" data-ar="حذف نهائي" data-en="Delete Permanently">حذف نهائي</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- رسالة عدم وجود بيانات -->
-    <div id="noDataMessage" class="no-data-message" style="display: none;">
-      <p data-ar="لا توجد عناصر محذوفة" data-en="No deleted items found">لا توجد عناصر محذوفة</p>
-    </div>
-
-    <!-- رسالة التحميل -->
-    <div id="loadingMessage" class="loading-message">
-      <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
-    </div>
-  </main>
-
-  <!-- Modal تأكيد الاسترجاع -->
-  <div id="restoreModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <h3 data-ar="تأكيد الاسترجاع" data-en="Confirm Restoration">تأكيد الاسترجاع</h3>
-      <p id="restoreMessage" data-ar="هل أنت متأكد من استرجاع هذا العنصر؟" data-en="Are you sure you want to restore this item?">هل أنت متأكد من استرجاع هذا العنصر؟</p>
-      <div class="modal-actions">
-        <button onclick="confirmRestore()" class="confirm-btn" data-ar="تأكيد" data-en="Confirm">تأكيد</button>
-        <button onclick="closeRestoreModal()" class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal تأكيد الحذف النهائي -->
-  <div id="deleteModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <h3 data-ar="تأكيد الحذف النهائي" data-en="Confirm Permanent Deletion">تأكيد الحذف النهائي</h3>
-      <p id="deleteMessage" data-ar="هل أنت متأكد من الحذف النهائي لهذا العنصر؟ لا يمكن التراجع عن هذا الإجراء." data-en="Are you sure you want to permanently delete this item? This action cannot be undone.">هل أنت متأكد من الحذف النهائي لهذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.</p>
-      <div class="modal-actions">
-        <button onclick="confirmDelete()" class="delete-btn" data-ar="حذف نهائي" data-en="Delete Permanently">حذف نهائي</button>
-        <button onclick="closeDeleteModal()" class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-  // نظام الحماية لصفحات Super Admin
-  async function checkSuperAdminAccess() {
-    try {
-      const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      
-      if (!token) {
-        console.log('لا يوجد توكن، عرض رسالة رفض الوصول');
-        showAccessDenied();
-        return false;
-      }
-      
-      // التحقق من أن المستخدم هو Super Admin (RoleID = 1)
-      if (user.RoleID !== 1) {
-        console.log('المستخدم ليس Super Admin، عرض رسالة رفض الوصول');
-        showAccessDenied();
-        return false;
-      }
-      
-      // التحقق من صحة التوكن مع الخادم
-      const response = await fetch('http://localhost:3001/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        console.log('التوكن غير صالح، توجيه لصفحة تسجيل الدخول');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login/login.html';
-        return false;
-      }
-      
-      const data = await response.json();
-      
-      if (!data.success || data.data.RoleID !== 1) {
-        console.log('المستخدم ليس Super Admin، عرض رسالة رفض الوصول');
-        showAccessDenied();
-        return false;
-      }
-      
-      console.log('✅ المستخدم Super Admin، يمكن الوصول للصفحة');
-      hideAccessDenied();
-      return true;
-      
-    } catch (error) {
-      console.error('خطأ في التحقق من الصلاحيات:', error);
-      showAccessDenied();
-      return false;
-    }
-  }
-
-  function showAccessDenied() {
-    document.getElementById('accessDenied').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  }
-
-  function hideAccessDenied() {
-    document.getElementById('accessDenied').style.display = 'none';
-    document.body.style.overflow = 'auto';
-  }
-
-  // تشغيل التحقق عند تحميل الصفحة
-  window.addEventListener('load', function() {
-    checkSuperAdminAccess();
-  });
-
-  // التحقق كل 30 ثانية للتأكد من صحة الجلسة
-  setInterval(checkSuperAdminAccess, 30000);
-  </script>
-
-  <script src="superAdminProtection.js"></script>
-  <script src="recycle-bin.js"></script>
-</body>
-</html>

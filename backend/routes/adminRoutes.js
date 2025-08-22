@@ -245,25 +245,63 @@ router.get('/departments/:id/employees', async (req, res) => {
    Notifications (الإشعارات)
    ========================= */
 
+// جلب جميع الإشعارات للمستخدم الحالي
+router.get('/notifications', async (req, res) => {
+  try {
+    const userId = req.user.employeeID;
+    const adminDepartmentId = req.user.departmentID;
+
+    // جلب الإشعارات الخاصة بالمستخدم أو القسم
+    const [rows] = await pool.execute(`
+      SELECT 
+        n.NotificationID, 
+        n.Title, 
+        n.Body AS Message, 
+        n.Type, 
+        n.CreatedAt, 
+        n.RelatedType, 
+        n.RelatedID,
+        n.IsRead,
+        CASE 
+          WHEN n.RecipientEmployeeID = ? THEN 'personal'
+          ELSE 'department'
+        END as NotificationScope
+      FROM notifications n
+      WHERE (n.RecipientEmployeeID = ? OR n.RecipientEmployeeID IS NULL)
+        AND (n.DepartmentID = ? OR n.DepartmentID IS NULL)
+      ORDER BY n.CreatedAt DESC
+      LIMIT 20
+    `, [userId, userId, adminDepartmentId]);
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('خطأ في جلب الإشعارات:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
+
 // جلب الإشعارات غير المقروءة (تعيد RelatedType/RelatedID لزر التفاصيل)
 router.get('/notifications/unread', async (req, res) => {
   try {
     const userId = req.user.employeeID;
+    const adminDepartmentId = req.user.departmentID;
 
     const [rows] = await pool.execute(`
       SELECT 
-        NotificationID, 
-        Title, 
-        Body AS Message, 
-        Type, 
-        CreatedAt, 
-        RelatedType, 
-        RelatedID
-      FROM notifications
-      WHERE RecipientEmployeeID = ? AND IsRead = FALSE
-      ORDER BY CreatedAt DESC
+        n.NotificationID, 
+        n.Title, 
+        n.Body AS Message, 
+        n.Type, 
+        n.CreatedAt, 
+        n.RelatedType, 
+        n.RelatedID
+      FROM notifications n
+      WHERE (n.RecipientEmployeeID = ? OR n.RecipientEmployeeID IS NULL)
+        AND (n.DepartmentID = ? OR n.DepartmentID IS NULL)
+        AND n.IsRead = FALSE
+      ORDER BY n.CreatedAt DESC
       LIMIT 10
-    `, [userId]);
+    `, [userId, adminDepartmentId]);
 
     res.json({ success: true, data: rows });
   } catch (error) {
@@ -596,6 +634,240 @@ router.get('/department/complaints', async (req, res) => {
   }
 });
 
+// إحصائيات قسم المدير الحالي
+router.get('/department/stats', async (req, res) => {
+  try {
+    const adminDepartmentId = req.user.departmentID;
+    if (!adminDepartmentId) {
+      return res.status(400).json({ success: false, message: 'المدير يجب أن يكون مرتبط بقسم معين' });
+    }
+
+    // إحصائيات الموظفين
+    const [employeeStats] = await pool.execute(`
+      SELECT COUNT(*) as totalEmployees
+      FROM employees 
+      WHERE DepartmentID = ? AND Status = 'active'
+    `, [adminDepartmentId]);
+
+    // إحصائيات الشكاوى
+    const [complaintStats] = await pool.execute(`
+      SELECT 
+        COUNT(*) as totalComplaints,
+        SUM(CASE WHEN CurrentStatus = 'جديدة' THEN 1 ELSE 0 END) as pendingComplaints,
+        SUM(CASE WHEN CurrentStatus = 'مغلقة' THEN 1 ELSE 0 END) as resolvedComplaints,
+        SUM(CASE WHEN CurrentStatus = 'قيد المعالجة' THEN 1 ELSE 0 END) as inProgressComplaints,
+        AVG(CASE 
+          WHEN CurrentStatus = 'مغلقة' 
+          THEN DATEDIFF(UpdatedAt, ComplaintDate)
+          ELSE NULL 
+        END) as avgResolutionTime
+      FROM complaints 
+      WHERE DepartmentID = ?
+    `, [adminDepartmentId]);
+
+    // معدل الرضا (افتراضي)
+    const satisfactionRate = 85; // يمكن حسابها من جدول منفصل للتقييمات
+
+    const stats = {
+      totalEmployees: employeeStats[0].totalEmployees || 0,
+      totalComplaints: complaintStats[0].totalComplaints || 0,
+      pendingComplaints: complaintStats[0].pendingComplaints || 0,
+      resolvedComplaints: complaintStats[0].resolvedComplaints || 0,
+      inProgressComplaints: complaintStats[0].inProgressComplaints || 0,
+      avgResolutionTime: Math.round(complaintStats[0].avgResolutionTime || 0),
+      satisfactionRate: satisfactionRate
+    };
+
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    console.error('خطأ في جلب إحصائيات القسم:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
+
+// بيانات الرسوم البيانية للقسم
+router.get('/department/charts-data', async (req, res) => {
+  try {
+    const adminDepartmentId = req.user.departmentID;
+    if (!adminDepartmentId) {
+      return res.status(400).json({ success: false, message: 'المدير يجب أن يكون مرتبط بقسم معين' });
+    }
+
+    // الشكاوى الشهرية (آخر 6 أشهر)
+    const [monthlyComplaints] = await pool.execute(`
+      SELECT 
+        DATE_FORMAT(ComplaintDate, '%Y-%m') as month,
+        COUNT(*) as complaintCount
+      FROM complaints 
+      WHERE DepartmentID = ? 
+        AND ComplaintDate >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+      GROUP BY DATE_FORMAT(ComplaintDate, '%Y-%m')
+      ORDER BY month
+    `, [adminDepartmentId]);
+
+    // توزيع الشكاوى حسب النوع
+    const [complaintsByType] = await pool.execute(`
+      SELECT 
+        ct.TypeName as complaintType,
+        COUNT(*) as complaintCount
+      FROM complaints c
+      LEFT JOIN complainttypes ct ON c.ComplaintTypeID = ct.ComplaintTypeID
+      WHERE c.DepartmentID = ?
+      GROUP BY ct.ComplaintTypeID, ct.TypeName
+      ORDER BY complaintCount DESC
+    `, [adminDepartmentId]);
+
+    const chartsData = {
+      monthlyComplaints: monthlyComplaints || [],
+      complaintsByType: complaintsByType || []
+    };
+
+    res.json({ success: true, data: chartsData });
+  } catch (error) {
+    console.error('خطأ في جلب بيانات الرسوم البيانية:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
+
+// الشكاوى الحديثة للقسم
+router.get('/department/recent-complaints', async (req, res) => {
+  try {
+    const adminDepartmentId = req.user.departmentID;
+    if (!adminDepartmentId) {
+      return res.status(400).json({ success: false, message: 'المدير يجب أن يكون مرتبط بقسم معين' });
+    }
+
+    const [rows] = await pool.execute(`
+      SELECT 
+        c.ComplaintID,
+        c.ComplaintDate,
+        c.ComplaintDetails,
+        c.CurrentStatus,
+        p.FullName AS PatientName,
+        ct.TypeName AS ComplaintType,
+        e.FullName AS AssignedEmployeeName
+      FROM complaints c
+      LEFT JOIN patients p ON c.PatientID = p.PatientID
+      LEFT JOIN complainttypes ct ON c.ComplaintTypeID = ct.ComplaintTypeID
+      LEFT JOIN complaint_assignments ca ON c.ComplaintID = ca.ComplaintID AND ca.Status = 'assigned'
+      LEFT JOIN employees e ON ca.AssignedTo = e.EmployeeID
+      WHERE c.DepartmentID = ?
+      ORDER BY c.ComplaintDate DESC
+      LIMIT 10
+    `, [adminDepartmentId]);
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('خطأ في جلب الشكاوى الحديثة:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
+
+/* ======================================
+   إدارة صلاحيات الموظفين
+   ====================================== */
+
+// جلب صلاحيات موظف معين
+router.get('/employee/permissions/:employeeId', async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const adminDepartmentId = req.user.departmentID;
+
+    // التحقق من أن الموظف ينتمي لنفس قسم المدير
+    const [employeeCheck] = await pool.execute(`
+      SELECT EmployeeID, DepartmentID, RoleID 
+      FROM employees 
+      WHERE EmployeeID = ?
+    `, [employeeId]);
+
+    if (employeeCheck.length === 0) {
+      return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+    }
+
+    if (employeeCheck[0].DepartmentID !== adminDepartmentId) {
+      return res.status(403).json({ success: false, message: 'لا يمكن الوصول لصلاحيات موظف من قسم آخر' });
+    }
+
+    // جلب صلاحيات الموظف
+    const [permissions] = await pool.execute(`
+      SELECT rp.PermissionID, p.PermissionName, p.Description
+      FROM rolepermissions rp
+      JOIN permissions p ON rp.PermissionID = p.PermissionID
+      WHERE rp.RoleID = (SELECT RoleID FROM employees WHERE EmployeeID = ?)
+    `, [employeeId]);
+
+    res.json({ success: true, data: permissions });
+  } catch (error) {
+    console.error('خطأ في جلب صلاحيات الموظف:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
+
+// تحديث صلاحيات موظف معين
+router.post('/employee/permissions/:employeeId', async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const { permissions } = req.body;
+    const adminDepartmentId = req.user.departmentID;
+
+    // التحقق من أن الموظف ينتمي لنفس قسم المدير
+    const [employeeCheck] = await pool.execute(`
+      SELECT EmployeeID, DepartmentID, RoleID 
+      FROM employees 
+      WHERE EmployeeID = ?
+    `, [employeeId]);
+
+    if (employeeCheck.length === 0) {
+      return res.status(404).json({ success: false, message: 'الموظف غير موجود' });
+    }
+
+    if (employeeCheck[0].DepartmentID !== adminDepartmentId) {
+      return res.status(403).json({ success: false, message: 'لا يمكن تعديل صلاحيات موظف من قسم آخر' });
+    }
+
+    // حذف الصلاحيات الحالية
+    await pool.execute(`
+      DELETE FROM rolepermissions 
+      WHERE RoleID = ?
+    `, [employeeCheck[0].RoleID]);
+
+    // إضافة الصلاحيات الجديدة
+    if (permissions && permissions.length > 0) {
+      const permissionMap = {
+        'viewComplaints': 'عرض الشكاوى',
+        'editComplaints': 'تعديل الشكاوى',
+        'assignComplaints': 'تعيين الشكاوى',
+        'viewReports': 'عرض التقارير',
+        'exportReports': 'تصدير التقارير',
+        'viewEmployees': 'عرض الموظفين',
+        'editEmployees': 'تعديل بيانات الموظفين'
+      };
+
+      for (const permissionKey of permissions) {
+        const permissionName = permissionMap[permissionKey];
+        if (permissionName) {
+          // البحث عن ID الصلاحية
+          const [permissionResult] = await pool.execute(`
+            SELECT PermissionID FROM permissions WHERE PermissionName = ?
+          `, [permissionName]);
+
+          if (permissionResult.length > 0) {
+            await pool.execute(`
+              INSERT INTO rolepermissions (RoleID, PermissionID) 
+              VALUES (?, ?)
+            `, [employeeCheck[0].RoleID, permissionResult[0].PermissionID]);
+          }
+        }
+      }
+    }
+
+    res.json({ success: true, message: 'تم تحديث الصلاحيات بنجاح' });
+  } catch (error) {
+    console.error('خطأ في تحديث صلاحيات الموظف:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
+
 /* =========================
    Complaints (التعيين وغيره)
    ========================= */
@@ -808,6 +1080,61 @@ router.delete('/notifications/:id', async (req, res) => {
   res.json({ success:true, message:'تم حذف الإشعار' });
 });
 
+/* =========================
+   Organizational Directory (الدليل التنظيمي)
+   ========================= */
 
+// جلب الدليل التنظيمي للموظفين
+router.get('/organizational-directory', async (req, res) => {
+  try {
+    const [rows] = await pool.execute(`
+      SELECT 
+        e.EmployeeID,
+        e.FullName,
+        e.Username,
+        e.Email,
+        e.PhoneNumber,
+        e.Specialty,
+        e.HireDate,
+        r.RoleName,
+        r.RoleID,
+        d.DepartmentName,
+        d.DepartmentID,
+        COALESCE(manager.FullName, 'غير محدد') AS ManagerName
+      FROM employees e
+      LEFT JOIN roles r ON e.RoleID = r.RoleID
+      LEFT JOIN departments d ON e.DepartmentID = d.DepartmentID
+      LEFT JOIN employees manager ON d.ManagerID = manager.EmployeeID
+      ORDER BY d.DepartmentName, e.FullName
+    `);
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('خطأ في جلب الدليل التنظيمي:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
+
+// جلب الأقسام
+router.get('/departments', async (req, res) => {
+  try {
+    const [rows] = await pool.execute(`
+      SELECT 
+        d.DepartmentID,
+        d.DepartmentName,
+        d.Description,
+        COALESCE(manager.FullName, 'غير محدد') AS ManagerName,
+        manager.EmployeeID AS ManagerID
+      FROM departments d
+      LEFT JOIN employees manager ON d.ManagerID = manager.EmployeeID
+      ORDER BY d.DepartmentName
+    `);
+
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('خطأ في جلب الأقسام:', error);
+    res.status(500).json({ success: false, message: 'خطأ في الخادم' });
+  }
+});
 
 module.exports = router;

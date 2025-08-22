@@ -370,7 +370,8 @@ const checkUserPermissions = async (req, res, next) => {
       employeeID: decoded.employeeID,
       username: decoded.username,
       roleID: decoded.roleID,
-      roleName: decoded.roleName
+      roleName: decoded.roleName,
+      departmentID: decoded.departmentID // إضافة DepartmentID
     };
     
     next();
@@ -454,6 +455,7 @@ const getAllComplaints = async (req, res) => {
         p.NationalID_Iqama,
         p.ContactNumber,
         d.DepartmentName,
+        c.DepartmentID,
         ct.TypeName as ComplaintTypeName,
         cst.SubTypeName,
         e.FullName as EmployeeName
@@ -480,6 +482,117 @@ const getAllComplaints = async (req, res) => {
 
   } catch (error) {
     console.error('خطأ في جلب الشكاوى:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'حدث خطأ في الخادم' 
+    });
+  }
+};
+
+// جلب شكاوى قسم محدد (للأدمن)
+const getDepartmentComplaints = async (req, res) => {
+  try {
+    const { departmentId } = req.params;
+    const { 
+      dateFilter = 'all',
+      search = '',
+      status = '',
+      complaintType = ''
+    } = req.query;
+
+    console.log('جلب شكاوى القسم:', departmentId);
+    console.log('معاملات الطلب:', req.query);
+    console.log('معلومات المستخدم:', req.user);
+
+    // التحقق من أن المستخدم أدمن
+    if (!req.user || req.user.roleID !== 3) {
+      return res.status(403).json({
+        success: false,
+        message: 'غير مسموح - هذه الخدمة للأدمن فقط'
+      });
+    }
+
+    // التحقق من أن الأدمن يطلب شكاوى قسمه فقط (إضافي للأمان)
+    if (req.user.departmentID && parseInt(departmentId) !== req.user.departmentID) {
+      return res.status(403).json({
+        success: false,
+        message: 'غير مسموح - يمكنك عرض شكاوى قسمك فقط'
+      });
+    }
+
+    let whereConditions = ['c.DepartmentID = ?'];
+    let queryParams = [departmentId];
+
+    // فلتر التاريخ
+    if (dateFilter && dateFilter !== 'all') {
+      const days = parseInt(dateFilter);
+      if (!isNaN(days)) {
+        whereConditions.push('c.ComplaintDate >= DATE_SUB(NOW(), INTERVAL ? DAY)');
+        queryParams.push(days);
+      }
+    }
+
+    // فلتر البحث
+    if (search && search.trim() !== '') {
+      whereConditions.push('(c.ComplaintID LIKE ? OR p.FullName LIKE ? OR p.NationalID_Iqama LIKE ?)');
+      const searchTerm = `%${search.trim()}%`;
+      queryParams.push(searchTerm, searchTerm, searchTerm);
+    }
+
+    // فلتر الحالة
+    if (status && status.trim() !== '') {
+      whereConditions.push('c.CurrentStatus = ?');
+      queryParams.push(status.trim());
+    }
+
+    // فلتر نوع الشكوى
+    if (complaintType && complaintType.trim() !== '') {
+      whereConditions.push('ct.TypeName LIKE ?');
+      queryParams.push(`%${complaintType.trim()}%`);
+    }
+
+    const whereClause = 'WHERE ' + whereConditions.join(' AND ');
+
+    // جلب الشكاوى مع البيانات المرتبطة
+    const [complaints] = await pool.execute(
+      `SELECT 
+        c.ComplaintID,
+        c.ComplaintDate,
+        c.ComplaintDetails,
+        c.CurrentStatus,
+        c.Priority,
+        c.ResponseDeadline,
+        p.FullName as PatientName,
+        p.NationalID_Iqama,
+        p.ContactNumber,
+        d.DepartmentName,
+        c.DepartmentID,
+        ct.TypeName as ComplaintTypeName,
+        cst.SubTypeName,
+        e.FullName as EmployeeName
+       FROM Complaints c
+       JOIN Patients p ON c.PatientID = p.PatientID
+       JOIN Departments d ON c.DepartmentID = d.DepartmentID
+       JOIN ComplaintTypes ct ON c.ComplaintTypeID = ct.ComplaintTypeID
+       LEFT JOIN ComplaintSubTypes cst ON c.SubTypeID = cst.SubTypeID
+       LEFT JOIN Employees e ON c.EmployeeID = e.EmployeeID
+       ${whereClause}
+       ORDER BY c.ComplaintDate DESC
+       LIMIT 100`,
+      queryParams
+    );
+
+    console.log(`تم جلب ${complaints.length} شكوى للقسم ${departmentId}`);
+
+    res.json({
+      success: true,
+      data: complaints,
+      departmentId: departmentId,
+      userRole: req.user ? req.user.roleID : null
+    });
+
+  } catch (error) {
+    console.error('خطأ في جلب شكاوى القسم:', error);
     res.status(500).json({ 
       success: false, 
       message: 'حدث خطأ في الخادم' 
@@ -1009,6 +1122,7 @@ module.exports = {
   getPatientComplaints,
   getComplaintDetails,
   getAllComplaints,
+  getDepartmentComplaints,
   getUserComplaints,
   submitComplaint,
   upload,

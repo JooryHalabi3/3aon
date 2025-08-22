@@ -6,6 +6,9 @@ const auth = require('../middleware/auth'); // Added auth middleware
 // جلب جميع الشكاوى (مع التحقق من الصلاحيات)
 router.get('/all', complaintController.checkUserPermissions, complaintController.getAllComplaints);
 
+// جلب شكاوى قسم محدد (للأدمن)
+router.get('/department/:departmentId', complaintController.checkUserPermissions, complaintController.getDepartmentComplaints);
+
 // جلب شكاوى المستخدم الشخصية (للمستخدمين العاديين فقط)
 router.get('/my-complaints', complaintController.checkUserPermissions, complaintController.getUserComplaints);
 

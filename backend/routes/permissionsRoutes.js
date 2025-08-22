@@ -12,4 +12,7 @@ router.get('/permissions/roles/:roleName/permissions', authenticateToken, permis
 // تحديث صلاحيات دور معين
 router.put('/permissions/roles/:roleName/permissions', authenticateToken, permissionsController.updateRolePermissions);
 
+// تحديث جميع الصلاحيات في النظام
+router.post('/permissions/update-all', authenticateToken, permissionsController.updateAllPermissions);
+
 module.exports = router;

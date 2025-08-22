@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة الصلاحيات - عونك</title>
+  
+  <!-- خط عربي: Tajawal -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- خط إنجليزي: Merriweather (serif) -->
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="department-permissions.css">
+</head>
+
+<body>
+     <!-- زر العودة -->
+   <div class="back-button">
+     <a href="admin.html">
+       <img src="../icon/Back.png" alt="Back Icon" class="back-icon" />
+       <span data-ar="عودة" data-en="Back">عودة</span>
+     </a>
+   </div>
+
+   <!-- الهيدر -->
+   <header class="header">
+     <div class="header-content">
+       <div class="header-title" data-ar="إدارة الصلاحيات" data-en="Permissions Management">إدارة الصلاحيات</div>
+       <img src="../icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+       <button id="langToggle" class="lang-toggle-btn">
+         <img src="../icon/lang.png" alt="language" class="lang-icon" />
+         <span id="langText">العربية | English</span>
+       </button>
+     </div>
+   </header>
+
+  <!-- رسالة رفض الوصول -->
+  <div id="accessDenied" class="access-denied" style="display: none;">
+           <div class="access-denied-content">
+         <img src="../icon/access-denied.png" alt="رفض الوصول" class="access-denied-icon">
+         <h2 data-ar="لا يمكن الوصول لهذه الصفحة" data-en="Access Denied">لا يمكن الوصول لهذه الصفحة</h2>
+         <p data-ar="ليس لديك صلاحية للوصول لهذه الصفحة" data-en="You don't have permission to access this page">ليس لديك صلاحية للوصول لهذه الصفحة</p>
+         <a href="../login/home.html" class="btn" data-ar="العودة للصفحة الرئيسية" data-en="Back to Home">العودة للصفحة الرئيسية</a>
+       </div>
+  </div>
+
+  <!-- المحتوى الرئيسي -->
+  <main class="main-content" id="mainContent">
+    <!-- معلومات القسم -->
+    <div class="department-info">
+      <h2 id="departmentTitle" data-ar="إدارة صلاحيات قسم" data-en="Department Permissions Management">إدارة صلاحيات قسم</h2>
+      <p id="departmentDescription" data-ar="عرض وإدارة صلاحيات موظفي القسم" data-en="View and manage department employee permissions">عرض وإدارة صلاحيات موظفي القسم</p>
+    </div>
+
+    <!-- إحصائيات سريعة -->
+    <div class="stats-section">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3 id="totalEmployees">0</h3>
+          <p data-ar="إجمالي الموظفين" data-en="Total Employees">إجمالي الموظفين</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <h3 id="activeEmployees">0</h3>
+          <p data-ar="الموظفين النشطين" data-en="Active Employees">الموظفين النشطين</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🔒</div>
+        <div class="stat-content">
+          <h3 id="employeesWithPermissions">0</h3>
+          <p data-ar="الموظفين ذوي الصلاحيات" data-en="Employees with Permissions">الموظفين ذوي الصلاحيات</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- جدول الموظفين -->
+    <div class="employees-section">
+      <div class="section-header">
+        <h3 data-ar="موظفي القسم" data-en="Department Employees">موظفي القسم</h3>
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="البحث عن موظف..." data-ar-placeholder="البحث عن موظف..." data-en-placeholder="Search employee...">
+                     <button id="searchBtn" class="search-btn">
+             <img src="../icon/search.png" alt="بحث">
+           </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="employees-table">
+          <thead>
+            <tr>
+              <th data-ar="الموظف" data-en="Employee">الموظف</th>
+              <th data-ar="الوظيفة" data-en="Position">الوظيفة</th>
+              <th data-ar="البريد الإلكتروني" data-en="Email">البريد الإلكتروني</th>
+              <th data-ar="رقم الهاتف" data-en="Phone">رقم الهاتف</th>
+              <th data-ar="الحالة" data-en="Status">الحالة</th>
+              <th data-ar="الصلاحيات" data-en="Permissions">الصلاحيات</th>
+              <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="employeesTableBody">
+            <!-- البيانات ستُضاف هنا ديناميكياً -->
+          </tbody>
+        </table>
+      </div>
+
+             <!-- رسالة عدم وجود موظفين -->
+       <div id="noEmployees" class="no-data" style="display: none;">
+         <img src="../icon/alert.png" alt="لا توجد بيانات" class="no-data-icon">
+         <h3 data-ar="لا يوجد موظفين" data-en="No Employees">لا يوجد موظفين</h3>
+         <p data-ar="لا يوجد موظفين في هذا القسم حالياً" data-en="No employees in this department currently">لا يوجد موظفين في هذا القسم حالياً</p>
+       </div>
+    </div>
+
+    <!-- نافذة تعديل الصلاحيات -->
+    <div id="permissionsModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle" data-ar="تعديل صلاحيات الموظف" data-en="Edit Employee Permissions">تعديل صلاحيات الموظف</h3>
+          <button class="close-modal" onclick="closePermissionsModal()">×</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="employee-info">
+            <div class="employee-avatar" id="modalEmployeeAvatar">JD</div>
+            <div class="employee-details">
+              <h4 id="modalEmployeeName">اسم الموظف</h4>
+              <p id="modalEmployeePosition">الوظيفة</p>
+            </div>
+          </div>
+
+          <div class="permissions-list">
+            <h4 data-ar="الصلاحيات المتاحة" data-en="Available Permissions">الصلاحيات المتاحة</h4>
+            
+            <div class="permission-group">
+              <h5 data-ar="إدارة الشكاوى" data-en="Complaint Management">إدارة الشكاوى</h5>
+              <div class="permission-item">
+                <input type="checkbox" id="viewComplaints" name="permissions">
+                <label for="viewComplaints" data-ar="عرض الشكاوى" data-en="View Complaints">عرض الشكاوى</label>
+              </div>
+              <div class="permission-item">
+                <input type="checkbox" id="editComplaints" name="permissions">
+                <label for="editComplaints" data-ar="تعديل الشكاوى" data-en="Edit Complaints">تعديل الشكاوى</label>
+              </div>
+              <div class="permission-item">
+                <input type="checkbox" id="assignComplaints" name="permissions">
+                <label for="assignComplaints" data-ar="تعيين الشكاوى" data-en="Assign Complaints">تعيين الشكاوى</label>
+              </div>
+            </div>
+
+            <div class="permission-group">
+              <h5 data-ar="التقارير" data-en="Reports">التقارير</h5>
+              <div class="permission-item">
+                <input type="checkbox" id="viewReports" name="permissions">
+                <label for="viewReports" data-ar="عرض التقارير" data-en="View Reports">عرض التقارير</label>
+              </div>
+              <div class="permission-item">
+                <input type="checkbox" id="exportReports" name="permissions">
+                <label for="exportReports" data-ar="تصدير التقارير" data-en="Export Reports">تصدير التقارير</label>
+              </div>
+            </div>
+
+            <div class="permission-group">
+              <h5 data-ar="إدارة المستخدمين" data-en="User Management">إدارة المستخدمين</h5>
+              <div class="permission-item">
+                <input type="checkbox" id="viewEmployees" name="permissions">
+                <label for="viewEmployees" data-ar="عرض الموظفين" data-en="View Employees">عرض الموظفين</label>
+              </div>
+              <div class="permission-item">
+                <input type="checkbox" id="editEmployees" name="permissions">
+                <label for="editEmployees" data-ar="تعديل بيانات الموظفين" data-en="Edit Employee Data">تعديل بيانات الموظفين</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closePermissionsModal()" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+          <button class="btn btn-primary" onclick="savePermissions()" data-ar="حفظ الصلاحيات" data-en="Save Permissions">حفظ الصلاحيات</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="department-permissions.js"></script>
+</body>
+
+</html>

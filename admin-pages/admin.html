@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم مدير القسم - عونك</title>
+ <!-- خط عربي: Tajawal -->
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- خط إنجليزي: Merriweather (serif) -->
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+  
+         <div class="back-button">
+       <a href="#" onclick="goBack()">
+         <img src="../icon/Back.png" alt="Back Icon" class="back-icon" />
+         <span data-ar="عودة" data-en="Back">عودة</span>
+       </a>
+     </div>
+
+   <header class="header">
+     <div class="header-content">
+       <div class="header-title" data-ar="عُــــــونَك - لوحة تحكم مدير القسم" data-en="AOUNAK - Department Manager Dashboard">عُــــــونَك - لوحة تحكم مدير القسم</div>
+       <img src="../icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+       <button id="langToggle" class="lang-toggle-btn">
+         <img src="../icon/lang.png" alt="language" class="lang-icon" />
+         <span id="langText">العربية | English</span>
+       </button>
+     </div>
+   </header>
+
+  <!-- مركز الإشعارات -->
+  <div id="notificationCenter" class="notification-center" style="display: none;">
+    <div class="notification-header">
+      <span data-ar="الإشعارات" data-en="Notifications">الإشعارات</span>
+      <span id="notificationCount" class="notification-count">0</span>
+      <button onclick="closeNotificationCenter()" class="close-notifications">×</button>
+    </div>
+    <div id="notificationList" class="notification-list">
+      <!-- الإشعارات ستُضاف هنا ديناميكياً -->
+    </div>
+  </div>
+
+ <br> <br><br> <br> <br><br>
+  <main>
+    <section class="dashboard">
+      <!-- بطاقات الأدمن المخصصة -->
+      
+             <!-- السجلات - خاصة بالقسم -->
+       <div class="card department-logs-card">
+         <img src="../icon/list.png" alt="السجلات">
+         <h3 data-ar="سجلات القسم" data-en="Department Logs">سجلات القسم</h3>
+         <p data-ar="الاطلاع على سجلات العمليات والشكاوى الخاصة بقسمك" data-en="View operation and complaint logs for your department">الاطلاع على سجلات العمليات والشكاوى الخاصة بقسمك</p>
+         <a href="logs.html" class="btn" data-ar="عرض السجلات" data-en="View Logs">عرض السجلات</a>
+       </div>
+
+       <!-- تتبع الطلبات - خاصة بالقسم -->
+       <div class="card department-requests-card">
+         <img src="../icon/status.png" alt="تتبع الطلبات">
+         <h3 data-ar="تتبع طلبات القسم" data-en="Department Request Tracking">تتبع طلبات القسم</h3>
+         <p data-ar="متابعة حالة الطلبات والشكاوى الخاصة بقسمك مع المدة المتبقية" data-en="Track request status and complaints for your department with remaining time">متابعة حالة الطلبات والشكاوى الخاصة بقسمك مع المدة المتبقية</p>
+         <a href="request-tracking.html" class="btn" data-ar="تتبع الطلبات" data-en="Track Requests">تتبع الطلبات</a>
+       </div>
+
+       <!-- إدارة القسم -->
+       <div class="card department-management-card">
+         <img src="../icon/Manager.png" alt="إدارة القسم">
+         <h3 data-ar="إدارة القسم" data-en="Department Management">إدارة القسم</h3>
+         <p data-ar="إدارة موظفي القسم وتعيين الشكاوى للموظفين" data-en="Manage department employees and assign complaints to employees">إدارة موظفي القسم وتعيين الشكاوى للموظفين</p>
+         <a href="department-management.html" class="btn" data-ar="إدارة القسم" data-en="Manage Department">إدارة القسم</a>
+       </div>
+
+                           <!-- ملخص القسم -->
+        <div class="card department-summary-card">
+          <img src="../icon/dashboard.png" alt="ملخص القسم">
+          <h3 data-ar="ملخص القسم" data-en="Department Summary">ملخص القسم</h3>
+          <p data-ar="عرض إحصائيات وأداء القسم" data-en="View department statistics and performance">عرض إحصائيات وأداء القسم</p>
+          <a href="department-summary.html" class="btn" data-ar="عرض الملخص" data-en="View Summary">عرض الملخص</a>
+        </div>
+
+               <!-- إدارة الصلاحيات -->
+        <div class="card department-permissions-card">
+          <img src="../icon/permissions.png" alt="إدارة الصلاحيات">
+          <h3 data-ar="إدارة الصلاحيات" data-en="Permissions Management">إدارة الصلاحيات</h3>
+          <p data-ar="إدارة صلاحيات موظفي القسم وعرض الموظفين" data-en="Manage department employee permissions and view employees">إدارة صلاحيات موظفي القسم وعرض الموظفين</p>
+          <a href="department-permissions.html" class="btn" data-ar="إدارة الصلاحيات" data-en="Manage Permissions">إدارة الصلاحيات</a>
+        </div>
+
+    </section>
+  </main>
+
+<script src="admin.js"></script>
+</body>
+
+</html>

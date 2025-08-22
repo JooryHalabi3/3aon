@@ -1,160 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>استرجاع البيانات - Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="recycle-bin.css">
-</head>
-<body>
-  <div class="back-button">
-    <a href="/admin/admin.html">
-      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
-      <span data-ar="عودة" data-en="Back">عودة</span>
-    </a>
-  </div>
-
-  <header class="header">
-    <div class="header-content">
-      <div class="header-title" data-ar="استرجاع البيانات - Admin" data-en="Data Recovery - Admin">استرجاع البيانات - Admin</div>
-      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
-      <button id="langToggle" class="lang-toggle-btn">
-        <img src="/icon/lang.png" alt="language" class="lang-icon" />
-        <span id="langText">العربية | English</span>
-      </button>
-    </div>
-  </header>
-
-  <br> <br><br> <br> <br><br>
-  <main class="main-content">
-    <!-- إحصائيات سريعة -->
-    <div class="stats-section">
-      <div class="stat-card">
-        <div class="stat-number" id="totalDeleted">0</div>
-        <div class="stat-label" data-ar="إجمالي المحذوفات" data-en="Total Deleted">إجمالي المحذوفات</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="recentDeleted">0</div>
-        <div class="stat-label" data-ar="محذوفات اليوم" data-en="Today's Deleted">محذوفات اليوم</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="restoredCount">0</div>
-        <div class="stat-label" data-ar="تم الاسترجاع" data-en="Restored">تم الاسترجاع</div>
-      </div>
-    </div>
-
-    <!-- فلاتر البحث -->
-    <div class="filters-section">
-      <div class="filter-group">
-        <label data-ar="نوع البيانات:" data-en="Data Type:">نوع البيانات:</label>
-        <select id="dataTypeFilter">
-          <option value="" data-ar="جميع الأنواع" data-en="All Types">جميع الأنواع</option>
-          <option value="complaints" data-ar="الشكاوى" data-en="Complaints">الشكاوى</option>
-          <option value="users" data-ar="المستخدمين" data-en="Users">المستخدمين</option>
-          <option value="reports" data-ar="التقارير" data-en="Reports">التقارير</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label data-ar="من تاريخ:" data-en="From Date:">من تاريخ:</label>
-        <input type="date" id="fromDateFilter">
-      </div>
-
-      <div class="filter-group">
-        <label data-ar="إلى تاريخ:" data-en="To Date:">إلى تاريخ:</label>
-        <input type="date" id="toDateFilter">
-      </div>
-
-      <div class="filter-group">
-        <label data-ar="البحث:" data-en="Search:">البحث:</label>
-        <input type="text" id="searchFilter" placeholder="البحث في البيانات المحذوفة...">
-      </div>
-
-      <button onclick="applyFilters()" class="filter-btn" data-ar="تطبيق الفلاتر" data-en="Apply Filters">تطبيق الفلاتر</button>
-      <button onclick="clearFilters()" class="clear-btn" data-ar="مسح الفلاتر" data-en="Clear Filters">مسح الفلاتر</button>
-    </div>
-
-    <!-- جدول البيانات المحذوفة -->
-    <div class="table-container">
-      <div class="table-header">
-        <h2 data-ar="البيانات المحذوفة" data-en="Deleted Data">البيانات المحذوفة</h2>
-        <div class="table-actions">
-          <button onclick="restoreSelected()" class="restore-btn" data-ar="استرجاع المحدد" data-en="Restore Selected">استرجاع المحدد</button>
-          <button onclick="deletePermanently()" class="delete-btn" data-ar="حذف نهائي" data-en="Delete Permanently">حذف نهائي</button>
-        </div>
-      </div>
-
-      <table id="deletedDataTable" class="data-table">
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-            <th data-ar="نوع البيانات" data-en="Data Type">نوع البيانات</th>
-            <th data-ar="المعرف" data-en="ID">المعرف</th>
-            <th data-ar="الاسم/الملخص" data-en="Name/Summary">الاسم/الملخص</th>
-            <th data-ar="تاريخ الحذف" data-en="Deleted Date">تاريخ الحذف</th>
-            <th data-ar="المحذوف بواسطة" data-en="Deleted By">المحذوف بواسطة</th>
-            <th data-ar="الإجراءات" data-en="Actions">الإجراءات</th>
-          </tr>
-        </thead>
-        <tbody id="deletedDataBody">
-          <!-- البيانات ستُضاف هنا ديناميكياً -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- رسالة عدم وجود بيانات -->
-    <div id="noDataMessage" class="no-data-message" style="display: none;">
-      <div class="no-data-icon">🗑️</div>
-      <p data-ar="لا توجد بيانات محذوفة" data-en="No deleted data found">لا توجد بيانات محذوفة</p>
-      <p data-ar="البيانات المحذوفة ستظهر هنا" data-en="Deleted data will appear here">البيانات المحذوفة ستظهر هنا</p>
-    </div>
-
-    <!-- رسالة التحميل -->
-    <div id="loadingMessage" class="loading-message">
-      <div class="loading-spinner"></div>
-      <p data-ar="جاري تحميل البيانات..." data-en="Loading data...">جاري تحميل البيانات...</p>
-    </div>
-  </main>
-
-  <!-- Modal تأكيد الاسترجاع -->
-  <div id="restoreModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 data-ar="تأكيد الاسترجاع" data-en="Confirm Restoration">تأكيد الاسترجاع</h3>
-        <span class="close" onclick="closeRestoreModal()">&times;</span>
-      </div>
-      <div class="modal-body">
-        <p data-ar="هل أنت متأكد من استرجاع العناصر المحددة؟" data-en="Are you sure you want to restore the selected items?">هل أنت متأكد من استرجاع العناصر المحددة؟</p>
-        <div id="restoreItemsList"></div>
-      </div>
-      <div class="modal-footer">
-        <button onclick="confirmRestore()" class="confirm-btn" data-ar="تأكيد الاسترجاع" data-en="Confirm Restore">تأكيد الاسترجاع</button>
-        <button onclick="closeRestoreModal()" class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal تأكيد الحذف النهائي -->
-  <div id="deleteModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 data-ar="تأكيد الحذف النهائي" data-en="Confirm Permanent Deletion">تأكيد الحذف النهائي</h3>
-        <span class="close" onclick="closeDeleteModal()">&times;</span>
-      </div>
-      <div class="modal-body">
-        <p data-ar="⚠️ تحذير: هذا الإجراء لا يمكن التراجع عنه!" data-en="⚠️ Warning: This action cannot be undone!">⚠️ تحذير: هذا الإجراء لا يمكن التراجع عنه!</p>
-        <p data-ar="هل أنت متأكد من حذف العناصر المحددة نهائياً؟" data-en="Are you sure you want to permanently delete the selected items?">هل أنت متأكد من حذف العناصر المحددة نهائياً؟</p>
-        <div id="deleteItemsList"></div>
-      </div>
-      <div class="modal-footer">
-        <button onclick="confirmDelete()" class="delete-btn" data-ar="حذف نهائي" data-en="Delete Permanently">حذف نهائي</button>
-        <button onclick="closeDeleteModal()" class="cancel-btn" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="recycle-bin.js"></script>
-</body>
-</html>

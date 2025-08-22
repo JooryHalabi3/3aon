@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ملخص القسم - عونك</title>
+  <!-- خط عربي: Tajawal -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- خط إنجليزي: Merriweather (serif) -->
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome للأيقونات -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="department-summary.css">
+</head>
+
+<body>  
+  <!-- زر العودة -->
+  <div class="back-button">
+    <a href="#" onclick="goBack()">
+      <img src="/icon/Back.png" alt="Back Icon" class="back-icon" />
+      <span data-ar="عودة" data-en="Back">عودة</span>
+    </a>
+  </div>
+
+  <!-- الهيدر -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-title" data-ar="عُــــــونَك" data-en="AOUNAK">عُــــــونَك</div>
+      <img src="/icon/hospital-logo.png" alt="شعار المستشفى" class="header-logo">
+      <button id="langToggle" class="lang-toggle-btn">
+        <img src="/icon/lang.png" alt="language" class="lang-icon" />
+        <span id="langText">العربية | English</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- المحتوى الرئيسي -->
+  <main class="main-content">
+    <!-- عنوان الصفحة -->
+    <div class="page-header">
+      <div class="page-title">
+        <i class="fas fa-chart-bar"></i>
+        <h1 id="pageTitle" data-ar="ملخص القسم" data-en="Department Summary">ملخص القسم</h1>
+      </div>
+      <div class="page-subtitle">
+        <p id="pageSubtitle" data-ar="عرض إحصائيات وأداء القسم" data-en="View department statistics and performance">عرض إحصائيات وأداء القسم</p>
+      </div>
+    </div>
+
+    <!-- إحصائيات سريعة -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-info">
+          <h3 id="totalEmployees">0</h3>
+          <p data-ar="إجمالي الموظفين" data-en="Total Employees">إجمالي الموظفين</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <div class="stat-info">
+          <h3 id="totalComplaints">0</h3>
+          <p data-ar="إجمالي الشكاوى" data-en="Total Complaints">إجمالي الشكاوى</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-info">
+          <h3 id="pendingComplaints">0</h3>
+          <p data-ar="الشكاوى المعلقة" data-en="Pending Complaints">الشكاوى المعلقة</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-info">
+          <h3 id="resolvedComplaints">0</h3>
+          <p data-ar="الشكاوى المحلولة" data-en="Resolved Complaints">الشكاوى المحلولة</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="stat-info">
+          <h3 id="avgResolutionTime">0</h3>
+          <p data-ar="متوسط وقت الحل (أيام)" data-en="Avg Resolution Time (Days)">متوسط وقت الحل (أيام)</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="stat-info">
+          <h3 id="satisfactionRate">0%</h3>
+          <p data-ar="معدل الرضا" data-en="Satisfaction Rate">معدل الرضا</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- الرسوم البيانية -->
+    <div class="charts-container">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 data-ar="توزيع الشكاوى حسب النوع" data-en="Complaints Distribution by Type">توزيع الشكاوى حسب النوع</h3>
+        </div>
+        <div class="chart-content">
+          <canvas id="complaintsTypeChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 data-ar="الشكاوى الشهرية" data-en="Monthly Complaints">الشكاوى الشهرية</h3>
+        </div>
+        <div class="chart-content">
+          <canvas id="monthlyComplaintsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- قائمة الموظفين النشطين -->
+    <div class="employees-section">
+      <div class="section-header">
+        <h3 data-ar="الموظفون النشطون" data-en="Active Employees">الموظفون النشطون</h3>
+        <button class="refresh-btn" onclick="loadDepartmentData()">
+          <i class="fas fa-sync-alt"></i>
+          <span data-ar="تحديث" data-en="Refresh">تحديث</span>
+        </button>
+      </div>
+      
+      <div class="employees-grid" id="employeesGrid">
+        <!-- سيتم ملؤها ديناميكياً -->
+      </div>
+    </div>
+
+    <!-- الشكاوى الأخيرة -->
+    <div class="recent-complaints-section">
+      <div class="section-header">
+        <h3 data-ar="الشكاوى الأخيرة" data-en="Recent Complaints">الشكاوى الأخيرة</h3>
+        <a href="request-tracking.html" class="view-all-btn">
+          <span data-ar="عرض الكل" data-en="View All">عرض الكل</span>
+          <i class="fas fa-arrow-left"></i>
+        </a>
+      </div>
+      
+      <div class="complaints-list" id="recentComplaintsList">
+        <!-- سيتم ملؤها ديناميكياً -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="department-summary.js"></script>
+</body>
+
+</html>

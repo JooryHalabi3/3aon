@@ -5,14 +5,22 @@ const getRoles = async (req, res) => {
     try {
         const roles = [
             {
-                name: 'employee',
-                description: 'Standard employee permissions',            
-                user_count: 24
+                name: 'SUPER_ADMIN',
+                displayName: 'سوبر أدمن',
+                description: 'صلاحيات كاملة على النظام',
+                user_count: 1
             },
             {
-                name: 'manager',
-                description: 'Administrative permissions',
+                name: 'ADMIN',
+                displayName: 'أدمن',
+                description: 'إدارة القسم والموظفين',
                 user_count: 3
+            },
+            {
+                name: 'EMPLOYEE',
+                displayName: 'موظف',
+                description: 'الصلاحيات الأساسية',
+                user_count: 24
             }
         ];
         
@@ -114,8 +122,72 @@ const updateRolePermissions = async (req, res) => {
     }
 };
 
+// تحديث جميع الصلاحيات في النظام
+const updateAllPermissions = async (req, res) => {
+    try {
+        // التحقق من أن المستخدم سوبر أدمن
+        const user = req.user;
+        if (user.RoleID !== 1) {
+            return res.status(403).json({
+                success: false,
+                message: 'ليس لديك صلاحية تحديث الصلاحيات'
+            });
+        }
+
+        // حذف جميع الصلاحيات الحالية
+        await db.execute('DELETE FROM RolePermissions');
+
+        // إدخال الصلاحيات الجديدة
+        const newPermissions = [
+            // صلاحيات سوبر أدمن
+            ['SUPER_ADMIN', 'full_system_access', 1],
+            ['SUPER_ADMIN', 'user_management', 1],
+            ['SUPER_ADMIN', 'department_management', 1],
+            ['SUPER_ADMIN', 'assign_complaints', 1],
+            ['SUPER_ADMIN', 'transfer_complaints', 1],
+            ['SUPER_ADMIN', 'view_all_complaints', 1],
+            ['SUPER_ADMIN', 'view_reports', 1],
+            
+            // صلاحيات أدمن
+            ['ADMIN', 'assign_complaints', 1],
+            ['ADMIN', 'transfer_complaints', 1],
+            ['ADMIN', 'view_department_complaints', 1],
+            ['ADMIN', 'view_reports', 1],
+            ['ADMIN', 'update_complaint_status', 1],
+            ['ADMIN', 'add_comments', 1],
+            
+            // صلاحيات موظف
+            ['EMPLOYEE', 'view_assigned_complaints', 1],
+            ['EMPLOYEE', 'update_complaint_status', 1],
+            ['EMPLOYEE', 'add_comments', 1],
+            ['EMPLOYEE', 'submit_complaint', 1],
+            ['EMPLOYEE', 'follow_own_complaint', 1],
+            ['EMPLOYEE', 'view_public_complaints', 1]
+        ];
+
+        for (const [role, permission, hasPermission] of newPermissions) {
+            await db.execute(
+                'INSERT INTO RolePermissions (role_name, permission_name, has_permission) VALUES (?, ?, ?)',
+                [role, permission, hasPermission]
+            );
+        }
+
+        res.json({
+            success: true,
+            message: 'تم تحديث جميع الصلاحيات بنجاح'
+        });
+    } catch (error) {
+        console.error('Error updating all permissions:', error);
+        res.status(500).json({
+            success: false,
+            message: 'خطأ في تحديث الصلاحيات'
+        });
+    }
+};
+
 module.exports = {
     getRoles,
     getRolePermissions,
-    updateRolePermissions
+    updateRolePermissions,
+    updateAllPermissions
 };

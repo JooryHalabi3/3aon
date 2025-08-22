@@ -48,8 +48,8 @@ const checkAdminPermissions = async (req, res, next) => {
       DepartmentName: user.DepartmentName
     });
 
-    // السماح لـ Admin (RoleID = 2) و Super Admin (RoleID = 1)
-    if (user.RoleID !== 1 && user.RoleID !== 2) {
+    // السماح لـ Super Admin (RoleID = 1) و Admin (RoleID = 3)
+    if (user.RoleID !== 1 && user.RoleID !== 3) {
       console.log('🚫 المستخدم ليس Admin. RoleID:', user.RoleID);
       return res.status(403).json({ 
         success: false, 
