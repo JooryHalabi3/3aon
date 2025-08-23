@@ -19,7 +19,6 @@ function checkAuthentication() {
 let complaintsData = [];
 let departments = [];
 let complaintTypes = [];
-let statusUpdateInterval = null;
 
 // تحديث عنوان الصفحة للمدير
 function updatePageTitleForAdmin() {
@@ -65,34 +64,6 @@ function updatePageForNoUserComplaints() {
 async function loadComplaints() {
   try {
     console.log('بدء جلب الشكاوى...'); // إضافة رسالة تصحيح
-    
-    // محاولة تحميل البيانات من localStorage أولاً إذا كانت موجودة
-    const cachedData = localStorage.getItem('complaintsData');
-    if (cachedData) {
-      try {
-        const parsedData = JSON.parse(cachedData);
-        if (Array.isArray(parsedData) && parsedData.length > 0) {
-          complaintsData = parsedData;
-          console.log('تم تحميل البيانات من الذاكرة المؤقتة:', complaintsData.length, 'شكوى');
-          updateComplaintsDisplay();
-          
-          // إذا كانت البيانات موجودة في الذاكرة المؤقتة، لا نحتاج لجلبها من الخادم مرة أخرى
-          // إلا إذا كان هناك فلاتر مطبقة
-          const hasActiveFilters = document.getElementById('dateFilter').value !== 'all' ||
-                                 document.querySelector('.search-box').value.trim() !== '' ||
-                                 document.querySelectorAll('.dropdown')[1].value !== 'الحالة' ||
-                                 document.querySelectorAll('.dropdown')[2].value !== 'القسم' ||
-                                 document.querySelectorAll('.dropdown')[3].value !== 'نوع الشكوى';
-          
-          if (!hasActiveFilters) {
-            console.log('لا توجد فلاتر نشطة، استخدام البيانات المحفوظة');
-            return;
-          }
-        }
-      } catch (error) {
-        console.warn('خطأ في تحميل البيانات من الذاكرة المؤقتة:', error);
-      }
-    }
     
     const dateFilter = document.getElementById('dateFilter').value;
     const searchTerm = document.querySelector('.search-box').value;
@@ -180,13 +151,9 @@ async function loadComplaints() {
         });
         
         console.log('عدد الشكاوى الصحيحة:', complaintsData.length);
-        
-        // حفظ البيانات في localStorage للتحديثات
-        localStorage.setItem('complaintsData', JSON.stringify(complaintsData));
       } else {
         console.warn('البيانات ليست مصفوفة، تعيين مصفوفة فارغة');
         complaintsData = [];
-        localStorage.setItem('complaintsData', JSON.stringify([]));
       }
       updateComplaintsDisplay();
     } else {
@@ -342,9 +309,9 @@ function updateComplaintsDisplay() {
             </div>
             <div class="actions">
               <a href="#" onclick="viewComplaintDetails(${complaint.ComplaintID})" class="btn blue" data-ar="عرض التفاصيل" data-en="View Details">عرض التفاصيل</a>
-              <a href="#" onclick="replyToComplaint(${complaint.ComplaintID})" class="btn green" data-ar="الرد على الشكوى" data-en="Reply to Complaint">الرد على الشكوى</a>
-              <a href="#" onclick="changeComplaintStatus(${complaint.ComplaintID})" class="btn gray" data-ar="تغيير الحالة" data-en="Change Status">تغيير الحالة</a>
-              <a href="#" onclick="trackComplaint(${complaint.ComplaintID})" class="btn track" data-ar="تتبع حالة الشكوى" data-en="Track Complaint">تتبع حالة الشكوى</a>
+              <a href="/general complaints/reply.html" class="btn green" data-ar="الرد على الشكوى" data-en="Reply to Complaint">الرد على الشكوى</a>
+              <a href="/general complaints/status.html" class="btn gray" data-ar="تغيير الحالة" data-en="Change Status">تغيير الحالة</a>
+              <a href="/general complaints/track.html" class="btn track" data-ar="تتبع حالة الشكوى" data-en="Track Complaint">تتبع حالة الشكوى</a>
               <a href="#" onclick="showTransferModal(${complaint.ComplaintID})" class="btn orange" data-ar="تحويل شكوى" data-en="Transfer Complaint">تحويل شكوى</a>
             </div>
           </div>
@@ -357,10 +324,6 @@ function updateComplaintsDisplay() {
 
   console.log('تم إنشاء HTML للشكاوى'); // إضافة رسالة تصحيح
   complaintsSection.innerHTML = complaintsHTML;
-  
-  // تحديث البيانات في localStorage بعد كل تحديث للعرض
-  localStorage.setItem('complaintsData', JSON.stringify(complaintsData));
-  
   console.log('تم تحديث عرض الشكاوى بنجاح'); // إضافة رسالة تصحيح
 }
 
@@ -395,48 +358,6 @@ function viewComplaintDetails(complaintId) {
   }
 }
 
-// تغيير حالة الشكوى
-function changeComplaintStatus(complaintId) {
-  const complaint = complaintsData.find(c => c.ComplaintID === complaintId);
-  if (complaint) {
-    // حفظ بيانات الشكوى في localStorage للوصول إليها في صفحة تغيير الحالة
-    localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
-    console.log(`تم تحديد الشكوى ${complaintId} لتغيير الحالة:`, complaint);
-    window.location.href = "/general complaints/status.html";
-  } else {
-    console.error(`لم يتم العثور على الشكوى ${complaintId}`);
-    alert('خطأ: لم يتم العثور على بيانات الشكوى');
-  }
-}
-
-// الرد على الشكوى
-function replyToComplaint(complaintId) {
-  const complaint = complaintsData.find(c => c.ComplaintID === complaintId);
-  if (complaint) {
-    // حفظ بيانات الشكوى في localStorage للوصول إليها في صفحة الرد
-    localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
-    console.log(`تم تحديد الشكوى ${complaintId} للرد:`, complaint);
-    window.location.href = "/general complaints/reply.html";
-  } else {
-    console.error(`لم يتم العثور على الشكوى ${complaintId}`);
-    alert('خطأ: لم يتم العثور على بيانات الشكوى');
-  }
-}
-
-// تتبع حالة الشكوى
-function trackComplaint(complaintId) {
-  const complaint = complaintsData.find(c => c.ComplaintID === complaintId);
-  if (complaint) {
-    // حفظ بيانات الشكوى في localStorage للوصول إليها في صفحة التتبع
-    localStorage.setItem("selectedComplaint", JSON.stringify(complaint));
-    console.log(`تم تحديد الشكوى ${complaintId} للتتبع:`, complaint);
-    window.location.href = "/general complaints/track.html";
-  } else {
-    console.error(`لم يتم العثور على الشكوى ${complaintId}`);
-    alert('خطأ: لم يتم العثور على بيانات الشكوى');
-  }
-}
-
 // تطبيق الفلاتر
 function applyFilters() {
   loadComplaints();
@@ -457,181 +378,51 @@ document.getElementById("exportBtn").addEventListener("click", function () {
 
 // مراقبة تحديثات حالة الشكاوى
 function listenForStatusUpdates() {
-  console.log('بدء مراقبة تحديثات حالة الشكاوى...');
-  
-  // مراقبة تغيير localStorage بين النوافذ
+  // مراقبة تغيير localStorage
   window.addEventListener('storage', (e) => {
-    console.log('تم اكتشاف تغيير في localStorage:', e.key, e.newValue);
-    if (e.key === 'complaintStatusUpdated' && e.newValue) {
-      try {
-        const updateData = JSON.parse(e.newValue);
-        if (updateData && updateData.complaintId) {
-          console.log('تم اكتشاف تحديث حالة الشكوى من نافذة أخرى:', updateData);
-          updateComplaintStatusInUI(updateData.complaintId, updateData.newStatus);
-        }
-      } catch (error) {
-        console.error('خطأ في معالجة تحديث الحالة من نافذة أخرى:', error);
+    if (e.key === 'complaintStatusUpdated') {
+      const updateData = JSON.parse(e.newValue);
+      if (updateData && updateData.complaintId) {
+        console.log('تم اكتشاف تحديث حالة الشكوى:', updateData);
+        updateComplaintStatusInUI(updateData.complaintId, updateData.newStatus);
       }
     }
   });
 
-  // مراقبة التحديثات في نفس النافذة كل ثانية
+  // مراقبة التحديثات في نفس النافذة
   setInterval(() => {
     const updateData = localStorage.getItem('complaintStatusUpdated');
     if (updateData) {
-      try {
-        const parsed = JSON.parse(updateData);
-        const timeDiff = Date.now() - parsed.timestamp;
+      const parsed = JSON.parse(updateData);
+      const timeDiff = Date.now() - parsed.timestamp;
+      
+      // إذا كان التحديث حديث (أقل من 5 ثواني) وليس من نفس الصفحة
+      if (timeDiff < 5000 && !window.complaintStatusUpdateProcessed) {
+        console.log('تم اكتشاف تحديث حالة محلي:', parsed);
+        updateComplaintStatusInUI(parsed.complaintId, parsed.newStatus);
+        window.complaintStatusUpdateProcessed = true;
         
-        // إذا كان التحديث حديث (أقل من 30 ثانية) وليس من نفس الصفحة
-        if (timeDiff < 30000 && !window.complaintStatusUpdateProcessed) {
-          console.log('تم اكتشاف تحديث حالة محلي:', parsed);
-          updateComplaintStatusInUI(parsed.complaintId, parsed.newStatus);
-          window.complaintStatusUpdateProcessed = true;
-          
-          // إزالة العلامة بعد 35 ثانية
-          setTimeout(() => {
-            window.complaintStatusUpdateProcessed = false;
-          }, 35000);
-        }
-      } catch (error) {
-        console.error('خطأ في معالجة تحديث الحالة المحلي:', error);
+        // إزالة العلامة بعد 10 ثواني
+        setTimeout(() => {
+          window.complaintStatusUpdateProcessed = false;
+        }, 10000);
       }
     }
   }, 1000);
-  
-  // إضافة مراقبة إضافية للتحديثات من الخادم كل 10 ثواني
-  setInterval(async () => {
-    try {
-      console.log('فحص التحديثات من الخادم...');
-      await loadComplaints();
-    } catch (error) {
-      console.error('خطأ في فحص التحديثات من الخادم:', error);
-    }
-  }, 10000);
 }
 
 // تحديث حالة الشكوى في الواجهة
 function updateComplaintStatusInUI(complaintId, newStatus) {
-  console.log(`محاولة تحديث حالة الشكوى ${complaintId} إلى ${newStatus}`);
-  
   // البحث عن الشكوى في البيانات المحملة
   const complaintIndex = complaintsData.findIndex(c => c.ComplaintID === complaintId);
   if (complaintIndex !== -1) {
-    console.log(`تم العثور على الشكوى في الفهرس ${complaintIndex}`);
-    
     // تحديث البيانات
     complaintsData[complaintIndex].CurrentStatus = newStatus;
-    
-    // تحديث البيانات في localStorage
-    localStorage.setItem('complaintsData', JSON.stringify(complaintsData));
     
     // إعادة عرض الشكاوى لتظهر التحديثات
     updateComplaintsDisplay();
     
-    console.log(`تم تحديث حالة الشكوى ${complaintId} إلى ${newStatus} بنجاح`);
-    
-    // إظهار إشعار بصري للمستخدم
-    showStatusUpdateNotification(complaintId, newStatus);
-  } else {
-    console.warn(`لم يتم العثور على الشكوى ${complaintId} في البيانات المحملة`);
-    // محاولة إعادة تحميل البيانات من الخادم
-    loadComplaints();
-  }
-}
-
-// إظهار إشعار بصري للتحديث
-function showStatusUpdateNotification(complaintId, newStatus) {
-  // إنشاء عنصر الإشعار
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #28a745;
-    color: white;
-    padding: 15px 20px;
-    border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 10000;
-    font-family: 'Tajawal', sans-serif;
-    font-size: 14px;
-    max-width: 300px;
-    animation: slideIn 0.3s ease-out;
-  `;
-  
-  notification.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <span style="font-size: 18px;">✅</span>
-      <div>
-        <div style="font-weight: bold;">تم تحديث حالة الشكوى</div>
-        <div>الشكوى #${String(complaintId).padStart(6, '0')} → ${newStatus}</div>
-      </div>
-    </div>
-  `;
-  
-  // إضافة CSS للحركة
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-  `;
-  document.head.appendChild(style);
-  
-  // إضافة الإشعار للصفحة
-  document.body.appendChild(notification);
-  
-  // إزالة الإشعار بعد 3 ثواني
-  setTimeout(() => {
-    notification.style.animation = 'slideOut 0.3s ease-in';
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 300);
-  }, 3000);
-}
-
-// بدء مراقبة التحديثات التلقائية
-function startAutoRefresh() {
-  console.log('بدء المراقبة التلقائية للتحديثات...');
-  
-  // مراقبة كل 5 ثواني للتحديثات الجديدة
-  statusUpdateInterval = setInterval(() => {
-    checkForStatusUpdates();
-  }, 5000);
-}
-
-// فحص التحديثات الجديدة
-async function checkForStatusUpdates() {
-  try {
-    // فحص آخر تحديث معروف
-    const lastUpdate = localStorage.getItem('lastStatusUpdate');
-    const currentTime = Date.now();
-    
-    // إذا لم يكن هناك تحديث سابق أو كان التحديث منذ أكثر من 10 ثواني
-    if (!lastUpdate || (currentTime - parseInt(lastUpdate)) > 10000) {
-      console.log('فحص التحديثات الجديدة...');
-      
-      // إعادة تحميل البيانات من الخادم للتأكد من التحديثات
-      await loadComplaints();
-      
-      // تحديث وقت آخر فحص
-      localStorage.setItem('lastStatusUpdate', currentTime.toString());
-    }
-  } catch (error) {
-    console.error('خطأ في فحص التحديثات:', error);
-  }
-}
-
-// إيقاف المراقبة التلقائية
-function stopAutoRefresh() {
-  if (statusUpdateInterval) {
-    clearInterval(statusUpdateInterval);
-    statusUpdateInterval = null;
-    console.log('تم إيقاف المراقبة التلقائية');
+    console.log(`تم تحديث حالة الشكوى ${complaintId} إلى ${newStatus}`);
   }
 }
 
@@ -693,38 +484,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // بدء مراقبة تحديثات الحالة
   listenForStatusUpdates();
-  
-  // بدء المراقبة التلقائية
-  startAutoRefresh();
-  
-  // إضافة مراقبة إضافية للتحديثات عند التركيز على النافذة
-  window.addEventListener('focus', () => {
-    console.log('تم التركيز على النافذة، فحص التحديثات...');
-    checkForRecentUpdates();
-  });
-  
-  // إضافة مراقبة عند تحميل الصفحة
-  window.addEventListener('load', () => {
-    console.log('تم تحميل الصفحة، فحص التحديثات...');
-    checkForRecentUpdates();
-  });
-  
-  // دالة فحص التحديثات الحديثة
-  function checkForRecentUpdates() {
-    const updateData = localStorage.getItem('complaintStatusUpdated');
-    if (updateData) {
-      try {
-        const parsed = JSON.parse(updateData);
-        const timeDiff = Date.now() - parsed.timestamp;
-        if (timeDiff < 60000) { // دقيقة واحدة
-          console.log('تم اكتشاف تحديث حالة حديث:', parsed);
-          updateComplaintStatusInUI(parsed.complaintId, parsed.newStatus);
-        }
-      } catch (error) {
-        console.error('خطأ في معالجة تحديث الحالة:', error);
-      }
-    }
-  }
 
   // إضافة مستمعي الأحداث للفلاتر
   const dateFilter = document.getElementById('dateFilter');
@@ -743,11 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   console.log('تم إعداد جميع الأحداث بنجاح'); // إضافة رسالة تصحيح
-});
-
-// تنظيف عند إغلاق الصفحة
-window.addEventListener('beforeunload', () => {
-  stopAutoRefresh();
 });
 
 // دوال تحويل الشكوى
