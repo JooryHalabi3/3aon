@@ -546,4 +546,3 @@ document.addEventListener('DOMContentLoaded', () => {
     visitDateInput.max = today;
   }
 });
-ئ
